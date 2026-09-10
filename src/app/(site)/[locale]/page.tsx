@@ -125,18 +125,15 @@ export default async function HomePage({
               fetchPriority="high"
               className="absolute inset-0 h-full w-full object-cover"
             />
-            <div className="absolute inset-0 bg-gradient-to-t from-ink/60 via-ink/10 to-transparent lg:from-ink/80 lg:via-ink/20" />
+            <div className="absolute inset-0 bg-gradient-to-t from-ink/90 via-ink/35 to-transparent" />
             {/* seam: photo melts into the light page on phones */}
             <div className="absolute inset-x-0 bottom-0 h-24 bg-gradient-to-t from-paper to-transparent lg:hidden" />
-            <div className="absolute bottom-0 left-0 p-5 pb-16 text-white [text-shadow:0_2px_14px_rgba(0,0,0,0.55)] sm:p-7 sm:pb-20 lg:pb-7">
-              <div className="font-display text-4xl font-extrabold leading-none tracking-tight sm:text-5xl">
-                {count}{" "}
-                <span className="text-xl font-bold text-white/85 sm:text-2xl">
-                  {t("home.carsForSale")}
-                </span>
-              </div>
-              <p className="mt-2 text-sm font-medium text-white/85">
+            <div className="absolute bottom-0 left-0 p-5 pb-16 text-white [text-shadow:0_2px_16px_rgba(0,0,0,0.65)] sm:p-7 sm:pb-20 lg:pb-7">
+              <h2 className="font-display text-3xl font-extrabold leading-tight tracking-tight sm:text-4xl">
                 {t("common.tagline")}
+              </h2>
+              <p className="mt-2 text-sm font-semibold text-white sm:text-base">
+                {t("home.heroLine", { count })}
               </p>
             </div>
           </div>

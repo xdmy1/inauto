@@ -79,7 +79,8 @@
     },
     "contactTitle": "Vino să le vezi pe viu",
     "contactText": "mun. Chișinău, str. Cucorilor 14. Deschis în fiecare zi.",
-    "advanced": "Filtre avansate"
+    "advanced": "Filtre avansate",
+    "heroLine": "{count, plural, one {# mașină} few {# mașini} other {# de mașini}} în parcare chiar acum"
   },
   "catalog": {
     "title": "Automobile",
