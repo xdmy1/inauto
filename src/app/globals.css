@@ -363,6 +363,9 @@ html[data-anim] [data-reveal] {
 html[data-anim] [data-reveal].is-revealed {
   opacity: 1;
   transform: none;
+  /* drop the stacking context once revealed, or later siblings paint over
+     open dropdown panels */
+  will-change: auto;
 }
 
 /* checkboxes match the design system instead of the OS default */

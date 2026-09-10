@@ -81,7 +81,7 @@ export default async function HomePage({
   setRequestLocale(locale);
   const t = await getTranslations();
 
-  const [count, latest, hot, brands, popular, agg, colorRows] = await Promise.all([
+  const [count, latest, hot, brands, popular] = await Promise.all([
     prisma.car.count({ where: { status: "PUBLISHED" } }),
     prisma.car.findMany({
       where: { status: "PUBLISHED" },
@@ -105,41 +105,18 @@ export default async function HomePage({
       orderBy: { price: "desc" },
       take: 7,
     }),
-    prisma.car.aggregate({
-      where: { status: "PUBLISHED" },
-      _min: { price: true, year: true, engineCc: true },
-      _max: { price: true, year: true, mileage: true, engineCc: true },
-    }),
-    prisma.car.findMany({
-      where: { status: "PUBLISHED", color: { not: null } },
-      select: { color: true },
-      distinct: ["color"],
-      orderBy: { color: "asc" },
-    }),
   ]);
-
-  const colors = colorRows.map((c) => c.color!).filter(Boolean);
-
-  const bounds = {
-    priceMin: Math.floor((agg._min.price ?? 1000) / 500) * 500,
-    priceMax: Math.ceil((agg._max.price ?? 50000) / 500) * 500,
-    yearMin: agg._min.year ?? 2000,
-    yearMax: agg._max.year ?? new Date().getFullYear(),
-    mileageMax: Math.ceil((agg._max.mileage ?? 300000) / 10000) * 10000,
-    engineMin: Math.floor((agg._min.engineCc ?? 1000) / 100) * 100,
-    engineMax: Math.ceil((agg._max.engineCc ?? 5000) / 100) * 100,
-  };
 
   return (
     <>
       {/* Hero: search + count panel */}
       <section className="mx-auto max-w-[1360px] px-4 pt-6 sm:px-6 sm:pt-8">
-        <div className="grid grid-cols-1 gap-5 lg:grid-cols-[440px_1fr]">
+        <div className="grid grid-cols-1 gap-5 lg:grid-cols-[400px_1fr]">
           <div data-reveal className="h-full">
-            <QuickSearch brands={brands} colors={colors} count={count} bounds={bounds} />
+            <QuickSearch brands={brands} count={count} />
           </div>
 
-          <div data-reveal className="relative hidden min-h-[360px] overflow-hidden rounded-2xl lg:block">
+          <div data-reveal className="relative hidden min-h-[420px] overflow-hidden rounded-2xl lg:block">
             <img
               src="/images/hero.webp"
               alt={`${site.name} — ${site.address.full}`}
