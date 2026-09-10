@@ -54,8 +54,8 @@ export default async function CarPage({
   const car = await getCar(slug);
   if (!car) notFound();
 
-  // up to 8 similar cars: same brand first, then closest price, topped up
-  // with the newest listings so the section is never almost empty
+  // one row of similar cars: same brand first, then closest price, topped
+  // up with the newest listings so the row is always full
   const similar = await prisma.car.findMany({
     where: {
       status: "PUBLISHED",
@@ -65,17 +65,17 @@ export default async function CarPage({
         { price: { gte: car.price * 0.7, lte: car.price * 1.3 } },
       ],
     },
-    take: 8,
+    take: 4,
     include: { images: { orderBy: { order: "asc" }, take: 1 } },
   });
-  if (similar.length < 8) {
+  if (similar.length < 4) {
     const fill = await prisma.car.findMany({
       where: {
         status: "PUBLISHED",
         id: { notIn: [car.id, ...similar.map((s) => s.id)] },
       },
       orderBy: { createdAt: "desc" },
-      take: 8 - similar.length,
+      take: 4 - similar.length,
       include: { images: { orderBy: { order: "asc" }, take: 1 } },
     });
     similar.push(...fill);
