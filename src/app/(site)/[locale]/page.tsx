@@ -9,16 +9,19 @@ import { CarCard } from "@/components/CarCard";
 import { QuickSearch } from "@/components/QuickSearch";
 import {
   ArrowRightIcon,
-  CarIcon,
   ClockIcon,
-  FileCheckIcon,
   MapPinIcon,
   PhoneIcon,
   SearchIcon,
-  ShieldCheckIcon,
-  WalletIcon,
   WhatsAppIcon,
 } from "@/components/icons";
+import {
+  CoinsIllo,
+  ContractIllo,
+  IconSpot,
+  OdometerIllo,
+  SteeringIllo,
+} from "@/components/illustrations";
 
 export async function generateMetadata({
   params,
@@ -62,11 +65,11 @@ function SectionHeader({
   );
 }
 
-const WHY_ICONS = {
-  verified: ShieldCheckIcon,
-  financing: WalletIcon,
-  testdrive: CarIcon,
-  docs: FileCheckIcon,
+const WHY_ILLOS = {
+  verified: OdometerIllo,
+  financing: CoinsIllo,
+  testdrive: SteeringIllo,
+  docs: ContractIllo,
 } as const;
 
 export default async function HomePage({
@@ -207,13 +210,13 @@ export default async function HomePage({
       {/* Why us — compact strip */}
       <section className="mx-auto max-w-[1360px] px-4 sm:px-6">
         <div className="mt-12 grid grid-cols-1 gap-px overflow-hidden rounded-2xl border border-line bg-line sm:grid-cols-2 lg:grid-cols-4">
-          {(Object.keys(WHY_ICONS) as (keyof typeof WHY_ICONS)[]).map((key) => {
-            const Icon = WHY_ICONS[key];
+          {(Object.keys(WHY_ILLOS) as (keyof typeof WHY_ILLOS)[]).map((key) => {
+            const Illo = WHY_ILLOS[key];
             return (
-              <div key={key} className="flex items-start gap-3.5 bg-card p-5">
-                <span className="icon-tile shrink-0">
-                  <Icon className="h-5 w-5" />
-                </span>
+              <div key={key} className="flex items-start gap-4 bg-card p-5">
+                <IconSpot>
+                  <Illo />
+                </IconSpot>
                 <div>
                   <h3 className="text-sm font-bold">{t(`home.why.${key}`)}</h3>
                   <p className="mt-1 text-xs leading-relaxed text-ink-soft">

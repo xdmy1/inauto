@@ -5,7 +5,6 @@ import { Logo } from "./Logo";
 import {
   ClockIcon,
   FacebookIcon,
-  InstagramIcon,
   MapPinIcon,
   PhoneIcon,
   WhatsAppIcon,
@@ -67,15 +66,6 @@ export async function Footer() {
                 className="flex h-10 w-10 items-center justify-center rounded-full border border-white/15 text-white/70 transition-colors hover:border-white/40 hover:text-white"
               >
                 <FacebookIcon className="h-4.5 w-4.5" />
-              </a>
-              <a
-                href={site.social.instagram}
-                target="_blank"
-                rel="noopener noreferrer"
-                aria-label="Instagram"
-                className="flex h-10 w-10 items-center justify-center rounded-full border border-white/15 text-white/70 transition-colors hover:border-white/40 hover:text-white"
-              >
-                <InstagramIcon className="h-4.5 w-4.5" />
               </a>
               <a
                 href={waHref(site.whatsapp)}

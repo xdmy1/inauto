@@ -35,8 +35,10 @@ export function Select({
   className?: string;
 }) {
   const [open, setOpen] = useState(false);
+  const [closing, setClosing] = useState(false);
   const [query, setQuery] = useState("");
   const [highlight, setHighlight] = useState(-1);
+  const closeTimer = useRef<number | undefined>(undefined);
   const rootRef = useRef<HTMLDivElement>(null);
   const listRef = useRef<HTMLDivElement>(null);
   const searchRef = useRef<HTMLInputElement>(null);
@@ -80,11 +82,19 @@ export function Select({
       [highlight]?.scrollIntoView({ block: "nearest" });
   }, [highlight]);
 
+  // animate out, then unmount (matching close for the entrance animation)
   function close() {
-    setOpen(false);
-    setQuery("");
-    setHighlight(-1);
+    if (!open || closing) return;
+    setClosing(true);
+    closeTimer.current = window.setTimeout(() => {
+      setOpen(false);
+      setClosing(false);
+      setQuery("");
+      setHighlight(-1);
+    }, 200);
   }
+
+  useEffect(() => () => window.clearTimeout(closeTimer.current), []);
 
   function pick(v: string) {
     onChange(v);
@@ -138,7 +148,7 @@ export function Select({
         aria-expanded={open}
         aria-controls={listboxId}
         data-open={open}
-        onClick={() => (open ? close() : setOpen(true))}
+        onClick={() => (open ? close() : (setClosing(false), setOpen(true)))}
         onKeyDown={onKeyDown}
         className={`flex cursor-pointer items-center justify-between gap-2 outline-none ${trigger}`}
       >
@@ -165,13 +175,13 @@ export function Select({
         <>
           {/* mobile bottom-sheet backdrop */}
           <div
-            className="select-backdrop fixed inset-0 z-50 bg-ink/45 sm:hidden"
+            className={`select-backdrop fixed inset-0 z-50 bg-ink/45 sm:hidden ${closing ? "closing" : ""}`}
             onClick={close}
             aria-hidden="true"
           />
           <div
             id={listboxId}
-            className="select-panel overflow-hidden border border-line bg-card shadow-lift"
+            className={`select-panel overflow-hidden border border-line bg-card shadow-lift ${closing ? "closing" : ""}`}
           >
             {/* drag handle (mobile only) */}
             <div className="pt-2.5 sm:hidden">

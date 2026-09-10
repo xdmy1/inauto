@@ -22,8 +22,8 @@ export const site = {
   ],
   geo: { lat: 47.0105, lon: 28.8638 },
   social: {
-    facebook: "https://www.facebook.com/inauto.md",
-    instagram: "https://www.instagram.com/inauto.md",
+    // the only social profile that actually exists on the old site
+    facebook: "https://www.facebook.com/INauto.md/",
   },
 } as const;
 

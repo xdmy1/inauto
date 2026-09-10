@@ -120,8 +120,8 @@
     "p2": "Fiecare automobil trece printr-o verificare tehnică înainte să ajungă în parcare. Nu ascundem nimic: ce e de spus despre o mașină, îți spunem direct, la telefon sau față în față.",
     "p3": "Cumperi cu plata integrală sau cu finanțare — prima rată începe de la 100 €, iar actele se perfectează pe loc, în aceeași zi.",
     "statsCars": "automobile în parcare",
-    "statsYears": "ani pe piață",
-    "statsClients": "clienți mulțumiți"
+    "statsDays": "zile pe săptămână deschis",
+    "statsDown": "prima rată la finanțare"
   },
   "contact": {
     "label": "Contacte",
@@ -177,5 +177,11 @@
       "rwd": "Spate",
       "awd": "4x4"
     }
+  },
+  "notFound": {
+    "title": "Pagina asta a plecat cu altă mașină.",
+    "text": "Adresa nu există sau anunțul a fost vândut între timp. Aruncă o privire la ce avem acum în parcare.",
+    "home": "Prima pagină",
+    "catalog": "Vezi automobilele"
   }
 }

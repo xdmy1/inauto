@@ -31,9 +31,9 @@ export default async function AboutPage({
   const count = await prisma.car.count({ where: { status: "PUBLISHED" } });
 
   const stats = [
-    { value: String(count || "60+"), label: t("statsCars") },
-    { value: "10+", label: t("statsYears") },
-    { value: "2000+", label: t("statsClients") },
+    { value: String(count), label: t("statsCars") },
+    { value: "7/7", label: t("statsDays") },
+    { value: "100 €", label: t("statsDown") },
   ];
 
   return (
