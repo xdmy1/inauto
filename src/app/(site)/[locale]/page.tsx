@@ -128,7 +128,7 @@ export default async function HomePage({
             <div className="absolute inset-0 bg-gradient-to-t from-ink/80 via-ink/20 to-transparent" />
             {/* seam: photo melts into the overlapping dark card on phones */}
             <div className="absolute inset-x-0 bottom-0 h-28 bg-gradient-to-t from-ink via-ink/60 to-transparent lg:hidden" />
-            <div className="absolute bottom-0 left-0 p-5 pb-16 text-white [text-shadow:0_2px_14px_rgba(0,0,0,0.55)] sm:p-7 sm:pb-20 lg:pb-7">
+            <div className="absolute bottom-0 left-0 p-5 pb-8 text-white [text-shadow:0_2px_14px_rgba(0,0,0,0.55)] sm:p-7 sm:pb-10 lg:pb-7">
               <div className="font-display text-4xl font-extrabold leading-none tracking-tight sm:text-5xl">
                 {count}{" "}
                 <span className="text-xl font-bold text-white/85 sm:text-2xl">
@@ -144,9 +144,9 @@ export default async function HomePage({
           {/* search — overlaps the photo on phones */}
           <div
             data-reveal
-            className="relative z-10 -mt-9 px-4 sm:px-0 lg:mt-0 lg:h-full"
+            className="-mt-px bg-ink px-4 pb-2 lg:mt-0 lg:h-full lg:bg-transparent lg:p-0"
           >
-            <div className="h-full overflow-hidden rounded-2xl shadow-lift lg:shadow-none">
+            <div className="h-full overflow-hidden rounded-2xl">
               <QuickSearch brands={brands} count={count} />
             </div>
           </div>
