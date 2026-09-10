@@ -143,7 +143,7 @@ export default async function HomePage({
             data-reveal
             className="relative z-10 -mt-10 px-4 sm:px-0 lg:mt-0 lg:h-full"
           >
-            <div className="h-full overflow-hidden rounded-2xl shadow-lift lg:shadow-card">
+            <div className="h-full rounded-2xl shadow-lift lg:shadow-card">
               <QuickSearch brands={brands} count={count} />
             </div>
           </div>
