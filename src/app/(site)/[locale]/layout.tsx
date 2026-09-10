@@ -9,6 +9,7 @@ import { autoDealerJsonLd, canonicalFor, localizedAlternates } from "@/lib/seo";
 import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
 import { FloatingWhatsApp } from "@/components/FloatingWhatsApp";
+import { ScrollReveal } from "@/components/ScrollReveal";
 import "../../globals.css";
 
 const inter = Inter({
@@ -69,7 +70,13 @@ export default async function LocaleLayout({
   return (
     <html lang={locale} className={`${inter.variable} ${manrope.variable}`}>
       <body className="min-h-dvh flex flex-col">
+        <script
+          dangerouslySetInnerHTML={{
+            __html: "document.documentElement.setAttribute('data-anim','')",
+          }}
+        />
         <NextIntlClientProvider>
+          <ScrollReveal />
           <Header />
           <main className="flex-1">{children}</main>
           <Footer />

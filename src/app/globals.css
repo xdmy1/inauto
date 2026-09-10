@@ -351,6 +351,20 @@ body {
   background: transparent;
 }
 
+/* scroll-reveal (activated only when JS sets data-anim on <html>) */
+html[data-anim] [data-reveal] {
+  opacity: 0;
+  transform: translateY(18px);
+  transition:
+    opacity 0.65s cubic-bezier(0.16, 1, 0.3, 1),
+    transform 0.65s cubic-bezier(0.16, 1, 0.3, 1);
+  will-change: opacity, transform;
+}
+html[data-anim] [data-reveal].is-revealed {
+  opacity: 1;
+  transform: none;
+}
+
 /* checkboxes match the design system instead of the OS default */
 input[type="checkbox"],
 input[type="radio"] {

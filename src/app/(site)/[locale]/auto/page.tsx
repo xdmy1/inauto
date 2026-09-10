@@ -108,7 +108,7 @@ export default async function CatalogPage({
         </nav>
       </div>
 
-      <div className="mt-8 grid grid-cols-1 gap-8 lg:grid-cols-[280px_1fr]">
+      <div className="mt-8 grid grid-cols-1 gap-8 lg:grid-cols-[310px_1fr]">
         {/* Filters — sidebar on desktop, collapsible on mobile */}
         <aside>
           <details className="group rounded-2xl border border-line bg-card p-4 lg:hidden">

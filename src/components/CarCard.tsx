@@ -40,6 +40,7 @@ export async function CarCard({ car }: { car: CarCardData }) {
   return (
     <Link
       href={`/auto/${car.slug}`}
+      data-reveal
       className="group flex flex-col overflow-hidden rounded-xl border border-line bg-card shadow-card transition-shadow hover:shadow-lift"
     >
       <div className="relative aspect-[4/3] overflow-hidden bg-line/50">

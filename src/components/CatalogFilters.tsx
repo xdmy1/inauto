@@ -91,8 +91,8 @@ export function CatalogFilters({
       </label>
 
       <div className="grid grid-cols-2 gap-2.5">
-        <NumberField name="priceMin" label={t("catalog.priceMin")} defaultValue={filters.priceMin} placeholder="0 €" />
-        <NumberField name="priceMax" label={t("catalog.priceMax")} defaultValue={filters.priceMax} placeholder="∞ €" />
+        <NumberField name="priceMin" label={t("catalog.priceMin")} defaultValue={filters.priceMin} placeholder="0" />
+        <NumberField name="priceMax" label={t("catalog.priceMax")} defaultValue={filters.priceMax} placeholder="∞" />
         <NumberField name="yearMin" label={t("catalog.yearMin")} defaultValue={filters.yearMin} placeholder="2000" />
         <NumberField name="yearMax" label={t("catalog.yearMax")} defaultValue={filters.yearMax} placeholder="2026" />
       </div>
@@ -102,25 +102,25 @@ export function CatalogFilters({
           name="mileageMin"
           label={`${t("common.mileage")} min`}
           defaultValue={filters.mileageMin}
-          placeholder="0 km"
+          placeholder="0"
         />
         <NumberField
           name="mileageMax"
-          label={t("catalog.mileageMax")}
+          label={`${t("common.mileage")} max`}
           defaultValue={filters.mileageMax}
-          placeholder="200 000 km"
+          placeholder="200 000"
         />
         <NumberField
           name="engineMin"
           label={`${t("common.engine")} min`}
           defaultValue={filters.engineMin}
-          placeholder="1000 cm³"
+          placeholder="1000"
         />
         <NumberField
           name="engineMax"
           label={`${t("common.engine")} max`}
           defaultValue={filters.engineMax}
-          placeholder="5000 cm³"
+          placeholder="5000"
         />
       </div>
 

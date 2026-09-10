@@ -130,7 +130,7 @@ export default async function CarPage({
       </nav>
 
       <div className="mt-6 grid grid-cols-1 gap-10 lg:grid-cols-[1fr_380px]">
-        <div>
+        <div data-reveal>
           <Gallery images={car.images} alt={`${name} ${car.year}`} />
 
           {/* Specs */}
@@ -169,7 +169,7 @@ export default async function CarPage({
         </div>
 
         {/* Price + contact — sticky on desktop */}
-        <aside>
+        <aside data-reveal>
           <div className="sticky top-24 space-y-4">
             <div className="rounded-2xl border border-line bg-card p-6 shadow-card">
               <h1 className="font-display text-2xl font-extrabold tracking-tight">

@@ -50,7 +50,7 @@ export default async function ContactPage({
 
       <div className="mt-10 grid grid-cols-1 gap-5 lg:grid-cols-3">
         {/* Address + map */}
-        <div className="rounded-2xl border border-line bg-card p-6">
+        <div data-reveal className="rounded-2xl border border-line bg-card p-6">
           <h2 className="text-xs font-semibold uppercase tracking-[0.18em] text-ink-faint">
             {t("contact.address")}
           </h2>
@@ -68,7 +68,7 @@ export default async function ContactPage({
         </div>
 
         {/* Phones */}
-        <div className="rounded-2xl border border-line bg-card p-6">
+        <div data-reveal className="rounded-2xl border border-line bg-card p-6">
           <h2 className="text-xs font-semibold uppercase tracking-[0.18em] text-ink-faint">
             {t("contact.phones")}
           </h2>
@@ -103,7 +103,7 @@ export default async function ContactPage({
         </div>
 
         {/* Hours */}
-        <div className="rounded-2xl border border-line bg-card p-6">
+        <div data-reveal className="rounded-2xl border border-line bg-card p-6">
           <h2 className="text-xs font-semibold uppercase tracking-[0.18em] text-ink-faint">
             {t("contact.hours")}
           </h2>
@@ -119,7 +119,7 @@ export default async function ContactPage({
       </div>
 
       {/* Map embed */}
-      <div className="mt-5 overflow-hidden rounded-2xl border border-line">
+      <div data-reveal className="mt-5 overflow-hidden rounded-2xl border border-line">
         <iframe
           title={t("contact.address")}
           src={`https://maps.google.com/maps?q=${encodeURIComponent(

@@ -135,9 +135,11 @@ export default async function HomePage({
       {/* Hero: search + count panel */}
       <section className="mx-auto max-w-[1360px] px-4 pt-6 sm:px-6 sm:pt-8">
         <div className="grid grid-cols-1 gap-5 lg:grid-cols-[440px_1fr]">
-          <QuickSearch brands={brands} colors={colors} count={count} bounds={bounds} />
+          <div data-reveal className="h-full">
+            <QuickSearch brands={brands} colors={colors} count={count} bounds={bounds} />
+          </div>
 
-          <div className="relative hidden min-h-[360px] overflow-hidden rounded-2xl lg:block">
+          <div data-reveal className="relative hidden min-h-[360px] overflow-hidden rounded-2xl lg:block">
             <img
               src="/images/hero.webp"
               alt={`${site.name} — ${site.address.full}`}
@@ -162,7 +164,7 @@ export default async function HomePage({
         </div>
 
         {/* Popular searches */}
-        <div className="mt-4 flex flex-wrap items-center gap-2">
+        <div data-reveal className="mt-4 flex flex-wrap items-center gap-2">
           <span className="text-sm font-bold">{t("home.popular")}</span>
           {popular.map((p) => (
             <Link
@@ -195,7 +197,7 @@ export default async function HomePage({
 
       {/* Financing banner */}
       <section className="mx-auto max-w-[1360px] px-4 sm:px-6">
-        <div className="mt-12 flex flex-col items-start justify-between gap-5 overflow-hidden rounded-2xl bg-gradient-to-r from-accent-deep to-accent px-6 py-8 text-white sm:flex-row sm:items-center sm:px-9">
+        <div data-reveal className="mt-12 flex flex-col items-start justify-between gap-5 overflow-hidden rounded-2xl bg-gradient-to-r from-accent-deep to-accent px-6 py-8 text-white sm:flex-row sm:items-center sm:px-9">
           <div>
             <h2 className="font-display text-xl font-extrabold tracking-tight sm:text-2xl">
               {t("home.financeTitle")}
@@ -254,7 +256,7 @@ export default async function HomePage({
 
       {/* Contact strip */}
       <section className="mx-auto max-w-[1360px] px-4 sm:px-6">
-        <div className="mt-12 rounded-2xl border border-line bg-card p-6 sm:p-8">
+        <div data-reveal className="mt-12 rounded-2xl border border-line bg-card p-6 sm:p-8">
           <div className="flex flex-col gap-6 lg:flex-row lg:items-center lg:justify-between">
             <div>
               <h2 className="font-display text-xl font-extrabold tracking-tight sm:text-2xl">

@@ -19,49 +19,54 @@ export type SearchBounds = {
 };
 
 const SEATS = [2, 4, 5, 6, 7, 8, 9];
+const nf = new Intl.NumberFormat("ro-RO");
 
-/** numeric box that commits on blur/Enter — type instead of dragging */
-function NumBox({
+/** editable value that looks like text — formatted at rest, raw while editing */
+function NumValue({
   value,
   onCommit,
-  suffix,
+  plain = false,
 }: {
   value: number;
   onCommit: (n: number) => void;
-  suffix?: string;
+  plain?: boolean;
 }) {
-  const [txt, setTxt] = useState(String(value));
-  useEffect(() => setTxt(String(value)), [value]);
+  const [editing, setEditing] = useState(false);
+  const [txt, setTxt] = useState("");
+  const shown = editing ? txt : plain ? String(value) : nf.format(value);
   return (
-    <span className="flex items-center gap-1">
-      <input
-        inputMode="numeric"
-        value={txt}
-        onChange={(e) => setTxt(e.target.value)}
-        onFocus={(e) => e.target.select()}
-        onBlur={() => {
-          const n = Number(txt.replace(/[^\d]/g, ""));
-          if (Number.isFinite(n) && txt.trim() !== "") onCommit(n);
-          else setTxt(String(value));
-        }}
-        onKeyDown={(e) => {
-          if (e.key === "Enter") (e.target as HTMLInputElement).blur();
-        }}
-        className="h-8 w-[72px] rounded-md border border-white/15 bg-white/[0.07] px-2 text-right text-[13px] tabular-nums text-white outline-none transition-colors focus:border-white/50"
-      />
-      {suffix && <span className="text-[11px] text-white/45">{suffix}</span>}
-    </span>
+    <input
+      inputMode="numeric"
+      value={shown}
+      onFocus={(e) => {
+        setEditing(true);
+        setTxt(String(value));
+        requestAnimationFrame(() => e.target.select());
+      }}
+      onChange={(e) => setTxt(e.target.value)}
+      onBlur={() => {
+        setEditing(false);
+        const n = Number(txt.replace(/[^\d]/g, ""));
+        if (Number.isFinite(n) && txt.trim() !== "" && n !== value) onCommit(n);
+      }}
+      onKeyDown={(e) => {
+        if (e.key === "Enter") (e.target as HTMLInputElement).blur();
+      }}
+      className="min-w-0 border-b border-dashed border-transparent bg-transparent p-0 text-right font-semibold tabular-nums text-white outline-none transition-colors hover:border-white/30 focus:border-white/60"
+      style={{ width: `${shown.length + 0.5}ch` }}
+    />
   );
 }
 
-function RangeField({
+/** one self-contained range control: label, editable values, slider */
+function RangePanel({
   label,
   min,
   max,
   step,
   value,
   onChange,
-  suffix,
+  plain,
 }: {
   label: string;
   min: number;
@@ -69,32 +74,32 @@ function RangeField({
   step: number;
   value: [number, number];
   onChange: (v: [number, number]) => void;
-  suffix?: string;
+  plain?: boolean;
 }) {
   const clamp = (n: number) => Math.min(max, Math.max(min, n));
   return (
-    <div>
-      <div className="flex items-center justify-between gap-2">
-        <span className="text-xs font-medium text-white/60">{label}</span>
-        <span className="flex items-center gap-1.5">
-          <NumBox
+    <div className="rounded-xl border border-white/10 bg-white/[0.05] px-3.5 pb-3.5 pt-3">
+      <div className="flex items-baseline justify-between gap-3">
+        <span className="text-xs font-medium text-white/55">{label}</span>
+        <span className="flex items-baseline gap-1 text-[13.5px]">
+          <NumValue
+            plain={plain}
             value={value[0]}
-            suffix={suffix}
             onCommit={(n) =>
               onChange([Math.min(clamp(n), value[1] - step), value[1]])
             }
           />
           <span className="text-white/35">–</span>
-          <NumBox
+          <NumValue
+            plain={plain}
             value={value[1]}
-            suffix={suffix}
             onCommit={(n) =>
               onChange([value[0], Math.max(clamp(n), value[0] + step)])
             }
           />
         </span>
       </div>
-      <div className="mt-2 px-1">
+      <div className="mt-2.5 px-1">
         <RangeSlider
           min={min}
           max={max}
@@ -192,36 +197,46 @@ export function QuickSearch({
     router.push(`/auto${p.size ? `?${p}` : ""}`);
   }
 
-  const label = "text-xs font-medium text-white/60";
-  const chip = (active: boolean) =>
-    `cursor-pointer rounded-full px-3 py-1.5 text-xs font-semibold transition-all ${
-      active
-        ? "tag-red"
-        : "border border-white/15 bg-white/[0.06] text-white/75 hover:border-white/35 hover:text-white"
-    }`;
+  const label = "text-xs font-medium text-white/55";
+
+  const selectField = (
+    lbl: string,
+    value: string,
+    onChange: (v: string) => void,
+    options: { value: string; label: string }[],
+    searchable = false
+  ) => (
+    <label className="block" key={lbl}>
+      <span className={`${label} mb-1.5 block`}>{lbl}</span>
+      <Select
+        variant="dark"
+        searchable={searchable}
+        value={value}
+        onChange={onChange}
+        placeholder={t("home.searchAny")}
+        options={options}
+      />
+    </label>
+  );
 
   return (
     <form
       onSubmit={submit}
-      className="flex h-full flex-col gap-4 rounded-2xl bg-ink p-5 text-white sm:p-6"
+      className="flex h-full flex-col gap-3.5 rounded-2xl bg-ink p-5 text-white sm:p-6"
     >
       <h2 className="font-display text-lg font-bold">{t("home.searchTitle")}</h2>
 
       <div className="grid grid-cols-2 gap-3">
-        <label className="block">
-          <span className={`${label} mb-1.5 block`}>{t("home.searchBrand")}</span>
-          <Select
-            variant="dark"
-            searchable
-            value={brand}
-            onChange={setBrand}
-            placeholder={t("home.searchAny")}
-            options={brands.map((b) => ({
-              value: b.brand,
-              label: `${b.brand} (${b.count})`,
-            }))}
-          />
-        </label>
+        {selectField(
+          t("home.searchBrand"),
+          brand,
+          setBrand,
+          brands.map((b) => ({
+            value: b.brand,
+            label: `${b.brand} (${b.count})`,
+          })),
+          true
+        )}
         <label className="block">
           <span className={`${label} mb-1.5 block`}>{t("home.searchModel")}</span>
           <input
@@ -233,16 +248,16 @@ export function QuickSearch({
         </label>
       </div>
 
-      <RangeField
-        label={t("common.price")}
+      <RangePanel
+        label={`${t("common.price")} (€)`}
         min={bounds.priceMin}
         max={bounds.priceMax}
         step={500}
         value={price}
         onChange={setPrice}
-        suffix="€"
       />
-      <RangeField
+      <RangePanel
+        plain
         label={t("common.year")}
         min={bounds.yearMin}
         max={bounds.yearMax}
@@ -250,24 +265,23 @@ export function QuickSearch({
         value={year}
         onChange={setYear}
       />
-      <div>
-        <span className={`${label} mb-2 block`}>{t("home.searchFuel")}</span>
-        <div className="flex flex-wrap gap-1.5">
-          {FUELS.map((f) => (
-            <button
-              key={f}
-              type="button"
-              aria-pressed={fuel === f}
-              onClick={() => setFuel(fuel === f ? "" : f)}
-              className={chip(fuel === f)}
-            >
-              {t(`options.fuel.${f}`)}
-            </button>
-          ))}
-        </div>
+
+      <div className="grid grid-cols-2 gap-3">
+        {selectField(
+          t("home.searchFuel"),
+          fuel,
+          setFuel,
+          FUELS.map((f) => ({ value: f, label: t(`options.fuel.${f}`) }))
+        )}
+        {selectField(
+          t("common.body"),
+          body,
+          setBody,
+          BODIES.map((b) => ({ value: b, label: t(`options.body.${b}`) }))
+        )}
       </div>
 
-      {/* advanced filters — collapsed by default so the cars stay above the fold */}
+      {/* advanced filters — collapsed so the cars stay above the fold */}
       <button
         type="button"
         onClick={() => setAdv(!adv)}
@@ -291,99 +305,59 @@ export function QuickSearch({
 
       <div
         className={`grid transition-[grid-template-rows] duration-300 ease-out ${
-          adv ? "grid-rows-[1fr]" : "-mt-4 grid-rows-[0fr]"
+          adv ? "grid-rows-[1fr]" : "-mt-3.5 grid-rows-[0fr]"
         }`}
       >
-        <div className="flex flex-col gap-4 overflow-hidden px-0.5 pb-0.5">
-      <RangeField
-        label={t("common.mileage")}
-        min={0}
-        max={bounds.mileageMax}
-        step={5000}
-        value={mileage}
-        onChange={setMileage}
-        suffix="km"
-      />
-      <RangeField
-        label={`${t("common.engine")} (cm³)`}
-        min={bounds.engineMin}
-        max={bounds.engineMax}
-        step={100}
-        value={engine}
-        onChange={setEngine}
-      />
+        <div className="flex min-h-0 flex-col gap-3.5 overflow-hidden px-0.5 pb-0.5 pt-0.5">
+          <RangePanel
+            label={`${t("common.mileage")} (km)`}
+            min={0}
+            max={bounds.mileageMax}
+            step={5000}
+            value={mileage}
+            onChange={setMileage}
+          />
+          <RangePanel
+            label={`${t("common.engine")} (cm³)`}
+            min={bounds.engineMin}
+            max={bounds.engineMax}
+            step={100}
+            value={engine}
+            onChange={setEngine}
+          />
 
-      <div className="grid grid-cols-2 gap-x-3 gap-y-4">
-        <div className="col-span-2">
-          <span className={`${label} mb-2 block`}>{t("common.transmission")}</span>
-          <div className="flex flex-wrap gap-1.5">
-            {TRANSMISSIONS.map((x) => (
-              <button
-                key={x}
-                type="button"
-                aria-pressed={transmission === x}
-                onClick={() => setTransmission(transmission === x ? "" : x)}
-                className={chip(transmission === x)}
-              >
-                {t(`options.transmission.${x}`)}
-              </button>
-            ))}
+          <div className="grid grid-cols-2 gap-3">
+            {selectField(
+              t("common.transmission"),
+              transmission,
+              setTransmission,
+              TRANSMISSIONS.map((x) => ({
+                value: x,
+                label: t(`options.transmission.${x}`),
+              }))
+            )}
+            {selectField(
+              t("common.drivetrain"),
+              drivetrain,
+              setDrivetrain,
+              DRIVETRAINS.map((d) => ({
+                value: d,
+                label: t(`options.drivetrain.${d}`),
+              }))
+            )}
+            {selectField(
+              t("common.color"),
+              color,
+              setColor,
+              colors.map((c) => ({ value: c, label: c }))
+            )}
+            {selectField(
+              t("common.seats"),
+              seats,
+              setSeats,
+              SEATS.map((n) => ({ value: String(n), label: String(n) }))
+            )}
           </div>
-        </div>
-
-        <div className="col-span-2">
-          <span className={`${label} mb-2 block`}>{t("common.drivetrain")}</span>
-          <div className="flex flex-wrap gap-1.5">
-            {DRIVETRAINS.map((d) => (
-              <button
-                key={d}
-                type="button"
-                aria-pressed={drivetrain === d}
-                onClick={() => setDrivetrain(drivetrain === d ? "" : d)}
-                className={chip(drivetrain === d)}
-              >
-                {t(`options.drivetrain.${d}`)}
-              </button>
-            ))}
-          </div>
-        </div>
-
-        <label className="block">
-          <span className={`${label} mb-1.5 block`}>{t("common.body")}</span>
-          <Select
-            variant="dark"
-            value={body}
-            onChange={setBody}
-            placeholder={t("home.searchAny")}
-            options={BODIES.map((b) => ({
-              value: b,
-              label: t(`options.body.${b}`),
-            }))}
-          />
-        </label>
-
-        <label className="block">
-          <span className={`${label} mb-1.5 block`}>{t("common.color")}</span>
-          <Select
-            variant="dark"
-            value={color}
-            onChange={setColor}
-            placeholder={t("home.searchAny")}
-            options={colors.map((c) => ({ value: c, label: c }))}
-          />
-        </label>
-
-        <label className="block">
-          <span className={`${label} mb-1.5 block`}>{t("common.seats")}</span>
-          <Select
-            variant="dark"
-            value={seats}
-            onChange={setSeats}
-            placeholder={t("home.searchAny")}
-            options={SEATS.map((n) => ({ value: String(n), label: String(n) }))}
-          />
-        </label>
-      </div>
         </div>
       </div>
 

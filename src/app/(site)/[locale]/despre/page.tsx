@@ -69,7 +69,7 @@ export default async function AboutPage({
     <div className="mx-auto max-w-[1360px] px-4 pt-12 sm:px-6 sm:pt-16">
       {/* intro + photo */}
       <div className="grid grid-cols-1 items-center gap-10 lg:grid-cols-[1.05fr_1fr]">
-        <div>
+        <div data-reveal>
           <h1 className="max-w-xl font-display text-4xl font-extrabold leading-tight tracking-tight sm:text-5xl">
             {t("about.title")}
           </h1>
@@ -103,7 +103,7 @@ export default async function AboutPage({
           </div>
         </div>
 
-        <div>
+        <div data-reveal>
           <div className="overflow-hidden rounded-3xl shadow-lift">
             <img
               src="/images/hero.webp"
@@ -133,7 +133,7 @@ export default async function AboutPage({
         {(Object.keys(WHY_ILLOS) as (keyof typeof WHY_ILLOS)[]).map((key) => {
           const Illo = WHY_ILLOS[key];
           return (
-            <div key={key} className="flex items-start gap-4 bg-card p-5">
+            <div key={key} data-reveal className="flex items-start gap-4 bg-card p-5">
               <IconSpot>
                 <Illo />
               </IconSpot>
@@ -149,7 +149,7 @@ export default async function AboutPage({
       </div>
 
       {/* visit CTA */}
-      <div className="mt-14 flex flex-col items-start justify-between gap-5 rounded-2xl bg-ink px-6 py-8 text-white sm:flex-row sm:items-center sm:px-9">
+      <div data-reveal className="mt-14 flex flex-col items-start justify-between gap-5 rounded-2xl bg-ink px-6 py-8 text-white sm:flex-row sm:items-center sm:px-9">
         <div>
           <h2 className="font-display text-xl font-extrabold tracking-tight sm:text-2xl">
             {t("home.contactTitle")}
