@@ -43,7 +43,8 @@
     "location": "Parcarea",
     "cars": "{count, plural, one {# automobil} few {# automobile} other {# de automobile}}",
     "priceDrop": "Preț redus",
-    "waBubble": "Apasă aici ca să ne scrii!"
+    "waBubble": "Apasă aici ca să ne scrii!",
+    "waQuiet": "sau scrie-ne pe WhatsApp"
   },
   "nav": {
     "home": "Acasă",
@@ -80,7 +81,8 @@
     "contactTitle": "Vino să le vezi pe viu",
     "contactText": "mun. Chișinău, str. Cucorilor 14. Deschis în fiecare zi.",
     "advanced": "Filtre avansate",
-    "heroLine": "{count, plural, one {# mașină} few {# mașini} other {# de mașini}} în parcare chiar acum"
+    "heroLine": "{count, plural, one {# mașină} few {# mașini} other {# de mașini}} în parcare chiar acum",
+    "searchPlaceholder": "Caută după marcă sau model…"
   },
   "catalog": {
     "title": "Automobile",

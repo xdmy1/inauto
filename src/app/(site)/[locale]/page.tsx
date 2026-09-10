@@ -5,6 +5,7 @@ import { prisma } from "@/lib/prisma";
 import { getBrandsWithCounts } from "@/lib/cars";
 import { site, telHref, waHref } from "@/lib/site";
 import { canonicalFor, localizedAlternates } from "@/lib/seo";
+import { getPathname } from "@/i18n/navigation";
 import { CarCard } from "@/components/CarCard";
 import { QuickSearch } from "@/components/QuickSearch";
 import {
@@ -149,8 +150,19 @@ export default async function HomePage({
           </div>
         </div>
 
-        {/* Popular searches */}
-        <div data-reveal className="mt-5 flex flex-wrap items-center gap-2 px-4 sm:px-0">
+        {/* quick text search + popular presets */}
+        <div data-reveal className="mt-5 flex flex-wrap items-center gap-x-4 gap-y-2 px-4 sm:px-0">
+          <form
+            action={getPathname({ locale, href: "/auto" })}
+            className="relative hidden min-w-[280px] flex-1 lg:block"
+          >
+            <SearchIcon className="pointer-events-none absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-ink-faint" />
+            <input
+              name="q"
+              placeholder={t("home.searchPlaceholder")}
+              className="h-10 w-full rounded-xl border border-line bg-card pl-10 pr-3.5 text-sm text-ink outline-none transition-colors placeholder:text-ink-faint focus:border-ink"
+            />
+          </form>
           <span className="text-sm font-bold">{t("home.popular")}</span>
           {popular.slice(0, 5).map((p) => (
             <Link

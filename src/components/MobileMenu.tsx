@@ -7,7 +7,7 @@ import { useTranslations } from "next-intl";
 import { Link, usePathname } from "@/i18n/navigation";
 import { site, telHref, waHref } from "@/lib/site";
 import { Logo } from "./Logo";
-import { ArrowRightIcon, PhoneIcon, WhatsAppIcon } from "./icons";
+import { ArrowRightIcon, PhoneIcon } from "./icons";
 
 export function MobileMenu() {
   const t = useTranslations();
@@ -150,7 +150,7 @@ export function MobileMenu() {
               </div>
             </div>
 
-            <div className="space-y-2.5 border-t border-line px-5 py-5 pb-[max(1.25rem,env(safe-area-inset-bottom))]">
+            <div className="border-t border-line px-5 py-5 pb-[max(1.25rem,env(safe-area-inset-bottom))]">
               <a href={telHref(site.phones[0])} className="btn-primary w-full">
                 <PhoneIcon className="h-4 w-4" />
                 {t("common.call")} · {site.phoneDisplay[0]}
@@ -159,12 +159,11 @@ export function MobileMenu() {
                 href={waHref(site.whatsapp)}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="btn-wa flex h-12 w-full items-center justify-center gap-2 rounded-xl font-display text-sm font-bold text-white"
+                className="mt-3 block text-center text-sm font-medium text-ink-soft underline-offset-4 hover:underline"
               >
-                <WhatsAppIcon className="h-4.5 w-4.5" />
-                WhatsApp
+                {t("common.waQuiet")}
               </a>
-              <p className="pt-1 text-center text-xs text-ink-faint">
+              <p className="mt-3 text-center text-xs text-ink-faint">
                 {site.address.full}
               </p>
             </div>

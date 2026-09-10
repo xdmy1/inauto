@@ -68,27 +68,27 @@ export function NavMenu() {
     { href: "/auto?priceMax=10000", label: t("footer.under10k") },
   ];
 
+  // v1b — segmented pill, squared to match the header buttons (rounded-xl)
   const itemCls = (active: boolean) =>
-    `relative flex h-[72px] items-center text-sm font-semibold transition-colors ${
-      active ? "text-ink" : "text-ink-soft hover:text-ink"
+    `flex h-10 items-center rounded-lg px-4 text-sm font-semibold transition-colors ${
+      active ? "bg-card text-ink shadow-card" : "text-ink-soft hover:text-ink"
     }`;
 
-  const underline = (
-    <span
-      className="absolute inset-x-0 bottom-0 h-[2.5px] rounded-full bg-accent"
-      aria-hidden
-    />
-  );
+  const underline = null;
+  const divider = null;
 
   const isCatalog = pathname.startsWith("/auto");
 
   return (
-    <nav className="hidden items-center gap-8 md:flex" aria-label="Main">
+    <nav
+      className="chip-3d hidden items-center gap-0.5 rounded-xl p-1 md:flex"
+      aria-label="Main"
+    >
       <Link href="/" className={itemCls(pathname === "/")}>
         {t("nav.home")}
         {pathname === "/" && underline}
       </Link>
-
+      {divider}
       <div ref={rootRef} className="relative">
         <button
           type="button"
@@ -163,11 +163,12 @@ export function NavMenu() {
           </div>
         )}
       </div>
-
+      {divider}
       <Link href="/despre" className={itemCls(pathname === "/despre")}>
         {t("nav.about")}
         {pathname === "/despre" && underline}
       </Link>
+      {divider}
       <Link href="/contacte" className={itemCls(pathname === "/contacte")}>
         {t("nav.contact")}
         {pathname === "/contacte" && underline}

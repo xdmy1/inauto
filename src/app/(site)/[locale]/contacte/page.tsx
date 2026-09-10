@@ -48,7 +48,8 @@ export default async function ContactPage({
         {t("contact.title")}
       </h1>
 
-      <div className="mt-10 grid grid-cols-1 gap-5 lg:grid-cols-3">
+      <div className="mt-10 grid grid-cols-1 gap-8 lg:grid-cols-[420px_1fr]">
+        <div className="space-y-5">
         {/* Address + map */}
         <div data-reveal className="rounded-2xl border border-line bg-card p-6">
           <h2 className="text-xs font-semibold uppercase tracking-[0.18em] text-ink-faint">
@@ -57,14 +58,28 @@ export default async function ContactPage({
           <p className="mt-3 font-display text-lg font-bold">
             {site.address.full}
           </p>
-          <a
-            href={mapsUrl}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="mt-4 inline-flex items-center gap-1.5 text-sm font-semibold text-accent hover:text-accent-deep"
-          >
-            {t("contact.mapCta")} →
-          </a>
+          <div className="mt-4 flex flex-wrap gap-2.5">
+            <a
+              href={mapsUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="chip-3d flex h-11 items-center gap-2 rounded-xl px-4 text-sm font-semibold"
+            >
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img src="/images/gmaps.svg" alt="" className="h-5 w-auto" />
+              Google Maps
+            </a>
+            <a
+              href={`https://waze.com/ul?q=${encodeURIComponent(`${site.address.street}, ${site.address.city}`)}&navigate=yes`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="chip-3d flex h-11 items-center gap-2 rounded-xl px-4 text-sm font-semibold"
+            >
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img src="/images/waze.png" alt="" className="h-5 w-5" />
+              Waze
+            </a>
+          </div>
         </div>
 
         {/* Phones */}
@@ -116,19 +131,20 @@ export default async function ContactPage({
             ))}
           </dl>
         </div>
-      </div>
+        </div>
 
-      {/* Map embed */}
-      <div data-reveal className="mt-5 overflow-hidden rounded-2xl border border-line">
-        <iframe
-          title={t("contact.address")}
-          src={`https://maps.google.com/maps?q=${encodeURIComponent(
-            `${site.address.street}, ${site.address.city}`
-          )}&z=15&output=embed`}
-          className="h-[380px] w-full"
-          loading="lazy"
-          referrerPolicy="no-referrer-when-downgrade"
-        />
+        {/* Map — the other column, full height */}
+        <div data-reveal className="overflow-hidden rounded-2xl border border-line">
+          <iframe
+            title={t("contact.address")}
+            src={`https://maps.google.com/maps?q=${encodeURIComponent(
+              `${site.address.street}, ${site.address.city}`
+            )}&z=15&output=embed`}
+            className="h-[380px] w-full lg:h-full lg:min-h-[560px]"
+            loading="lazy"
+            referrerPolicy="no-referrer-when-downgrade"
+          />
+        </div>
       </div>
     </div>
   );
