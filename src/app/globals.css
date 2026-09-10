@@ -107,16 +107,16 @@ body {
   }
   /* small 3D variants for tags, chips and pills */
   .chip-3d {
-    border: 1px solid #d4d8e1;
-    background: linear-gradient(180deg, #ffffff 0%, #e8ebf1 100%);
+    border: 1px solid #e2e5eb;
+    background: linear-gradient(180deg, #ffffff 0%, #f0f2f6 100%);
     box-shadow:
-      inset 0 1px 0 rgba(255, 255, 255, 0.9),
-      0 1px 3px rgba(16, 19, 31, 0.14);
+      inset 0 1px 0 rgba(255, 255, 255, 0.8),
+      0 1px 2px rgba(16, 19, 31, 0.07);
     transition: background 150ms ease, box-shadow 150ms ease, border-color 150ms ease;
   }
   .chip-3d:hover {
-    border-color: #c2c7d3;
-    background: linear-gradient(180deg, #fafbfc 0%, #dfe3eb 100%);
+    border-color: #d4d8e1;
+    background: linear-gradient(180deg, #fdfdfe 0%, #eaedf2 100%);
   }
   .chip-dark {
     @apply text-white;
