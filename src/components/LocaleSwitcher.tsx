@@ -18,27 +18,29 @@ function SwitcherInner() {
   }
 
   return (
-    <div
-      className="flex items-center rounded-full border border-line bg-card p-0.5 text-xs font-semibold"
-      role="group"
-      aria-label="Language"
-    >
-      {routing.locales.map((l) => (
-        <button
-          key={l}
-          type="button"
-          onClick={() => switchTo(l)}
-          aria-pressed={l === locale}
-          className={`rounded-full px-2.5 py-1 uppercase transition-colors ${
-            l === locale
-              ? "bg-ink text-paper"
-              : "text-ink-soft hover:text-ink"
-          }`}
-        >
-          {l}
-        </button>
+    <span className="flex items-center gap-1.5 text-sm" aria-label="Language">
+      {routing.locales.map((l, i) => (
+        <span key={l} className="flex items-center gap-1.5">
+          {i > 0 && (
+            <span className="text-line select-none" aria-hidden>
+              /
+            </span>
+          )}
+          <button
+            type="button"
+            onClick={() => switchTo(l)}
+            aria-pressed={l === locale}
+            className={`uppercase transition-colors ${
+              l === locale
+                ? "font-semibold text-ink"
+                : "font-normal text-ink-faint hover:text-ink"
+            }`}
+          >
+            {l}
+          </button>
+        </span>
       ))}
-    </div>
+    </span>
   );
 }
 

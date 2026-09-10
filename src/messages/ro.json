@@ -137,7 +137,14 @@
   },
   "footer": {
     "rights": "© {year} INAUTO.MD — Toate drepturile rezervate.",
-    "address": "mun. Chișinău, str. Cucorilor 14"
+    "address": "mun. Chișinău, str. Cucorilor 14",
+    "about": "Parc auto în Chișinău. Mașini verificate cu kilometraj real, finanțare cu prima rată de la 100 € și acte perfectate pe loc.",
+    "navigation": "Navigare",
+    "categories": "Automobile populare",
+    "contact": "Contacte",
+    "hours": "Program",
+    "under10k": "Până la 10 000 €",
+    "madeBy": "Site creat de"
   },
   "options": {
     "body": {

@@ -82,6 +82,79 @@ body {
   }
 }
 
+/* dropdown entrance */
+@keyframes dropdown-in {
+  from {
+    opacity: 0;
+    transform: translateY(-8px) scale(0.96);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+@keyframes sheet-up {
+  from {
+    transform: translateY(100%);
+  }
+  to {
+    transform: translateY(0);
+  }
+}
+@keyframes fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+.select-backdrop {
+  animation: fade-in 0.2s ease-out;
+}
+/* Select panel: bottom sheet on phones, anchored popover from sm up */
+.select-panel {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 60;
+  display: flex;
+  flex-direction: column;
+  max-height: 65vh;
+  border-radius: 1.25rem 1.25rem 0 0;
+  animation: sheet-up 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+@media (min-width: 640px) {
+  .select-panel {
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: calc(100% + 8px);
+    bottom: auto;
+    max-height: none;
+    border-radius: 0.75rem;
+    transform-origin: top;
+    animation: dropdown-in 0.18s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+}
+
+/* infinite ticker (top bar) — track holds two identical halves */
+@keyframes marquee {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(-50%);
+  }
+}
+.animate-marquee {
+  animation: marquee 32s linear infinite;
+}
+.animate-marquee:hover {
+  animation-play-state: paused;
+}
+
 @media (prefers-reduced-motion: reduce) {
   html {
     scroll-behavior: auto;

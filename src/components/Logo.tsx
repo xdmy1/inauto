@@ -1,8 +1,31 @@
 /* eslint-disable @next/next/no-img-element */
-// Original INAUTO logo mark (red car from inauto.md) + wordmark
+// Original INAUTO.MD logo (red car + INAUTO.MD + "Noi avem mașina ta").
+// logo.png       — recolored for light backgrounds (white text → ink)
+// logo-white.png — untouched original, for dark backgrounds
 
+export function Logo({
+  className,
+  markClassName = "h-12 w-auto",
+  variant = "light",
+}: {
+  className?: string;
+  markClassName?: string;
+  /** background the logo sits on */
+  variant?: "light" | "dark";
+}) {
+  return (
+    <img
+      src={variant === "dark" ? "/images/logo-white.png" : "/images/logo.png"}
+      alt="INAUTO.MD — Noi avem mașina ta"
+      width={195}
+      height={75}
+      className={`${markClassName} ${className ?? ""}`}
+    />
+  );
+}
+
+// decorative fallback silhouette (card/gallery placeholders only)
 export function CarMark({ className }: { className?: string }) {
-  // decorative fallback silhouette (card/gallery placeholders)
   return (
     <svg
       viewBox="0 0 132 44"
@@ -20,28 +43,5 @@ export function CarMark({ className }: { className?: string }) {
         d="M100 25a8 8 0 1 1 0 16 8 8 0 0 1 0-16Zm0 4.5a3.5 3.5 0 1 0 0 7 3.5 3.5 0 0 0 0-7Z"
       />
     </svg>
-  );
-}
-
-export function Logo({
-  className,
-  markClassName = "h-7 w-auto",
-}: {
-  className?: string;
-  markClassName?: string;
-}) {
-  return (
-    <span className={`flex items-center gap-2.5 ${className ?? ""}`}>
-      <img
-        src="/images/logo-car.png"
-        alt=""
-        width={192}
-        height={75}
-        className={markClassName}
-      />
-      <span className="font-display text-xl font-extrabold tracking-tight leading-none">
-        inauto<span className="text-accent">.md</span>
-      </span>
-    </span>
   );
 }

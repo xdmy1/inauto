@@ -14,7 +14,7 @@ export default function AdminDashLayout({
         <div className="mx-auto flex h-14 max-w-[1360px] items-center justify-between px-4 sm:px-6">
           <div className="flex items-center gap-6">
             <Link href="/admin">
-              <Logo markClassName="h-5 w-auto" />
+              <Logo markClassName="h-10 w-auto" />
             </Link>
             <nav className="flex items-center gap-4 text-sm font-medium">
               <Link href="/admin" className="text-ink-soft hover:text-ink">

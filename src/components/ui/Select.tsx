@@ -162,58 +162,70 @@ export function Select({
       </button>
 
       {open && (
-        <div
-          id={listboxId}
-          className="absolute left-0 right-0 top-full z-50 mt-2 overflow-hidden rounded-xl border border-line bg-card shadow-lift"
-        >
-          {searchable && (
-            <div className="border-b border-line p-2">
-              <input
-                ref={searchRef}
-                value={query}
-                onChange={(e) => {
-                  setQuery(e.target.value);
-                  setHighlight(0);
-                }}
-                onKeyDown={onKeyDown}
-                placeholder="Caută..."
-                className="h-9 w-full rounded-lg border border-line bg-paper px-3 text-sm text-ink outline-none placeholder:text-ink-faint focus:border-ink"
-              />
-            </div>
-          )}
+        <>
+          {/* mobile bottom-sheet backdrop */}
           <div
-            ref={listRef}
-            role="listbox"
-            className="max-h-64 overflow-y-auto p-1.5"
+            className="select-backdrop fixed inset-0 z-50 bg-ink/45 sm:hidden"
+            onClick={close}
+            aria-hidden="true"
+          />
+          <div
+            id={listboxId}
+            className="select-panel overflow-hidden border border-line bg-card shadow-lift"
           >
-            {filtered.map((o, i) => {
-              const isSelected = o.value === value;
-              return (
-                <div
-                  key={o.value || "__any"}
-                  role="option"
-                  aria-selected={isSelected}
-                  onMouseEnter={() => setHighlight(i)}
-                  onMouseDown={(e) => {
-                    e.preventDefault();
-                    pick(o.value);
+            {/* drag handle (mobile only) */}
+            <div className="pt-2.5 sm:hidden">
+              <div className="mx-auto h-1 w-10 rounded-full bg-line" />
+            </div>
+            {searchable && (
+              <div className="border-b border-line p-2.5 sm:p-2">
+                <input
+                  ref={searchRef}
+                  value={query}
+                  onChange={(e) => {
+                    setQuery(e.target.value);
+                    setHighlight(0);
                   }}
-                  className={`flex cursor-pointer items-center justify-between gap-2 rounded-lg px-3 py-2 text-sm ${
-                    i === highlight ? "bg-paper" : ""
-                  } ${isSelected ? "font-semibold text-accent" : "text-ink"} ${
-                    o.value === "" ? "text-ink-soft" : ""
-                  }`}
-                >
-                  <span className="truncate">{o.label}</span>
-                  {isSelected && <CheckIcon className="h-4 w-4 shrink-0" />}
-                </div>
-              );
-            })}
-            {filtered.length === 0 && (
-              <div className="px-3 py-2 text-sm text-ink-faint">—</div>
+                  onKeyDown={onKeyDown}
+                  placeholder="Caută..."
+                  className="h-10 w-full rounded-lg border border-line bg-paper px-3 text-base text-ink outline-none placeholder:text-ink-faint focus:border-ink sm:h-9 sm:text-sm"
+                />
+              </div>
             )}
+            <div
+              ref={listRef}
+              role="listbox"
+              className="flex-1 overflow-y-auto p-2 pb-[max(0.5rem,env(safe-area-inset-bottom))] sm:max-h-64 sm:p-1.5 sm:pb-1.5"
+            >
+              {filtered.map((o, i) => {
+                const isSelected = o.value === value;
+                return (
+                  <div
+                    key={o.value || "__any"}
+                    role="option"
+                    aria-selected={isSelected}
+                    onMouseEnter={() => setHighlight(i)}
+                    onMouseDown={(e) => {
+                      e.preventDefault();
+                      pick(o.value);
+                    }}
+                    className={`flex cursor-pointer items-center justify-between gap-2 rounded-lg px-3.5 py-3 text-base sm:px-3 sm:py-2 sm:text-sm ${
+                      i === highlight ? "bg-paper" : ""
+                    } ${isSelected ? "font-semibold text-accent" : "text-ink"} ${
+                      o.value === "" ? "text-ink-soft" : ""
+                    }`}
+                  >
+                    <span className="truncate">{o.label}</span>
+                    {isSelected && <CheckIcon className="h-4 w-4 shrink-0" />}
+                  </div>
+                );
+              })}
+              {filtered.length === 0 && (
+                <div className="px-3 py-2 text-sm text-ink-faint">—</div>
+              )}
+            </div>
           </div>
-        </div>
+        </>
       )}
     </div>
   );
