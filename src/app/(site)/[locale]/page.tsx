@@ -116,7 +116,7 @@ export default async function HomePage({
             <QuickSearch brands={brands} count={count} />
           </div>
 
-          <div data-reveal className="relative hidden min-h-[420px] overflow-hidden rounded-2xl lg:block">
+          <div data-reveal className="relative order-first min-h-[240px] overflow-hidden rounded-2xl sm:min-h-[300px] lg:order-none lg:min-h-[420px]">
             <img
               src="/images/hero.webp"
               alt={`${site.name} — ${site.address.full}`}
@@ -127,9 +127,9 @@ export default async function HomePage({
             />
             <div className="absolute inset-0 bg-gradient-to-t from-ink/85 via-ink/25 to-transparent" />
             <div className="absolute bottom-0 left-0 p-7 text-white">
-              <div className="font-display text-5xl font-extrabold leading-none tracking-tight">
+              <div className="font-display text-3xl font-extrabold leading-none tracking-tight sm:text-5xl">
                 {count}{" "}
-                <span className="text-2xl font-bold text-white/85">
+                <span className="text-lg font-bold text-white/85 sm:text-2xl">
                   {t("home.carsForSale")}
                 </span>
               </div>

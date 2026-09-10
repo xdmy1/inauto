@@ -7,17 +7,11 @@ import { OpenNowBadge } from "./OpenNowBadge";
 import { Logo } from "./Logo";
 import { LocaleSwitcher } from "./LocaleSwitcher";
 import { MobileMenu } from "./MobileMenu";
+import { NavMenu } from "./NavMenu";
 import { PhoneIcon } from "./icons";
 
 export async function Header() {
   const t = await getTranslations();
-
-  const nav = [
-    { href: "/", label: t("nav.home") },
-    { href: "/auto", label: t("nav.catalog") },
-    { href: "/despre", label: t("nav.about") },
-    { href: "/contacte", label: t("nav.contact") },
-  ] as const;
 
   // live inventory ticker — the actual cars, stock-market style
   const tickerCars = await prisma.car.findMany({
@@ -79,17 +73,7 @@ export async function Header() {
             <Logo markClassName="h-12 w-auto" />
           </Link>
 
-          <nav className="hidden items-center gap-7 md:flex" aria-label="Main">
-            {nav.map((item) => (
-              <Link
-                key={item.href}
-                href={item.href}
-                className="text-sm font-medium text-ink-soft transition-colors hover:text-ink"
-              >
-                {item.label}
-              </Link>
-            ))}
-          </nav>
+          <NavMenu />
 
           <div className="flex items-center gap-2.5">
             <LocaleSwitcher />
@@ -106,11 +90,7 @@ export async function Header() {
             >
               {t("nav.catalog")}
             </Link>
-            <MobileMenu
-              items={nav.map((n) => ({ ...n }))}
-              phone={site.phoneDisplay[0]}
-              phoneHref={telHref(site.phones[0])}
-            />
+            <MobileMenu />
           </div>
         </div>
       </header>
