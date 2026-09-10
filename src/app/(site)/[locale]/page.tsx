@@ -215,7 +215,7 @@ export default async function HomePage({
           {(Object.keys(WHY_ILLOS) as (keyof typeof WHY_ILLOS)[]).map((key) => {
             const Illo = WHY_ILLOS[key];
             return (
-              <div key={key} className="flex items-start gap-4 bg-card p-5">
+              <div key={key} className="flex items-center gap-4 bg-card p-5">
                 <IconSpot>
                   <Illo />
                 </IconSpot>
