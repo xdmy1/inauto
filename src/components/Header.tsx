@@ -1,6 +1,9 @@
 import { getTranslations } from "next-intl/server";
 import { Link } from "@/i18n/navigation";
+import { prisma } from "@/lib/prisma";
+import { fmtPrice } from "@/lib/cars";
 import { site, telHref } from "@/lib/site";
+import { OpenNowBadge } from "./OpenNowBadge";
 import { Logo } from "./Logo";
 import { LocaleSwitcher } from "./LocaleSwitcher";
 import { MobileMenu } from "./MobileMenu";
@@ -16,40 +19,57 @@ export async function Header() {
     { href: "/contacte", label: t("nav.contact") },
   ] as const;
 
-  const usps = [
-    t("common.tagline"),
-    t("home.why.financing"),
-    t("home.why.verified"),
-    t("home.why.docs"),
-    t("home.why.testdrive"),
-    site.address.full,
-    site.phoneDisplay[0],
-  ];
+  // live inventory ticker — the actual cars, stock-market style
+  const tickerCars = await prisma.car.findMany({
+    where: { status: "PUBLISHED" },
+    orderBy: { createdAt: "desc" },
+    take: 10,
+    select: { slug: true, brand: true, model: true, year: true, price: true },
+  });
 
   return (
     <>
-      {/* ticker — infinite marquee */}
-      <div className="overflow-hidden bg-ink text-paper">
-        <div className="flex w-max animate-marquee">
-          {[0, 1].map((half) => (
-            <div
-              key={half}
-              aria-hidden={half === 1}
-              className="flex h-11 items-center"
-            >
-              {usps.map((u) => (
-                <span
-                  key={u}
-                  className="flex items-center whitespace-nowrap text-base font-extralight tracking-wide text-paper/85"
-                >
-                  <span className="px-7 text-accent" aria-hidden>
-                    ·
-                  </span>
-                  {u}
-                </span>
-              ))}
-            </div>
-          ))}
+      {/* inventory ticker */}
+      <div className="flex h-11 items-stretch bg-ink text-paper">
+        <div className="z-10 hidden shrink-0 items-center border-r border-white/10 bg-ink pl-4 pr-5 sm:flex lg:pl-[max(1rem,calc((100vw-1360px)/2+1.5rem))]">
+          <OpenNowBadge />
+        </div>
+        <div className="relative flex-1 overflow-hidden">
+          <div className="absolute inset-y-0 left-0 z-10 w-8 bg-gradient-to-r from-ink to-transparent" />
+          <div className="flex h-full w-max animate-marquee">
+            {[0, 1].map((half) => (
+              <div
+                key={half}
+                aria-hidden={half === 1}
+                className="flex h-full items-center"
+              >
+                {tickerCars.map((c, i) => (
+                  <Link
+                    key={`${c.slug}-${half}`}
+                    href={`/auto/${c.slug}`}
+                    tabIndex={half === 1 ? -1 : 0}
+                    className="group/tick flex items-center gap-2.5 whitespace-nowrap px-6 text-[13.5px] font-light text-paper/80 transition-colors hover:text-white"
+                  >
+                    {i < 3 && (
+                      <span className="rounded bg-accent px-1.5 py-0.5 text-[9.5px] font-bold tracking-wider text-white">
+                        {t("ticker.new")}
+                      </span>
+                    )}
+                    <span>
+                      {c.brand} {c.model}{" "}
+                      <span className="text-paper/45">{c.year}</span>
+                    </span>
+                    <span className="font-semibold tabular-nums text-white group-hover/tick:text-accent">
+                      {fmtPrice(c.price)}
+                    </span>
+                    <span className="pl-4 text-accent/70" aria-hidden>
+                      ◆
+                    </span>
+                  </Link>
+                ))}
+              </div>
+            ))}
+          </div>
         </div>
       </div>
 

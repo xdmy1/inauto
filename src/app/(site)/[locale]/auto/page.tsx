@@ -108,25 +108,22 @@ export default async function CatalogPage({
         </nav>
       </div>
 
-      <div className="mt-8 grid grid-cols-1 gap-8 lg:grid-cols-[310px_1fr]">
-        {/* Filters — sidebar on desktop, collapsible on mobile */}
-        <aside>
-          <details className="group rounded-2xl border border-line bg-card p-4 lg:hidden">
-            <summary className="cursor-pointer list-none font-display text-sm font-bold">
-              {t("catalog.filters")} ▾
-            </summary>
-            <div className="mt-4">
-              <CatalogFilters action={action} brands={brands} colors={colors} filters={filters} />
-            </div>
-          </details>
-          <div className="sticky top-24 hidden rounded-2xl border border-line bg-card p-4 lg:block">
-            <h2 className="mb-4 font-display text-sm font-bold uppercase tracking-wide">
-              {t("catalog.filters")}
-            </h2>
+      {/* Filters — horizontal bar, collapsible on mobile */}
+      <div data-reveal className="mt-6">
+        <details className="group rounded-2xl border border-line bg-card p-4 shadow-card lg:hidden">
+          <summary className="cursor-pointer list-none font-display text-sm font-bold">
+            {t("catalog.filters")} ▾
+          </summary>
+          <div className="mt-4">
             <CatalogFilters action={action} brands={brands} colors={colors} filters={filters} />
           </div>
-        </aside>
+        </details>
+        <div className="hidden rounded-2xl border border-line bg-card p-5 shadow-card lg:block">
+          <CatalogFilters action={action} brands={brands} colors={colors} filters={filters} />
+        </div>
+      </div>
 
+      <div className="mt-8">
         {/* Results */}
         <div>
           {cars.length === 0 ? (
@@ -140,7 +137,7 @@ export default async function CatalogPage({
               </Link>
             </div>
           ) : (
-            <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 xl:grid-cols-3">
+            <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
               {cars.map((car) => (
                 <CarCard key={car.id} car={car} />
               ))}

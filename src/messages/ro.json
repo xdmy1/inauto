@@ -185,5 +185,10 @@
     "text": "Adresa nu există sau anunțul a fost vândut între timp. Aruncă o privire la ce avem acum în parcare.",
     "home": "Prima pagină",
     "catalog": "Vezi automobilele"
+  },
+  "ticker": {
+    "open": "Deschis acum · până la {time}",
+    "closed": "Închis · deschidem la {time}",
+    "new": "NOU"
   }
 }
