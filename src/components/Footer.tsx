@@ -48,7 +48,7 @@ export async function Footer() {
     <footer className="mt-24 bg-ink text-white">
       <div className="mx-auto max-w-[1360px] px-4 sm:px-6">
         {/* main grid */}
-        <div className="grid grid-cols-1 gap-x-10 gap-y-12 py-14 sm:grid-cols-2 lg:grid-cols-[1.4fr_1fr_1fr_1.2fr_1.1fr]">
+        <div className="grid grid-cols-1 gap-x-10 gap-y-12 py-14 sm:grid-cols-2 lg:grid-cols-[1.25fr_0.75fr_0.95fr_1.45fr_1.1fr]">
           {/* brand */}
           <div>
             <Link href="/" aria-label={site.name}>
@@ -116,7 +116,7 @@ export async function Footer() {
                   href={mapsUrl}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className={`flex items-start gap-3 ${link}`}
+                  className={`flex items-start gap-3 whitespace-nowrap ${link}`}
                 >
                   <MapPinIcon className="mt-0.5 h-4.5 w-4.5 shrink-0 text-accent" />
                   {t("footer.address")}

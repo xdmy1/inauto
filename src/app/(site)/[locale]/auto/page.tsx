@@ -9,6 +9,7 @@ import {
 import { canonicalFor, localizedAlternates } from "@/lib/seo";
 import { CarCard } from "@/components/CarCard";
 import { CatalogFilters } from "@/components/CatalogFilters";
+import { prisma } from "@/lib/prisma";
 
 export async function generateMetadata({
   params,
@@ -39,10 +40,17 @@ export default async function CatalogPage({
   const t = await getTranslations();
 
   const filters = parseFilters(sp);
-  const [{ cars, total, pages }, brands] = await Promise.all([
+  const [{ cars, total, pages }, brands, colorRows] = await Promise.all([
     getPublishedCars(filters),
     getBrandsWithCounts(),
+    prisma.car.findMany({
+      where: { status: "PUBLISHED", color: { not: null } },
+      select: { color: true },
+      distinct: ["color"],
+      orderBy: { color: "asc" },
+    }),
   ]);
+  const colors = colorRows.map((c) => c.color!).filter(Boolean);
 
   const action = getPathname({ locale, href: "/auto" });
 
@@ -108,14 +116,14 @@ export default async function CatalogPage({
               {t("catalog.filters")} ▾
             </summary>
             <div className="mt-4">
-              <CatalogFilters action={action} brands={brands} filters={filters} />
+              <CatalogFilters action={action} brands={brands} colors={colors} filters={filters} />
             </div>
           </details>
           <div className="sticky top-24 hidden rounded-2xl border border-line bg-card p-4 lg:block">
             <h2 className="mb-4 font-display text-sm font-bold uppercase tracking-wide">
               {t("catalog.filters")}
             </h2>
-            <CatalogFilters action={action} brands={brands} filters={filters} />
+            <CatalogFilters action={action} brands={brands} colors={colors} filters={filters} />
           </div>
         </aside>
 

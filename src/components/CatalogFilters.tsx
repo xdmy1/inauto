@@ -38,13 +38,17 @@ function NumberField({
   );
 }
 
+const SEATS = [2, 4, 5, 6, 7, 8, 9];
+
 export function CatalogFilters({
   action,
   brands,
+  colors,
   filters,
 }: {
   action: string;
   brands: { brand: string; count: number }[];
+  colors: string[];
   filters: CarFilters;
 }) {
   const t = useTranslations();
@@ -53,6 +57,8 @@ export function CatalogFilters({
   const [fuel, setFuel] = useState(filters.fuel ?? "");
   const [transmission, setTransmission] = useState(filters.transmission ?? "");
   const [drivetrain, setDrivetrain] = useState(filters.drivetrain ?? "");
+  const [color, setColor] = useState(filters.color ?? "");
+  const [seats, setSeats] = useState(filters.seats ? String(filters.seats) : "");
 
   const opts = (
     keys: readonly string[],
@@ -91,12 +97,32 @@ export function CatalogFilters({
         <NumberField name="yearMax" label={t("catalog.yearMax")} defaultValue={filters.yearMax} placeholder="2026" />
       </div>
 
-      <NumberField
-        name="mileageMax"
-        label={t("catalog.mileageMax")}
-        defaultValue={filters.mileageMax}
-        placeholder="200 000 km"
-      />
+      <div className="grid grid-cols-2 gap-2.5">
+        <NumberField
+          name="mileageMin"
+          label={`${t("common.mileage")} min`}
+          defaultValue={filters.mileageMin}
+          placeholder="0 km"
+        />
+        <NumberField
+          name="mileageMax"
+          label={t("catalog.mileageMax")}
+          defaultValue={filters.mileageMax}
+          placeholder="200 000 km"
+        />
+        <NumberField
+          name="engineMin"
+          label={`${t("common.engine")} min`}
+          defaultValue={filters.engineMin}
+          placeholder="1000 cm³"
+        />
+        <NumberField
+          name="engineMax"
+          label={`${t("common.engine")} max`}
+          defaultValue={filters.engineMax}
+          placeholder="5000 cm³"
+        />
+      </div>
 
       <div className="block">
         <span className="field-label">{t("common.body")}</span>
@@ -123,6 +149,27 @@ export function CatalogFilters({
           onChange={setDrivetrain}
           options={opts(DRIVETRAINS, "drivetrain")}
         />
+      </div>
+
+      <div className="grid grid-cols-2 gap-2.5">
+        <div className="block">
+          <span className="field-label">{t("common.color")}</span>
+          <Select
+            name="color"
+            value={color}
+            onChange={setColor}
+            options={colors.map((c) => ({ value: c, label: c }))}
+          />
+        </div>
+        <div className="block">
+          <span className="field-label">{t("common.seats")}</span>
+          <Select
+            name="seats"
+            value={seats}
+            onChange={setSeats}
+            options={SEATS.map((n) => ({ value: String(n), label: String(n) }))}
+          />
+        </div>
       </div>
 
       {filters.sort && filters.sort !== "new" && (

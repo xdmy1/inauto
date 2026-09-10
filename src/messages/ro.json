@@ -78,7 +78,8 @@
       "docsText": "Ne ocupăm noi de tot: contract, transcriere, asigurare. Tu pleci direct cu mașina."
     },
     "contactTitle": "Vino să le vezi pe viu",
-    "contactText": "mun. Chișinău, str. Cucorilor 14. Deschis în fiecare zi."
+    "contactText": "mun. Chișinău, str. Cucorilor 14. Deschis în fiecare zi.",
+    "advanced": "Filtre avansate"
   },
   "catalog": {
     "title": "Automobile",
@@ -138,7 +139,7 @@
   },
   "footer": {
     "rights": "© {year} INAUTO.MD — Toate drepturile rezervate.",
-    "address": "mun. Chișinău, str. Cucorilor 14",
+    "address": "str. Cucorilor 14, Chișinău",
     "about": "Parc auto în Chișinău. Mașini verificate cu kilometraj real, finanțare cu prima rată de la 100 € și acte perfectate pe loc.",
     "navigation": "Navigare",
     "categories": "Automobile populare",

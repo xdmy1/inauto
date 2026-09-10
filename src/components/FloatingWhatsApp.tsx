@@ -9,15 +9,10 @@ export async function FloatingWhatsApp() {
     <div className="group fixed bottom-5 right-5 z-40 sm:bottom-6 sm:right-6">
       {/* chat bubble — desktop hover */}
       <div
-        className="btn-white pointer-events-none absolute bottom-1/2 right-full mr-3.5 hidden h-auto w-max translate-x-2 translate-y-1/2 rounded-2xl rounded-br-md px-4 py-2.5 text-sm font-semibold text-ink opacity-0 transition-all duration-200 group-hover:translate-x-0 group-hover:opacity-100 md:flex"
+        className="btn-wa pointer-events-none absolute bottom-1/2 right-full mr-3.5 hidden h-auto w-max translate-x-2 translate-y-1/2 rounded-2xl rounded-br-md px-4 py-2.5 text-sm font-semibold text-white opacity-0 transition-all duration-200 group-hover:translate-x-0 group-hover:opacity-100 md:flex"
         role="tooltip"
       >
         {t("waBubble")}
-        {/* tail */}
-        <span
-          className="absolute -right-1.5 bottom-3 h-3 w-3 rotate-45 rounded-[2px] bg-[#eef0f4]"
-          aria-hidden="true"
-        />
       </div>
 
       <a

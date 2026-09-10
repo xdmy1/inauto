@@ -49,7 +49,12 @@ export type CarFilters = {
   priceMax?: number;
   yearMin?: number;
   yearMax?: number;
+  mileageMin?: number;
   mileageMax?: number;
+  engineMin?: number;
+  engineMax?: number;
+  seats?: number;
+  color?: string;
   sort?: "new" | "price_asc" | "price_desc" | "year_desc" | "mileage_asc";
   page?: number;
 };
@@ -80,7 +85,12 @@ export function parseFilters(
     priceMax: n("priceMax"),
     yearMin: n("yearMin"),
     yearMax: n("yearMax"),
+    mileageMin: n("mileageMin"),
     mileageMax: n("mileageMax"),
+    engineMin: n("engineMin"),
+    engineMax: n("engineMax"),
+    seats: n("seats"),
+    color: s("color"),
     sort:
       sort === "price_asc" ||
       sort === "price_desc" ||
@@ -106,7 +116,12 @@ export function filtersToWhere(f: CarFilters): Prisma.CarWhereInput {
   if (f.priceMin || f.priceMax)
     where.price = { gte: f.priceMin, lte: f.priceMax };
   if (f.yearMin || f.yearMax) where.year = { gte: f.yearMin, lte: f.yearMax };
-  if (f.mileageMax) where.mileage = { lte: f.mileageMax };
+  if (f.mileageMin || f.mileageMax)
+    where.mileage = { gte: f.mileageMin, lte: f.mileageMax };
+  if (f.engineMin || f.engineMax)
+    where.engineCc = { gte: f.engineMin, lte: f.engineMax };
+  if (f.seats) where.seats = f.seats;
+  if (f.color) where.color = f.color;
   return where;
 }
 

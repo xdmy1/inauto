@@ -279,6 +279,78 @@ body {
   }
 }
 
+/* dual-thumb range sliders (dark card) */
+.range-wrap {
+  position: relative;
+  height: 20px;
+  display: flex;
+  align-items: center;
+}
+.range-track {
+  position: absolute;
+  left: 0;
+  right: 0;
+  height: 5px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.14);
+}
+.range-fill {
+  position: absolute;
+  height: 5px;
+  border-radius: 999px;
+  background: linear-gradient(180deg, #f04a58 0%, #c9101f 100%);
+  box-shadow: 0 1px 4px rgba(224, 25, 43, 0.35);
+}
+.range-input {
+  -webkit-appearance: none;
+  appearance: none;
+  position: absolute;
+  left: 0;
+  right: 0;
+  width: 100%;
+  height: 20px;
+  background: transparent;
+  pointer-events: none;
+  margin: 0;
+}
+.range-input::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  pointer-events: auto;
+  width: 19px;
+  height: 19px;
+  border-radius: 999px;
+  background: linear-gradient(180deg, #f04a58 0%, #c9101f 100%);
+  border: 2.5px solid #fff;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.3),
+    0 2px 6px rgba(0, 0, 0, 0.35);
+  cursor: grab;
+  transition: transform 120ms ease;
+}
+.range-input::-webkit-slider-thumb:hover {
+  transform: scale(1.12);
+}
+.range-input::-webkit-slider-thumb:active {
+  cursor: grabbing;
+  transform: scale(1.05);
+}
+.range-input::-moz-range-thumb {
+  pointer-events: auto;
+  width: 14px;
+  height: 14px;
+  border-radius: 999px;
+  background: linear-gradient(180deg, #f04a58 0%, #c9101f 100%);
+  border: 2.5px solid #fff;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.3),
+    0 2px 6px rgba(0, 0, 0, 0.35);
+  cursor: grab;
+}
+.range-input::-moz-range-track {
+  background: transparent;
+}
+
 /* checkboxes match the design system instead of the OS default */
 input[type="checkbox"],
 input[type="radio"] {
