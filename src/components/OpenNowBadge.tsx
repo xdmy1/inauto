@@ -38,24 +38,18 @@ export function OpenNowBadge() {
 
   if (!state) return <span className="inline-block w-40" aria-hidden />;
 
+  const [word, ...rest] = t(state.open ? "open" : "closed", {
+    time: state.time,
+  }).split(" · ");
+
   return (
-    <span className="flex items-center gap-2 whitespace-nowrap text-[13px] font-medium">
-      <span
-        className={`relative flex h-2 w-2 ${state.open ? "" : "opacity-90"}`}
-        aria-hidden
-      >
-        {state.open && (
-          <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400 opacity-60" />
-        )}
-        <span
-          className={`relative inline-flex h-2 w-2 rounded-full ${
-            state.open ? "bg-emerald-400" : "bg-white/40"
-          }`}
-        />
+    <span className="whitespace-nowrap text-[13px] font-medium">
+      <span className={state.open ? "text-emerald-400" : "text-white/50"}>
+        {word}
       </span>
-      <span className={state.open ? "text-white/90" : "text-white/60"}>
-        {t(state.open ? "open" : "closed", { time: state.time })}
-      </span>
+      {rest.length > 0 && (
+        <span className="text-white/60"> · {rest.join(" · ")}</span>
+      )}
     </span>
   );
 }
