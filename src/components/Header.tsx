@@ -75,14 +75,14 @@ export async function Header() {
             <LocaleSwitcher />
             <a
               href={telHref(site.phones[0])}
-              className="hidden h-10 items-center gap-2 rounded-xl border border-line bg-card px-3.5 text-sm font-semibold tabular-nums transition-colors hover:border-ink-faint lg:flex"
+              className="chip-3d hidden h-10 items-center gap-2 rounded-xl px-3.5 text-sm font-semibold tabular-nums lg:flex"
             >
               <PhoneIcon className="h-4 w-4 text-accent" />
               {site.phoneDisplay[0]}
             </a>
             <Link
               href="/auto"
-              className="hidden h-10 items-center rounded-xl bg-accent px-4 font-display text-sm font-bold text-white transition-colors hover:bg-accent-deep md:flex"
+              className="btn-primary hidden h-10 px-4 md:flex"
             >
               {t("nav.catalog")}
             </Link>

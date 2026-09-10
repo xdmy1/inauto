@@ -307,7 +307,7 @@ export function CarForm({ car }: { car: CarFormData }) {
         <button
           type="submit"
           disabled={pending}
-          className="h-12 rounded-xl bg-accent px-8 font-display text-sm font-bold text-white transition-colors hover:bg-accent-deep disabled:opacity-60"
+          className="btn-primary h-12 px-8 disabled:opacity-60"
         >
           {pending ? "Se salvează..." : car ? "Salvează modificările" : "Adaugă mașina"}
         </button>

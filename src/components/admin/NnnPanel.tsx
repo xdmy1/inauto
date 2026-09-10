@@ -86,7 +86,7 @@ export function NnnPanel({
         <button
           type="submit"
           disabled={syncPending}
-          className="h-10 w-full rounded-lg bg-ink text-sm font-bold text-paper transition-colors hover:bg-black disabled:opacity-60"
+          className="btn-dark h-10 w-full rounded-lg text-sm disabled:opacity-60"
         >
           {syncPending
             ? "Se sincronizează..."
@@ -104,7 +104,7 @@ export function NnnPanel({
             <button
               type="submit"
               disabled={repPending}
-              className="h-10 w-full rounded-lg border border-line text-sm font-semibold transition-colors hover:border-ink disabled:opacity-60"
+              className="chip-3d h-10 w-full rounded-lg text-sm font-semibold disabled:opacity-60"
             >
               {repPending ? "..." : "Republică (ridică în listă)"}
             </button>

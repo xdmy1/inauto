@@ -24,7 +24,7 @@ export function MobileMenu({
         aria-label="Meniu"
         aria-expanded={open}
         onClick={() => setOpen(!open)}
-        className="flex h-9 w-9 items-center justify-center rounded-full border border-line bg-card"
+        className="chip-3d flex h-9 w-9 items-center justify-center rounded-full"
       >
         <svg viewBox="0 0 16 16" className="h-4 w-4" aria-hidden="true">
           {open ? (

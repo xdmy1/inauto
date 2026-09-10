@@ -10,13 +10,11 @@ const RED_LIGHT = "#f04a58";
 type P = { className?: string };
 const base = "h-9 w-9";
 
-/** white rounded square with soft shadow, nested in a light-grey rounded square */
+/** light-grey rounded square holding the illustration */
 export function IconSpot({ children }: { children: React.ReactNode }) {
   return (
-    <span className="flex h-16 w-16 shrink-0 items-center justify-center rounded-2xl bg-paper p-2">
-      <span className="flex h-full w-full items-center justify-center rounded-xl bg-card shadow-card">
-        {children}
-      </span>
+    <span className="flex h-16 w-16 shrink-0 items-center justify-center rounded-2xl bg-paper">
+      {children}
     </span>
   );
 }

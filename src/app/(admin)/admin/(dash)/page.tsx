@@ -45,7 +45,7 @@ export default async function AdminDashboard({
           <Link
             href="/admin"
             className={`rounded-full px-3 py-1.5 text-xs font-semibold ${
-              !status ? "bg-ink text-paper" : "border border-line bg-card text-ink-soft"
+              !status ? "chip-dark" : "chip-3d text-ink-soft"
             }`}
           >
             Toate ({totalCount})
@@ -55,9 +55,7 @@ export default async function AdminDashboard({
               key={s}
               href={`/admin?status=${s}`}
               className={`rounded-full px-3 py-1.5 text-xs font-semibold ${
-                status === s
-                  ? "bg-ink text-paper"
-                  : "border border-line bg-card text-ink-soft"
+                status === s ? "chip-dark" : "chip-3d text-ink-soft"
               }`}
             >
               {s} ({countFor(s)})
@@ -136,7 +134,7 @@ export default async function AdminDashboard({
                   <div className="flex items-center justify-end gap-2">
                     <Link
                       href={`/admin/cars/${car.id}`}
-                      className="rounded-lg border border-line px-2.5 py-1.5 text-xs font-semibold hover:border-ink"
+                      className="chip-3d rounded-lg px-2.5 py-1.5 text-xs font-semibold"
                     >
                       Editează
                     </Link>
@@ -144,7 +142,7 @@ export default async function AdminDashboard({
                       <input type="hidden" name="carId" value={car.id} />
                       <ConfirmSubmit
                         message={`Ștergi definitiv ${car.brand} ${car.model} ${car.year}?`}
-                        className="rounded-lg border border-accent/30 px-2.5 py-1.5 text-xs font-semibold text-accent hover:bg-accent-soft"
+                        className="chip-3d rounded-lg px-2.5 py-1.5 text-xs font-semibold text-accent"
                       >
                         Șterge
                       </ConfirmSubmit>

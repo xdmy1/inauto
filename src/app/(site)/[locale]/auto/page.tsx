@@ -90,9 +90,7 @@ export default async function CatalogPage({
                 key={s}
                 href={`/auto${q.size ? `?${q}` : ""}`}
                 className={`rounded-full px-3 py-1.5 text-xs font-semibold transition-colors ${
-                  active
-                    ? "bg-ink text-paper"
-                    : "border border-line bg-card text-ink-soft hover:text-ink"
+                  active ? "chip-dark" : "chip-3d text-ink-soft hover:text-ink"
                 }`}
               >
                 {t(`catalog.sort.${s}`)}
@@ -128,7 +126,7 @@ export default async function CatalogPage({
               <p className="text-ink-soft">{t("catalog.empty")}</p>
               <Link
                 href="/auto"
-                className="mt-4 inline-block rounded-xl bg-ink px-5 py-2.5 font-display text-sm font-bold text-paper"
+                className="btn-dark mt-4 h-11 px-5"
               >
                 {t("catalog.emptyCta")}
               </Link>
@@ -146,7 +144,7 @@ export default async function CatalogPage({
               {filters.page! > 1 && (
                 <Link
                   href={pageHref(filters.page! - 1)}
-                  className="rounded-lg border border-line bg-card px-3.5 py-2 text-sm font-medium hover:border-ink"
+                  className="chip-3d rounded-lg px-3.5 py-2 text-sm font-medium"
                 >
                   ← {t("catalog.prev")}
                 </Link>
@@ -157,7 +155,7 @@ export default async function CatalogPage({
               {filters.page! < pages && (
                 <Link
                   href={pageHref(filters.page! + 1)}
-                  className="rounded-lg border border-line bg-card px-3.5 py-2 text-sm font-medium hover:border-ink"
+                  className="chip-3d rounded-lg px-3.5 py-2 text-sm font-medium"
                 >
                   {t("catalog.next")} →
                 </Link>

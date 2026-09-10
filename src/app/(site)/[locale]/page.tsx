@@ -56,7 +56,7 @@ function SectionHeader({
       </h2>
       <Link
         href={href}
-        className="inline-flex h-10 shrink-0 items-center gap-1.5 rounded-xl bg-ink px-4 text-[13px] font-bold text-paper transition-colors hover:bg-black"
+        className="btn-dark h-10 shrink-0 gap-1.5 px-4 text-[13px]"
       >
         {linkLabel}
         <ArrowRightIcon className="h-3.5 w-3.5" />
@@ -145,7 +145,7 @@ export default async function HomePage({
             <Link
               key={`${p.brand}-${p.model}`}
               href={`/auto?brand=${encodeURIComponent(p.brand)}&model=${encodeURIComponent(p.model.split(" ")[0])}`}
-              className="inline-flex items-center gap-1.5 rounded-full border border-line bg-card px-3 py-1.5 text-xs font-medium text-ink-soft transition-colors hover:border-ink-faint hover:text-ink"
+              className="chip-3d inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-medium text-ink-soft hover:text-ink"
             >
               <SearchIcon className="h-3 w-3" />
               {p.brand} {p.model.split(" ")[0]}

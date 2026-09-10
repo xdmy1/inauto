@@ -42,7 +42,8 @@
     "seats": "Locuri",
     "location": "Parcarea",
     "cars": "{count, plural, one {# automobil} few {# automobile} other {# de automobile}}",
-    "priceDrop": "Preț redus"
+    "priceDrop": "Preț redus",
+    "waBubble": "Apasă aici ca să ne scrii!"
   },
   "nav": {
     "home": "Acasă",

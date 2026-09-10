@@ -52,7 +52,7 @@ export default function LoginPage() {
           <button
             type="submit"
             disabled={pending}
-            className="h-11 w-full rounded-xl bg-ink font-display text-sm font-bold text-paper transition-colors hover:bg-black disabled:opacity-60"
+            className="btn-dark h-11 w-full disabled:opacity-60"
           >
             {pending ? "..." : "Intră"}
           </button>

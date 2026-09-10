@@ -58,7 +58,7 @@ export async function CarCard({ car }: { car: CarCardData }) {
           </div>
         )}
         {car.oldPrice && car.oldPrice > car.price && (
-          <span className="absolute left-0 top-3 bg-accent py-1 pl-3 pr-2.5 text-xs font-bold uppercase tracking-wide text-white">
+          <span className="tag-red absolute left-0 top-3 rounded-r-md py-1 pl-3 pr-2.5 text-xs font-bold uppercase tracking-wide">
             {t("common.priceDrop")}
           </span>
         )}
@@ -80,7 +80,7 @@ export async function CarCard({ car }: { car: CarCardData }) {
 
         <div className="mt-auto flex items-end justify-between gap-2 pt-3">
           {car.downPayment != null ? (
-            <span className="rounded-md bg-paper px-2 py-1 text-[11px] font-semibold text-ink-soft">
+            <span className="chip-3d rounded-md px-2 py-1 text-[11px] font-semibold text-ink-soft">
               {t("common.downPayment")}{" "}
               <span className="text-ink">{fmtPrice(car.downPayment)}</span>
             </span>
@@ -93,7 +93,7 @@ export async function CarCard({ car }: { car: CarCardData }) {
                 {fmtPrice(car.oldPrice)}
               </div>
             )}
-            <div className="rounded-md bg-accent px-2.5 py-1 text-[15px] font-bold text-white">
+            <div className="tag-red rounded-md px-2.5 py-1 text-[15px] font-bold">
               {fmtPrice(car.price)}
             </div>
           </div>

@@ -8,6 +8,7 @@ import { site } from "@/lib/site";
 import { autoDealerJsonLd, canonicalFor, localizedAlternates } from "@/lib/seo";
 import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
+import { FloatingWhatsApp } from "@/components/FloatingWhatsApp";
 import "../../globals.css";
 
 const inter = Inter({
@@ -72,6 +73,7 @@ export default async function LocaleLayout({
           <Header />
           <main className="flex-1">{children}</main>
           <Footer />
+          <FloatingWhatsApp />
         </NextIntlClientProvider>
         <script
           type="application/ld+json"

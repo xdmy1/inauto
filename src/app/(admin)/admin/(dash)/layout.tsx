@@ -22,7 +22,7 @@ export default function AdminDashLayout({
               </Link>
               <Link
                 href="/admin/cars/new"
-                className="rounded-full bg-accent px-3.5 py-1.5 text-xs font-bold text-white hover:bg-accent-deep"
+                className="tag-red rounded-full px-3.5 py-1.5 text-xs font-bold"
               >
                 + Adaugă mașină
               </Link>
