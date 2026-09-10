@@ -188,8 +188,8 @@
     "catalog": "Vezi automobilele"
   },
   "ticker": {
-    "open": "Deschis acum · până la {time}",
-    "closed": "Închis · deschidem la {time}",
+    "open": "Deschis până la {time}",
+    "closed": "Deschidem la {time}",
     "new": "NOU"
   }
 }

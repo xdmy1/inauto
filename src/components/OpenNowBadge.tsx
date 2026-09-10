@@ -36,20 +36,11 @@ export function OpenNowBadge() {
     return () => window.clearInterval(id);
   }, []);
 
-  if (!state) return <span className="inline-block w-40" aria-hidden />;
-
-  const [word, ...rest] = t(state.open ? "open" : "closed", {
-    time: state.time,
-  }).split(" · ");
+  if (!state) return <span className="inline-block w-36" aria-hidden />;
 
   return (
-    <span className="whitespace-nowrap text-[13px] font-medium">
-      <span className={state.open ? "text-emerald-400" : "text-white/50"}>
-        {word}
-      </span>
-      {rest.length > 0 && (
-        <span className="text-white/60"> · {rest.join(" · ")}</span>
-      )}
+    <span className="whitespace-nowrap text-[13.5px] font-light text-white/75">
+      {t(state.open ? "open" : "closed", { time: state.time })}
     </span>
   );
 }
