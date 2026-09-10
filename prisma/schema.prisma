@@ -1,12 +1,12 @@
-// Prisma schema for inauto.md
-// Dev: SQLite. Production: switch provider to "postgresql" and set DATABASE_URL.
+// Prisma schema for inauto.md — Neon Postgres (Vercel storage integration).
+// Local dev uses the same database.
 
 generator client {
   provider = "prisma-client-js"
 }
 
 datasource db {
-  provider = "sqlite"
+  provider = "postgresql"
   url      = env("DATABASE_URL")
 }
 
