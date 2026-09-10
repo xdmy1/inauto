@@ -5,10 +5,8 @@
 // fetch the feature schema for Transport → Легковые автомобили → Продам and
 // match our fields against feature titles (RU). Anything we cannot match is
 // reported back to the admin instead of failing silently.
-import path from "node:path";
-import fs from "node:fs/promises";
 import { prisma } from "../prisma";
-import { UPLOADS_DIR } from "../uploads";
+import { readLargeImage } from "../uploads";
 import { site } from "../site";
 import {
   createAdvert,
@@ -314,8 +312,7 @@ export async function syncCarTo999(carId: string): Promise<SyncReport> {
     // 1. upload photos (the large webp variants)
     const imageIds: string[] = [];
     for (const img of car.images.slice(0, MAX_IMAGES)) {
-      const file = path.join(UPLOADS_DIR, `${img.path}-lg.webp`);
-      const buf = await fs.readFile(file).catch(() => null);
+      const buf = await readLargeImage(img.path);
       if (!buf) continue;
       imageIds.push(await uploadImage(buf, `${car.slug}-${img.order}.webp`));
     }

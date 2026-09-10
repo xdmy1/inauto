@@ -3,11 +3,13 @@ import { prisma } from "@/lib/prisma";
 import { site } from "@/lib/site";
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
-  const cars = await prisma.car.findMany({
-    where: { status: "PUBLISHED" },
-    select: { slug: true, updatedAt: true },
-    orderBy: { createdAt: "desc" },
-  });
+  const cars = await prisma.car
+    .findMany({
+      where: { status: "PUBLISHED" },
+      select: { slug: true, updatedAt: true },
+      orderBy: { createdAt: "desc" },
+    })
+    .catch(() => []);
 
   const staticPaths = ["", "/auto", "/despre", "/contacte"];
 

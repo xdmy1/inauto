@@ -24,9 +24,8 @@ const manrope = Manrope({
   display: "swap",
 });
 
-export function generateStaticParams() {
-  return routing.locales.map((locale) => ({ locale }));
-}
+// Rendered at request time — serverless build machines have no database
+export const dynamic = "force-dynamic";
 
 export async function generateMetadata({
   params,
