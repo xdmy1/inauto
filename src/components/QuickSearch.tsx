@@ -55,12 +55,12 @@ export function QuickSearch({
     router.push(`/auto${p.size ? `?${p}` : ""}`);
   }
 
-  const label = "mb-1.5 block text-xs font-medium text-white/60";
+  const label = "mb-1.5 block text-xs font-medium text-ink-soft";
 
   return (
     <form
       onSubmit={submit}
-      className="flex h-full flex-col rounded-2xl bg-ink p-6 text-white"
+      className="flex h-full flex-col rounded-2xl border border-line bg-card p-6"
     >
       <h2 className="font-display text-xl font-bold">{t("home.searchTitle")}</h2>
 
@@ -68,7 +68,6 @@ export function QuickSearch({
         <label className="block">
           <span className={label}>{t("home.searchBrand")}</span>
           <Select
-            variant="dark"
             searchable
             value={brand}
             onChange={setBrand}
@@ -86,14 +85,13 @@ export function QuickSearch({
             value={model}
             onChange={(e) => setModel(e.target.value)}
             placeholder={t("home.searchAny")}
-            className="h-11 w-full rounded-lg border border-white/15 bg-white/[0.07] px-3 text-sm text-white outline-none transition-colors placeholder:text-white/40 focus:border-white/50"
+            className="input"
           />
         </label>
 
         <label className="block">
           <span className={label}>{t("home.searchPriceMax")}</span>
           <Select
-            variant="dark"
             value={priceMax}
             onChange={setPriceMax}
             placeholder={t("home.searchAny")}
@@ -112,7 +110,7 @@ export function QuickSearch({
         </button>
         <Link
           href="/auto"
-          className="mt-3.5 flex items-center justify-center gap-1.5 text-[13px] font-semibold text-white/60 transition-colors hover:text-white"
+          className="mt-3.5 flex items-center justify-center gap-1.5 text-[13px] font-semibold text-ink-soft transition-colors hover:text-ink"
         >
           {t("home.advanced")}
           <ArrowRightIcon className="h-3.5 w-3.5" />
