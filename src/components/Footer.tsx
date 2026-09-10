@@ -8,7 +8,7 @@ export async function Footer() {
 
   return (
     <footer className="mt-24 border-t border-line bg-card">
-      <div className="mx-auto max-w-6xl px-4 py-12 sm:px-6">
+      <div className="mx-auto max-w-[1360px] px-4 py-12 sm:px-6">
         <div className="flex flex-col gap-10 md:flex-row md:items-start md:justify-between">
           <div className="max-w-xs">
             <Logo />

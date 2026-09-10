@@ -94,7 +94,7 @@ export default async function CarPage({
   ];
 
   return (
-    <div className="mx-auto max-w-6xl px-4 pt-8 sm:px-6">
+    <div className="mx-auto max-w-[1360px] px-4 pt-8 sm:px-6">
       {/* Breadcrumb */}
       <nav className="flex items-center gap-2 text-xs text-ink-faint" aria-label="Breadcrumb">
         <Link href="/" className="hover:text-ink">

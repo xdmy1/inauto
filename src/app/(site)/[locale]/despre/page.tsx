@@ -37,7 +37,7 @@ export default async function AboutPage({
   ];
 
   return (
-    <div className="mx-auto max-w-6xl px-4 pt-14 sm:px-6">
+    <div className="mx-auto max-w-[1360px] px-4 pt-14 sm:px-6">
       <h1 className=" max-w-2xl font-display text-4xl font-extrabold leading-tight tracking-tight sm:text-5xl">
         {t("title")}
       </h1>

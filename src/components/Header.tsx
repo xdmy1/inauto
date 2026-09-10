@@ -26,7 +26,7 @@ export async function Header() {
     <>
       {/* USP strip */}
       <div className="bg-ink text-paper">
-        <div className="mx-auto flex h-9 max-w-6xl items-center justify-center gap-8 overflow-hidden px-4 text-xs font-medium sm:px-6">
+        <div className="mx-auto flex h-9 max-w-[1360px] items-center justify-center gap-8 overflow-hidden px-4 text-xs font-medium sm:px-6">
           {usps.map((u, i) => (
             <span
               key={u}
@@ -42,7 +42,7 @@ export async function Header() {
       </div>
 
       <header className="sticky top-0 z-40 border-b border-line bg-card/90 backdrop-blur-md">
-        <div className="mx-auto flex h-16 max-w-6xl items-center justify-between gap-4 px-4 sm:px-6">
+        <div className="mx-auto flex h-16 max-w-[1360px] items-center justify-between gap-4 px-4 sm:px-6">
           <Link href="/" aria-label={site.name} className="shrink-0">
             <Logo />
           </Link>

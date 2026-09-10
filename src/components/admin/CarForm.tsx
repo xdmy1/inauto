@@ -1,6 +1,6 @@
 "use client";
 
-import { useActionState } from "react";
+import { useActionState, useState } from "react";
 import {
   saveCarAction,
   type SaveCarState,
@@ -13,6 +13,12 @@ import {
   TRANSMISSIONS,
 } from "@/lib/cars";
 import { imageUrl } from "@/lib/images";
+import { Select } from "@/components/ui/Select";
+
+const BODY_RO: Record<string, string> = { sedan: "Sedan", hatchback: "Hatchback", wagon: "Universal", suv: "SUV / Crossover", coupe: "Coupe", cabrio: "Cabriolet", minivan: "Minivan", van: "Furgon", pickup: "Pickup" };
+const FUEL_RO: Record<string, string> = { petrol: "Benzin\u0103", diesel: "Motorin\u0103", hybrid: "Hybrid", phev: "Plug-in Hybrid", electric: "Electric", gas: "Gaz / Benzin\u0103" };
+const TRANS_RO: Record<string, string> = { automatic: "Automat\u0103", manual: "Mecanic\u0103", robotic: "Robotizat\u0103", cvt: "Variator (CVT)" };
+const DRIVE_RO: Record<string, string> = { fwd: "Fa\u021b\u0103", rwd: "Spate", awd: "4x4" };
 
 export type CarFormData = {
   id: string;
@@ -75,6 +81,11 @@ export function CarForm({ car }: { car: CarFormData }) {
     SaveCarState | undefined,
     FormData
   >(saveCarAction, undefined);
+  const [body, setBody] = useState(car?.body ?? "sedan");
+  const [fuel, setFuel] = useState(car?.fuel ?? "petrol");
+  const [transmission, setTransmission] = useState(car?.transmission ?? "automatic");
+  const [drivetrain, setDrivetrain] = useState(car?.drivetrain ?? "");
+  const [status, setStatus] = useState(car?.status ?? "PUBLISHED");
 
   return (
     <form action={action} className="space-y-8">
@@ -148,33 +159,16 @@ export function CarForm({ car }: { car: CarFormData }) {
         </h2>
         <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
           <Field label="Caroserie *">
-            <select name="body" required defaultValue={car?.body ?? "sedan"} className={inputCls}>
-              {BODIES.map((b) => (
-                <option key={b} value={b}>{b}</option>
-              ))}
-            </select>
+            <Select name="body" value={body} onChange={setBody} options={BODIES.map((b) => ({ value: b, label: BODY_RO[b] ?? b }))} />
           </Field>
           <Field label="Combustibil *">
-            <select name="fuel" required defaultValue={car?.fuel ?? "petrol"} className={inputCls}>
-              {FUELS.map((f) => (
-                <option key={f} value={f}>{f}</option>
-              ))}
-            </select>
+            <Select name="fuel" value={fuel} onChange={setFuel} options={FUELS.map((f) => ({ value: f, label: FUEL_RO[f] ?? f }))} />
           </Field>
           <Field label="Cutia *">
-            <select name="transmission" required defaultValue={car?.transmission ?? "automatic"} className={inputCls}>
-              {TRANSMISSIONS.map((t) => (
-                <option key={t} value={t}>{t}</option>
-              ))}
-            </select>
+            <Select name="transmission" value={transmission} onChange={setTransmission} options={TRANSMISSIONS.map((t) => ({ value: t, label: TRANS_RO[t] ?? t }))} />
           </Field>
           <Field label="Tracțiune">
-            <select name="drivetrain" defaultValue={car?.drivetrain ?? ""} className={inputCls}>
-              <option value="">—</option>
-              {DRIVETRAINS.map((d) => (
-                <option key={d} value={d}>{d}</option>
-              ))}
-            </select>
+            <Select name="drivetrain" value={drivetrain} onChange={setDrivetrain} options={DRIVETRAINS.map((d) => ({ value: d, label: DRIVE_RO[d] ?? d }))} />
           </Field>
           <Field label="Kilometraj *">
             <input type="number" name="mileage" required min={0} defaultValue={car?.mileage} className={inputCls} />
@@ -272,12 +266,8 @@ export function CarForm({ car }: { car: CarFormData }) {
           Publicare
         </h2>
         <div className="flex flex-wrap items-center gap-6">
-          <Field label="Status">
-            <select name="status" defaultValue={car?.status ?? "PUBLISHED"} className={`${inputCls} w-44`}>
-              {STATUSES.map((s) => (
-                <option key={s} value={s}>{s}</option>
-              ))}
-            </select>
+          <Field label="Status" className="w-44">
+            <Select name="status" value={status} onChange={setStatus} options={STATUSES.map((s) => ({ value: s, label: s }))} />
           </Field>
           <label className="flex items-center gap-2 pt-4 text-sm font-medium">
             <input type="checkbox" name="featured" defaultChecked={car?.featured} />

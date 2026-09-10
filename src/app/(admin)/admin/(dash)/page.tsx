@@ -2,16 +2,9 @@ import Link from "next/link";
 import { prisma } from "@/lib/prisma";
 import { fmtPrice, STATUSES } from "@/lib/cars";
 import { imageUrl } from "@/lib/images";
-import { deleteCarAction, setStatusAction } from "../actions";
+import { deleteCarAction } from "../actions";
+import { StatusSelect } from "@/components/admin/StatusSelect";
 import { ConfirmSubmit } from "@/components/admin/ConfirmSubmit";
-
-const STATUS_STYLE: Record<string, string> = {
-  DRAFT: "bg-gray-100 text-gray-700",
-  PUBLISHED: "bg-green-100 text-green-800",
-  RESERVED: "bg-amber-100 text-amber-800",
-  SOLD: "bg-blue-100 text-blue-800",
-  ARCHIVED: "bg-gray-200 text-gray-500",
-};
 
 const NNN_STYLE: Record<string, string> = {
   SYNCED: "bg-green-100 text-green-800",
@@ -127,26 +120,7 @@ export default async function AdminDashboard({
                   {fmtPrice(car.price)}
                 </td>
                 <td className="px-4 py-3">
-                  <form action={setStatusAction} className="flex items-center gap-1.5">
-                    <input type="hidden" name="carId" value={car.id} />
-                    <select
-                      name="status"
-                      defaultValue={car.status}
-                      className={`rounded-full px-2 py-1 text-xs font-bold ${STATUS_STYLE[car.status]}`}
-                    >
-                      {STATUSES.map((s) => (
-                        <option key={s} value={s}>
-                          {s}
-                        </option>
-                      ))}
-                    </select>
-                    <button
-                      type="submit"
-                      className="text-xs text-ink-faint underline hover:text-ink"
-                    >
-                      ok
-                    </button>
-                  </form>
+                  <StatusSelect carId={car.id} status={car.status} />
                 </td>
                 <td className="px-4 py-3">
                   <span

@@ -11,7 +11,7 @@ export default function AdminDashLayout({
   return (
     <div className="min-h-dvh">
       <header className="sticky top-0 z-40 border-b border-line bg-paper/90 backdrop-blur">
-        <div className="mx-auto flex h-14 max-w-6xl items-center justify-between px-4 sm:px-6">
+        <div className="mx-auto flex h-14 max-w-[1360px] items-center justify-between px-4 sm:px-6">
           <div className="flex items-center gap-6">
             <Link href="/admin">
               <Logo markClassName="h-5 w-auto" />
@@ -57,7 +57,7 @@ export default function AdminDashLayout({
           </div>
         </div>
       </header>
-      <main className="mx-auto max-w-6xl px-4 py-8 sm:px-6">{children}</main>
+      <main className="mx-auto max-w-[1360px] px-4 py-8 sm:px-6">{children}</main>
     </div>
   );
 }

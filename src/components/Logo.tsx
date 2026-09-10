@@ -1,5 +1,8 @@
-// INAUTO logo — modernized redraw of the original red car silhouette mark
+/* eslint-disable @next/next/no-img-element */
+// Original INAUTO logo mark (red car from inauto.md) + wordmark
+
 export function CarMark({ className }: { className?: string }) {
+  // decorative fallback silhouette (card/gallery placeholders)
   return (
     <svg
       viewBox="0 0 132 44"
@@ -22,14 +25,20 @@ export function CarMark({ className }: { className?: string }) {
 
 export function Logo({
   className,
-  markClassName = "h-6 w-auto",
+  markClassName = "h-7 w-auto",
 }: {
   className?: string;
   markClassName?: string;
 }) {
   return (
     <span className={`flex items-center gap-2.5 ${className ?? ""}`}>
-      <CarMark className={`${markClassName} text-accent`} />
+      <img
+        src="/images/logo-car.png"
+        alt=""
+        width={192}
+        height={75}
+        className={markClassName}
+      />
       <span className="font-display text-xl font-extrabold tracking-tight leading-none">
         inauto<span className="text-accent">.md</span>
       </span>

@@ -43,7 +43,7 @@ export default async function ContactPage({
   ];
 
   return (
-    <div className="mx-auto max-w-6xl px-4 pt-14 sm:px-6">
+    <div className="mx-auto max-w-[1360px] px-4 pt-14 sm:px-6">
       <h1 className=" font-display text-4xl font-extrabold tracking-tight sm:text-5xl">
         {t("contact.title")}
       </h1>

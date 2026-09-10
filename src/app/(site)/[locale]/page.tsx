@@ -107,7 +107,7 @@ export default async function HomePage({
   return (
     <>
       {/* Hero: search + count panel */}
-      <section className="mx-auto max-w-6xl px-4 pt-6 sm:px-6 sm:pt-8">
+      <section className="mx-auto max-w-[1360px] px-4 pt-6 sm:px-6 sm:pt-8">
         <div className="grid grid-cols-1 gap-5 lg:grid-cols-[400px_1fr]">
           <QuickSearch brands={brands} count={count} />
 
@@ -152,7 +152,7 @@ export default async function HomePage({
       </section>
 
       {/* Hot offers */}
-      <section className="mx-auto max-w-6xl px-4 sm:px-6">
+      <section className="mx-auto max-w-[1360px] px-4 sm:px-6">
         <div className="mt-12">
           <SectionHeader
             title={t("home.hotOffers")}
@@ -168,7 +168,7 @@ export default async function HomePage({
       </section>
 
       {/* Financing banner */}
-      <section className="mx-auto max-w-6xl px-4 sm:px-6">
+      <section className="mx-auto max-w-[1360px] px-4 sm:px-6">
         <div className="mt-12 flex flex-col items-start justify-between gap-5 overflow-hidden rounded-2xl bg-gradient-to-r from-accent-deep to-accent px-6 py-8 text-white sm:flex-row sm:items-center sm:px-9">
           <div>
             <h2 className="font-display text-xl font-extrabold tracking-tight sm:text-2xl">
@@ -189,7 +189,7 @@ export default async function HomePage({
       </section>
 
       {/* Latest */}
-      <section className="mx-auto max-w-6xl px-4 sm:px-6">
+      <section className="mx-auto max-w-[1360px] px-4 sm:px-6">
         <div className="mt-12">
           <SectionHeader
             title={t("home.latestTitle")}
@@ -205,7 +205,7 @@ export default async function HomePage({
       </section>
 
       {/* Why us — compact strip */}
-      <section className="mx-auto max-w-6xl px-4 sm:px-6">
+      <section className="mx-auto max-w-[1360px] px-4 sm:px-6">
         <div className="mt-12 grid grid-cols-1 gap-px overflow-hidden rounded-2xl border border-line bg-line sm:grid-cols-2 lg:grid-cols-4">
           {(Object.keys(WHY_ICONS) as (keyof typeof WHY_ICONS)[]).map((key) => {
             const Icon = WHY_ICONS[key];
@@ -227,7 +227,7 @@ export default async function HomePage({
       </section>
 
       {/* Contact strip */}
-      <section className="mx-auto max-w-6xl px-4 sm:px-6">
+      <section className="mx-auto max-w-[1360px] px-4 sm:px-6">
         <div className="mt-12 rounded-2xl border border-line bg-card p-6 sm:p-8">
           <div className="flex flex-col gap-6 lg:flex-row lg:items-center lg:justify-between">
             <div>
