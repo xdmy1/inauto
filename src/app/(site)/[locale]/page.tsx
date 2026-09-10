@@ -125,15 +125,17 @@ export default async function HomePage({
               fetchPriority="high"
               className="absolute inset-0 h-full w-full object-cover"
             />
-            <div className="absolute inset-0 bg-gradient-to-t from-ink/85 via-ink/20 to-transparent" />
-            <div className="absolute bottom-0 left-0 p-5 pb-14 text-white sm:p-7 lg:pb-7">
+            <div className="absolute inset-0 bg-gradient-to-t from-ink/80 via-ink/20 to-transparent" />
+            {/* seam: photo melts into the overlapping dark card on phones */}
+            <div className="absolute inset-x-0 bottom-0 h-28 bg-gradient-to-t from-ink via-ink/60 to-transparent lg:hidden" />
+            <div className="absolute bottom-0 left-0 p-5 pb-16 text-white [text-shadow:0_2px_14px_rgba(0,0,0,0.55)] sm:p-7 sm:pb-20 lg:pb-7">
               <div className="font-display text-4xl font-extrabold leading-none tracking-tight sm:text-5xl">
                 {count}{" "}
                 <span className="text-xl font-bold text-white/85 sm:text-2xl">
                   {t("home.carsForSale")}
                 </span>
               </div>
-              <p className="mt-2 text-sm font-medium text-white/70">
+              <p className="mt-2 text-sm font-medium text-white/85">
                 {t("common.tagline")}
               </p>
             </div>
