@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useTranslations } from "next-intl";
 import { Link, useRouter } from "@/i18n/navigation";
+import { SearchIcon } from "./icons";
 
 const PRICE_STEPS = [5000, 7500, 10000, 15000, 20000, 30000, 50000];
 
@@ -26,9 +27,6 @@ export function QuickSearch({
     router.push(`/auto${params.size ? `?${params}` : ""}`);
   }
 
-  const selectCls =
-    "h-11 w-full rounded-xl border border-line bg-paper px-3 text-sm outline-none transition-colors focus:border-ink";
-
   const chips = [
     { label: t("chips.suv"), query: "body=suv" },
     { label: t("chips.diesel"), query: "fuel=diesel" },
@@ -44,13 +42,11 @@ export function QuickSearch({
         className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4"
       >
         <label className="block">
-          <span className="mb-1.5 block text-xs font-semibold uppercase tracking-wide text-ink-faint">
-            {t("searchBrand")}
-          </span>
+          <span className="field-label">{t("searchBrand")}</span>
           <select
             value={brand}
             onChange={(e) => setBrand(e.target.value)}
-            className={selectCls}
+            className="select"
           >
             <option value="">{t("searchAny")}</option>
             {brands.map((b) => (
@@ -62,25 +58,21 @@ export function QuickSearch({
         </label>
 
         <label className="block">
-          <span className="mb-1.5 block text-xs font-semibold uppercase tracking-wide text-ink-faint">
-            {t("searchModel")}
-          </span>
+          <span className="field-label">{t("searchModel")}</span>
           <input
             value={model}
             onChange={(e) => setModel(e.target.value)}
             placeholder={t("searchAny")}
-            className={selectCls}
+            className="input"
           />
         </label>
 
         <label className="block">
-          <span className="mb-1.5 block text-xs font-semibold uppercase tracking-wide text-ink-faint">
-            {t("searchPriceMax")}
-          </span>
+          <span className="field-label">{t("searchPriceMax")}</span>
           <select
             value={priceMax}
             onChange={(e) => setPriceMax(e.target.value)}
-            className={selectCls}
+            className="select"
           >
             <option value="">{t("searchAny")}</option>
             {PRICE_STEPS.map((p) => (
@@ -92,10 +84,8 @@ export function QuickSearch({
         </label>
 
         <div className="flex items-end">
-          <button
-            type="submit"
-            className="h-11 w-full rounded-xl bg-accent font-display text-sm font-bold text-white transition-colors hover:bg-accent-deep"
-          >
+          <button type="submit" className="btn-primary h-11 w-full">
+            <SearchIcon className="h-4 w-4" />
             {t("searchButton")}
           </button>
         </div>
@@ -106,7 +96,7 @@ export function QuickSearch({
           <Link
             key={chip.query}
             href={`/auto?${chip.query}`}
-            className="rounded-full border border-line bg-paper px-3 py-1.5 text-xs font-medium text-ink-soft transition-colors hover:border-ink hover:text-ink"
+            className="rounded-full border border-line bg-paper px-3.5 py-1.5 text-xs font-semibold text-ink-soft transition-colors hover:border-accent hover:text-accent"
           >
             {chip.label}
           </Link>

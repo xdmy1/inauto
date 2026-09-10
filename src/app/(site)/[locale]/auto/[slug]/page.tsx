@@ -9,6 +9,7 @@ import { site, telHref, waHref } from "@/lib/site";
 import { canonicalFor, localizedAlternates, vehicleJsonLd } from "@/lib/seo";
 import { Gallery } from "@/components/Gallery";
 import { CarCard } from "@/components/CarCard";
+import { PhoneIcon, WhatsAppIcon } from "@/components/icons";
 
 async function getCar(slug: string) {
   return prisma.car.findFirst({
@@ -182,8 +183,9 @@ export default async function CarPage({
               <div className="mt-6 space-y-2.5">
                 <a
                   href={telHref(site.phones[0])}
-                  className="flex h-12 items-center justify-center rounded-xl bg-accent font-display text-sm font-bold text-white transition-colors hover:bg-accent-deep"
+                  className="btn-primary w-full"
                 >
+                  <PhoneIcon className="h-4 w-4" />
                   {t("common.call")} · {site.phoneDisplay[0]}
                 </a>
                 <a
@@ -193,8 +195,9 @@ export default async function CarPage({
                   )}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="flex h-12 items-center justify-center rounded-xl border border-ink font-display text-sm font-bold transition-colors hover:bg-ink hover:text-paper"
+                  className="btn-outline w-full"
                 >
+                  <WhatsAppIcon className="h-4.5 w-4.5 text-ok" />
                   {t("common.whatsapp")}
                 </a>
               </div>

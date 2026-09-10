@@ -30,8 +30,7 @@ export async function generateMetadata({
   };
 }
 
-const inputCls =
-  "h-10 w-full rounded-lg border border-line bg-card px-2.5 text-sm outline-none focus:border-ink";
+const inputCls = "input";
 
 function Select({
   name,
@@ -46,10 +45,10 @@ function Select({
 }) {
   return (
     <label className="block">
-      <span className="mb-1 block text-xs font-semibold uppercase tracking-wide text-ink-faint">
+      <span className="field-label">
         {label}
       </span>
-      <select name={name} defaultValue={value ?? ""} className={inputCls}>
+      <select name={name} defaultValue={value ?? ""} className="select">
         <option value="">—</option>
         {options.map((o) => (
           <option key={o.value} value={o.value}>
@@ -74,7 +73,7 @@ function NumberInput({
 }) {
   return (
     <label className="block">
-      <span className="mb-1 block text-xs font-semibold uppercase tracking-wide text-ink-faint">
+      <span className="field-label">
         {label}
       </span>
       <input
@@ -137,7 +136,7 @@ export default async function CatalogPage({
         }))}
       />
       <label className="block">
-        <span className="mb-1 block text-xs font-semibold uppercase tracking-wide text-ink-faint">
+        <span className="field-label">
           {t("home.searchModel")}
         </span>
         <input

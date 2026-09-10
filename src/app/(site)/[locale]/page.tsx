@@ -7,6 +7,16 @@ import { site, telHref, waHref } from "@/lib/site";
 import { canonicalFor, localizedAlternates } from "@/lib/seo";
 import { CarCard } from "@/components/CarCard";
 import { QuickSearch } from "@/components/QuickSearch";
+import {
+  ArrowRightIcon,
+  CarIcon,
+  CheckIcon,
+  FileCheckIcon,
+  PhoneIcon,
+  ShieldCheckIcon,
+  WalletIcon,
+  WhatsAppIcon,
+} from "@/components/icons";
 
 export async function generateMetadata({
   params,
@@ -35,6 +45,13 @@ function SectionLabel({ n, children }: { n: string; children: React.ReactNode })
   );
 }
 
+const WHY_ICONS = {
+  verified: ShieldCheckIcon,
+  financing: WalletIcon,
+  testdrive: CarIcon,
+  docs: FileCheckIcon,
+} as const;
+
 export default async function HomePage({
   params,
 }: {
@@ -55,12 +72,12 @@ export default async function HomePage({
     getBrandsWithCounts(),
   ]);
 
-  const why = [
-    { key: "verified" },
-    { key: "financing" },
-    { key: "testdrive" },
-    { key: "docs" },
-  ] as const;
+  const checks = [
+    t("home.why.verified"),
+    t("home.why.docs"),
+    t("home.why.financing"),
+    t("home.why.testdrive"),
+  ];
 
   const steps = [
     { n: "1", key: "one" },
@@ -71,30 +88,76 @@ export default async function HomePage({
   return (
     <>
       {/* Hero */}
-      <section className="mx-auto max-w-6xl px-4 pb-14 pt-14 sm:px-6 sm:pt-20">
-        <div className="max-w-3xl">
-          <p className="section-label">
-            <span className="inline-block h-2 w-2 rounded-full bg-accent" />
-            <span>{t("home.heroCount", { count })}</span>
-          </p>
-          <h1 className="mt-5 font-display text-4xl font-extrabold leading-[1.05] tracking-tight sm:text-6xl">
-            {t.rich("home.heroTitle", {
-              accent: (chunks) => <span className="text-accent">{chunks}</span>,
-            })}
-          </h1>
-          <p className="mt-5 max-w-xl text-base text-ink-soft sm:text-lg">
-            {t("home.heroSubtitle")}
-          </p>
+      <section className="mx-auto max-w-6xl px-4 pt-10 sm:px-6 sm:pt-16">
+        <div className="grid grid-cols-1 items-center gap-10 lg:grid-cols-[1.05fr_1fr]">
+          <div>
+            <p className="section-label">
+              <span className="inline-block h-2 w-2 animate-pulse rounded-full bg-accent" />
+              <span>{t("home.heroCount", { count })}</span>
+            </p>
+            <h1 className="mt-5 font-display text-4xl font-extrabold leading-[1.05] tracking-tight sm:text-5xl xl:text-6xl">
+              {t.rich("home.heroTitle", {
+                accent: (chunks) => (
+                  <span className="text-accent">{chunks}</span>
+                ),
+              })}
+            </h1>
+            <p className="mt-5 max-w-md text-base text-ink-soft sm:text-lg">
+              {t("home.heroSubtitle")}
+            </p>
+
+            <div className="mt-7 flex flex-wrap items-center gap-3">
+              <Link href="/auto" className="btn-primary">
+                {t("home.searchButton")}
+                <ArrowRightIcon className="h-4 w-4" />
+              </Link>
+              <a href={telHref(site.phones[0])} className="btn-outline">
+                <PhoneIcon className="h-4 w-4 text-accent" />
+                {site.phoneDisplay[0]}
+              </a>
+            </div>
+
+            <div className="hairline mt-8 grid max-w-md grid-cols-1 gap-x-6 gap-y-2.5 pt-6 sm:grid-cols-2">
+              {checks.map((c) => (
+                <span
+                  key={c}
+                  className="flex items-center gap-2 text-sm font-medium text-ink-soft"
+                >
+                  <CheckIcon className="h-4 w-4 shrink-0 text-ok" />
+                  {c}
+                </span>
+              ))}
+            </div>
+          </div>
+
+          <div className="relative overflow-hidden rounded-3xl shadow-lift">
+            <img
+              src="/images/hero.webp"
+              alt={`${site.name} — ${site.address.full}`}
+              width={1400}
+              height={1120}
+              fetchPriority="high"
+              className="aspect-[5/4] w-full object-cover"
+            />
+            <div className="absolute bottom-4 left-4 rounded-xl bg-ink/70 px-4 py-2.5 text-white backdrop-blur">
+              <div className="font-display text-lg font-extrabold leading-tight">
+                {count}+
+              </div>
+              <div className="text-xs text-white/80">
+                {t("about.statsCars")}
+              </div>
+            </div>
+          </div>
         </div>
 
-        <div className="mt-9">
+        <div className="mt-10">
           <QuickSearch brands={brands} />
         </div>
       </section>
 
       {/* Latest cars */}
       <section className="mx-auto max-w-6xl px-4 sm:px-6">
-        <div className="hairline flex items-end justify-between pt-10">
+        <div className="mt-16 flex items-end justify-between">
           <div>
             <SectionLabel n="01">{t("home.latestLabel")}</SectionLabel>
             <h2 className="mt-3 font-display text-2xl font-extrabold tracking-tight sm:text-3xl">
@@ -103,63 +166,67 @@ export default async function HomePage({
           </div>
           <Link
             href="/auto"
-            className="hidden items-center gap-1.5 text-sm font-semibold text-ink transition-colors hover:text-accent sm:flex"
+            className="hidden items-center gap-1.5 text-sm font-bold text-accent transition-colors hover:text-accent-deep sm:flex"
           >
             {t("common.viewAll")}
-            <span aria-hidden>→</span>
+            <ArrowRightIcon className="h-4 w-4" />
           </Link>
         </div>
 
-        <div className="mt-8 grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4">
+        <div className="mt-7 grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4">
           {latest.map((car) => (
             <CarCard key={car.id} car={car} />
           ))}
         </div>
 
-        <div className="mt-8 sm:hidden">
-          <Link
-            href="/auto"
-            className="flex h-12 items-center justify-center rounded-xl border border-ink font-display text-sm font-bold"
-          >
-            {t("common.viewAll")} →
+        <div className="mt-7 sm:hidden">
+          <Link href="/auto" className="btn-dark w-full">
+            {t("common.viewAll")}
+            <ArrowRightIcon className="h-4 w-4" />
           </Link>
         </div>
       </section>
 
       {/* Why us */}
       <section className="mx-auto max-w-6xl px-4 sm:px-6">
-        <div className="hairline mt-16 pt-10">
+        <div className="mt-16">
           <SectionLabel n="02">{t("home.whyLabel")}</SectionLabel>
           <h2 className="mt-3 max-w-xl font-display text-2xl font-extrabold tracking-tight sm:text-3xl">
             {t("home.whyTitle")}
           </h2>
         </div>
-        <div className="mt-8 grid grid-cols-1 gap-px overflow-hidden rounded-2xl border border-line bg-line sm:grid-cols-2 lg:grid-cols-4">
-          {why.map((item, i) => (
-            <div key={item.key} className="bg-card p-6">
-              <div className="text-xs font-semibold text-ink-faint">
-                0{i + 1}
+        <div className="mt-7 grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4">
+          {(Object.keys(WHY_ICONS) as (keyof typeof WHY_ICONS)[]).map((key) => {
+            const Icon = WHY_ICONS[key];
+            return (
+              <div
+                key={key}
+                className="rounded-2xl border border-line bg-card p-6 shadow-card"
+              >
+                <span className="icon-tile">
+                  <Icon className="h-5.5 w-5.5" />
+                </span>
+                <h3 className="mt-4 font-display text-base font-bold">
+                  {t(`home.why.${key}`)}
+                </h3>
+                <p className="mt-2 text-sm leading-relaxed text-ink-soft">
+                  {t(`home.why.${key}Text`)}
+                </p>
               </div>
-              <h3 className="mt-4 font-display text-base font-bold">
-                {t(`home.why.${item.key}`)}
-              </h3>
-              <p className="mt-2 text-sm leading-relaxed text-ink-soft">
-                {t(`home.why.${item.key}Text`)}
-              </p>
-            </div>
-          ))}
+            );
+          })}
         </div>
       </section>
 
       {/* How to buy */}
       <section className="mx-auto max-w-6xl px-4 sm:px-6">
-        <div className="hairline mt-16 pt-10">
+        <div className="mt-16">
           <SectionLabel n="03">{t("home.stepsLabel")}</SectionLabel>
           <h2 className="mt-3 font-display text-2xl font-extrabold tracking-tight sm:text-3xl">
             {t("home.stepsTitle")}
           </h2>
         </div>
-        <ol className="mt-8 grid grid-cols-1 gap-5 md:grid-cols-3">
+        <ol className="mt-7 grid grid-cols-1 gap-5 md:grid-cols-3">
           {steps.map((s) => (
             <li
               key={s.key}
@@ -190,18 +257,17 @@ export default async function HomePage({
             {t("home.contactText")}
           </p>
           <div className="mt-7 flex flex-wrap items-center gap-3">
-            <a
-              href={telHref(site.phones[0])}
-              className="flex h-12 items-center gap-2 rounded-xl bg-accent px-5 font-display text-sm font-bold text-white transition-colors hover:bg-accent-deep"
-            >
+            <a href={telHref(site.phones[0])} className="btn-primary">
+              <PhoneIcon className="h-4 w-4" />
               {t("common.call")} · {site.phoneDisplay[0]}
             </a>
             <a
               href={waHref(site.whatsapp)}
               target="_blank"
               rel="noopener noreferrer"
-              className="flex h-12 items-center rounded-xl border border-paper/25 px-5 font-display text-sm font-bold text-paper transition-colors hover:border-paper/60"
+              className="inline-flex h-12 items-center gap-2 rounded-xl border border-paper/25 px-6 font-display text-sm font-bold text-paper transition-colors hover:border-paper/60"
             >
+              <WhatsAppIcon className="h-4.5 w-4.5" />
               {t("common.whatsapp")}
             </a>
           </div>
