@@ -6,6 +6,7 @@ import sharp from "sharp";
 import path from "node:path";
 import fs from "node:fs/promises";
 import crypto from "node:crypto";
+import { put } from "@vercel/blob";
 
 const prisma = new PrismaClient();
 const UPLOADS = path.join(process.cwd(), "uploads");
@@ -14,8 +15,6 @@ const PHOTOS = path.join(process.cwd(), "research", "photos");
 async function importPhoto(carId: string, file: string) {
   const src = path.join(PHOTOS, file);
   const buf = await fs.readFile(src);
-  const dir = path.join(UPLOADS, "cars", carId);
-  await fs.mkdir(dir, { recursive: true });
   const name = crypto.randomBytes(8).toString("hex");
 
   const img = sharp(buf).rotate();
@@ -24,13 +23,28 @@ async function importPhoto(carId: string, file: string) {
     .resize({ width: 1600, height: 1200, fit: "inside", withoutEnlargement: true })
     .webp({ quality: 82 })
     .toBuffer({ resolveWithObject: true });
-  await fs.writeFile(path.join(dir, `${name}-lg.webp`), lg.data);
-  await img
+  const sm = await img
     .clone()
     .resize({ width: 640, height: 480, fit: "cover", position: "attention" })
     .webp({ quality: 75 })
-    .toFile(path.join(dir, `${name}-sm.webp`));
+    .toBuffer();
 
+  if (process.env.BLOB_READ_WRITE_TOKEN) {
+    const [lgBlob, smBlob] = await Promise.all([
+      put(`cars/${carId}/${name}-lg.webp`, lg.data, { access: "public", contentType: "image/webp" }),
+      put(`cars/${carId}/${name}-sm.webp`, sm, { access: "public", contentType: "image/webp" }),
+    ]);
+    return {
+      path: JSON.stringify({ lg: lgBlob.url, sm: smBlob.url }),
+      width: lg.info.width,
+      height: lg.info.height,
+    };
+  }
+
+  const dir = path.join(UPLOADS, "cars", carId);
+  await fs.mkdir(dir, { recursive: true });
+  await fs.writeFile(path.join(dir, `${name}-lg.webp`), lg.data);
+  await fs.writeFile(path.join(dir, `${name}-sm.webp`), sm);
   return {
     path: `cars/${carId}/${name}`,
     width: lg.info.width,
