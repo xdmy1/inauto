@@ -1,0 +1,80 @@
+// Prisma schema for inauto.md
+// Dev: SQLite. Production: switch provider to "postgresql" and set DATABASE_URL.
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model Car {
+  id           String   @id @default(cuid())
+  slug         String   @unique
+  brand        String
+  model        String
+  year         Int
+  price        Int // EUR
+  oldPrice     Int? // EUR, for discount display
+  downPayment  Int? // "prima rată", EUR
+  monthlyRate  Int? // EUR / month, optional
+  body         String // sedan, suv, hatchback...
+  fuel         String // petrol, diesel, hybrid, phev, electric, gas
+  transmission String // automatic, manual
+  drivetrain   String? // fwd, rwd, awd
+  mileage      Int // km
+  engineCc     Int?
+  powerHp      Int?
+  color        String?
+  seats        Int?
+  vin          String?
+  location     String? // parking address
+  descriptionRo String @default("")
+  descriptionRu String @default("")
+  status       String   @default("DRAFT") // DRAFT | PUBLISHED | RESERVED | SOLD | ARCHIVED
+  featured     Boolean  @default(false)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  images CarImage[]
+  advert Advert999?
+
+  @@index([status, createdAt])
+  @@index([brand, model])
+}
+
+model CarImage {
+  id       String @id @default(cuid())
+  carId    String
+  car      Car    @relation(fields: [carId], references: [id], onDelete: Cascade)
+  // relative path under the uploads dir, e.g. "cars/<carId>/<file>.webp"
+  path     String
+  width    Int?
+  height   Int?
+  order    Int    @default(0)
+
+  @@index([carId, order])
+}
+
+// Link between a local car and its 999.md advert
+model Advert999 {
+  id          String    @id @default(cuid())
+  carId       String    @unique
+  car         Car       @relation(fields: [carId], references: [id], onDelete: Cascade)
+  advertId    String? // id returned by partners-api.999.md
+  state       String    @default("PENDING") // PENDING | SYNCED | ERROR | DISABLED
+  lastError   String?
+  lastSyncAt  DateTime?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+}
+
+model AdminUser {
+  id           String   @id @default(cuid())
+  email        String   @unique
+  name         String?
+  passwordHash String
+  createdAt    DateTime @default(now())
+}

@@ -1,0 +1,188 @@
+{
+  "meta": {
+    "home": {
+      "title": "INAUTO.MD — Parc auto în Chișinău | Mașini second-hand cu prima rată",
+      "description": "Parc auto în Chișinău, str. Cucorilor 14. Mașini verificate, acte gata, prima rată de la 100 €. Vezi ofertele și programează un test drive."
+    },
+    "catalog": {
+      "title": "Automobile de vânzare în Chișinău — catalog INAUTO.MD",
+      "description": "Catalog complet de automobile second-hand în Chișinău: SUV, sedan, diesel, hybrid. Filtrează după marcă, preț și an. Prima rată de la 100 €."
+    },
+    "about": {
+      "title": "Despre INAUTO.MD — parc auto în Chișinău",
+      "description": "INAUTO — parc auto în Chișinău. Mașini verificate, kilometraj real, finanțare cu prima rată mică și acte perfectate pe loc."
+    },
+    "contact": {
+      "title": "Contacte INAUTO.MD — str. Cucorilor 14, Chișinău",
+      "description": "Vino la parcarea INAUTO: mun. Chișinău, str. Cucorilor 14. Program zilnic, telefon 068 501 002."
+    }
+  },
+  "common": {
+    "brand": "INAUTO.MD",
+    "tagline": "Noi avem mașina ta!",
+    "call": "Sună acum",
+    "whatsapp": "Scrie pe WhatsApp",
+    "viewAll": "Vezi toate",
+    "from": "de la",
+    "perMonth": "/lună",
+    "downPayment": "Prima rată",
+    "price": "Preț",
+    "oldPrice": "Preț vechi",
+    "sold": "Vândut",
+    "reserved": "Rezervat",
+    "year": "An",
+    "mileage": "Rulaj",
+    "fuel": "Combustibil",
+    "transmission": "Cutie",
+    "body": "Caroserie",
+    "drivetrain": "Tracțiune",
+    "engine": "Motor",
+    "power": "Putere",
+    "color": "Culoare",
+    "seats": "Locuri",
+    "location": "Parcarea",
+    "cars": "{count, plural, one {# automobil} few {# automobile} other {# de automobile}}"
+  },
+  "nav": {
+    "home": "Acasă",
+    "catalog": "Automobile",
+    "about": "Despre noi",
+    "contact": "Contacte"
+  },
+  "home": {
+    "heroTitle": "Mașina ta te așteaptă <accent>aici</accent>.",
+    "heroSubtitle": "Parc auto în Chișinău. Mașini verificate, acte gata în aceeași zi, prima rată de la 100 €.",
+    "heroCount": "{count} automobile în parcare acum",
+    "searchBrand": "Marca",
+    "searchModel": "Modelul",
+    "searchPriceMax": "Preț până la",
+    "searchAny": "Oricare",
+    "searchButton": "Arată automobilele",
+    "chips": {
+      "suv": "SUV",
+      "diesel": "Diesel",
+      "automatic": "Automată",
+      "under10k": "până la 10 000 €",
+      "hybrid": "Hybrid"
+    },
+    "latestLabel": "Ultimele adăugate",
+    "latestTitle": "Proaspăt în parcare",
+    "whyLabel": "De ce INAUTO",
+    "whyTitle": "Cumperi simplu, pleci liniștit.",
+    "why": {
+      "verified": "Kilometraj real",
+      "verifiedText": "Fiecare mașină vine cu istoric verificat și raport tehnic. Ce vezi în anunț e ce găsești în parcare.",
+      "financing": "Prima rată de la 100 €",
+      "financingText": "Finanțare rapidă, fără drumuri în plus. Aprobarea se face pe loc, actele în aceeași zi.",
+      "testdrive": "Test drive oricând",
+      "testdriveText": "Vii, alegi, conduci. Programează un test drive la orice mașină din parcare.",
+      "docs": "Acte perfectate pe loc",
+      "docsText": "Ne ocupăm noi de tot: contract, transcriere, asigurare. Tu pleci direct cu mașina."
+    },
+    "stepsLabel": "Cum cumperi",
+    "stepsTitle": "Trei pași până la mașina ta",
+    "steps": {
+      "one": "Alege mașina",
+      "oneText": "Caută în catalog sau sună-ne — îți spunem sincer ce avem și ce ți se potrivește.",
+      "two": "Vino la test drive",
+      "twoText": "str. Cucorilor 14, Chișinău. Verifici mașina, o conduci, pui orice întrebare.",
+      "three": "Pleacă cu ea azi",
+      "threeText": "Acte gata în aceeași zi, cu plata integrală sau cu prima rată de la 100 €."
+    },
+    "contactLabel": "Contact",
+    "contactTitle": "Vino să le vezi pe viu.",
+    "contactText": "Suntem la str. Cucorilor 14, Chișinău. Deschis în fiecare zi."
+  },
+  "catalog": {
+    "title": "Automobile",
+    "found": "{count, plural, one {# automobil găsit} few {# automobile găsite} other {# de automobile găsite}}",
+    "filters": "Filtre",
+    "reset": "Resetează",
+    "apply": "Aplică filtrele",
+    "sort": {
+      "label": "Sortare",
+      "new": "Cele mai noi",
+      "price_asc": "Preț crescător",
+      "price_desc": "Preț descrescător",
+      "year_desc": "An descrescător",
+      "mileage_asc": "Rulaj crescător"
+    },
+    "priceMin": "Preț de la",
+    "priceMax": "Preț până la",
+    "yearMin": "An de la",
+    "yearMax": "An până la",
+    "mileageMax": "Rulaj până la",
+    "empty": "Niciun automobil nu corespunde filtrelor.",
+    "emptyCta": "Resetează filtrele",
+    "prev": "Înapoi",
+    "next": "Înainte"
+  },
+  "car": {
+    "specs": "Caracteristici",
+    "description": "Descriere",
+    "contactTitle": "Interesat de această mașină?",
+    "contactText": "Sună sau scrie-ne — răspundem repede și îți spunem tot despre ea.",
+    "similar": "Mașini similare",
+    "backToCatalog": "Toate automobilele",
+    "downPaymentFrom": "Prima rată de la {amount}",
+    "atParking": "O găsești la parcarea noastră: {address}"
+  },
+  "about": {
+    "label": "Despre noi",
+    "title": "Un parc auto care lucrează cinstit.",
+    "p1": "INAUTO este un parc auto din Chișinău, pe str. Cucorilor 14. Aducem și vindem mașini verificate, cu kilometraj real și istoric transparent — exact așa cum ne-am dori să cumpărăm noi înșine.",
+    "p2": "Fiecare automobil trece printr-o verificare tehnică înainte să ajungă în parcare. Nu ascundem nimic: ce e de spus despre o mașină, îți spunem direct, la telefon sau față în față.",
+    "p3": "Cumperi cu plata integrală sau cu finanțare — prima rată începe de la 100 €, iar actele se perfectează pe loc, în aceeași zi.",
+    "statsCars": "automobile în parcare",
+    "statsYears": "ani pe piață",
+    "statsClients": "clienți mulțumiți"
+  },
+  "contact": {
+    "label": "Contacte",
+    "title": "Hai să vorbim.",
+    "address": "Adresa",
+    "phones": "Telefoane",
+    "email": "Email",
+    "hours": "Program",
+    "hoursMoFr": "Luni – Vineri",
+    "hoursSa": "Sâmbătă",
+    "hoursSu": "Duminică",
+    "mapCta": "Deschide în Google Maps"
+  },
+  "footer": {
+    "rights": "© {year} INAUTO.MD — Toate drepturile rezervate.",
+    "address": "mun. Chișinău, str. Cucorilor 14"
+  },
+  "options": {
+    "body": {
+      "sedan": "Sedan",
+      "hatchback": "Hatchback",
+      "wagon": "Universal",
+      "suv": "SUV / Crossover",
+      "coupe": "Coupe",
+      "cabrio": "Cabriolet",
+      "minivan": "Minivan",
+      "van": "Furgon",
+      "pickup": "Pickup"
+    },
+    "fuel": {
+      "petrol": "Benzină",
+      "diesel": "Motorină",
+      "hybrid": "Hybrid",
+      "phev": "Plug-in Hybrid",
+      "electric": "Electric",
+      "gas": "Gaz / Benzină"
+    },
+    "transmission": {
+      "automatic": "Automată",
+      "manual": "Mecanică",
+      "robotic": "Robotizată",
+      "cvt": "Variator (CVT)"
+    },
+    "drivetrain": {
+      "fwd": "Față",
+      "rwd": "Spate",
+      "awd": "4x4"
+    }
+  }
+}
