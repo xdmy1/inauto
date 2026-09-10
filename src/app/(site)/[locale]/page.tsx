@@ -10,9 +10,11 @@ import { QuickSearch } from "@/components/QuickSearch";
 import {
   ArrowRightIcon,
   CarIcon,
-  CheckIcon,
+  ClockIcon,
   FileCheckIcon,
+  MapPinIcon,
   PhoneIcon,
+  SearchIcon,
   ShieldCheckIcon,
   WalletIcon,
   WhatsAppIcon,
@@ -35,12 +37,27 @@ export async function generateMetadata({
   };
 }
 
-function SectionLabel({ n, children }: { n: string; children: React.ReactNode }) {
+function SectionHeader({
+  title,
+  href,
+  linkLabel,
+}: {
+  title: string;
+  href: string;
+  linkLabel: string;
+}) {
   return (
-    <div className="section-label">
-      <span>{n}</span>
-      <span className="h-px w-8 bg-line" />
-      <span>{children}</span>
+    <div className="flex items-center justify-between gap-4">
+      <h2 className="font-display text-xl font-extrabold tracking-tight sm:text-2xl">
+        {title}
+      </h2>
+      <Link
+        href={href}
+        className="inline-flex h-10 shrink-0 items-center gap-1.5 rounded-xl bg-ink px-4 text-[13px] font-bold text-paper transition-colors hover:bg-black"
+      >
+        {linkLabel}
+        <ArrowRightIcon className="h-3.5 w-3.5" />
+      </Link>
     </div>
   );
 }
@@ -61,215 +78,188 @@ export default async function HomePage({
   setRequestLocale(locale);
   const t = await getTranslations();
 
-  const [count, latest, brands] = await Promise.all([
+  const [count, latest, hot, brands, popular] = await Promise.all([
     prisma.car.count({ where: { status: "PUBLISHED" } }),
     prisma.car.findMany({
       where: { status: "PUBLISHED" },
-      orderBy: [{ featured: "desc" }, { createdAt: "desc" }],
+      orderBy: { createdAt: "desc" },
       take: 8,
       include: { images: { orderBy: { order: "asc" }, take: 1 } },
     }),
+    prisma.car.findMany({
+      where: {
+        status: "PUBLISHED",
+        OR: [{ oldPrice: { not: null } }, { featured: true }],
+      },
+      orderBy: [{ oldPrice: "desc" }, { createdAt: "desc" }],
+      take: 4,
+      include: { images: { orderBy: { order: "asc" }, take: 1 } },
+    }),
     getBrandsWithCounts(),
+    prisma.car.findMany({
+      where: { status: "PUBLISHED" },
+      select: { brand: true, model: true },
+      orderBy: { price: "desc" },
+      take: 7,
+    }),
   ]);
-
-  const checks = [
-    t("home.why.verified"),
-    t("home.why.docs"),
-    t("home.why.financing"),
-    t("home.why.testdrive"),
-  ];
-
-  const steps = [
-    { n: "1", key: "one" },
-    { n: "2", key: "two" },
-    { n: "3", key: "three" },
-  ] as const;
 
   return (
     <>
-      {/* Hero */}
-      <section className="mx-auto max-w-6xl px-4 pt-10 sm:px-6 sm:pt-16">
-        <div className="grid grid-cols-1 items-center gap-10 lg:grid-cols-[1.05fr_1fr]">
-          <div>
-            <p className="section-label">
-              <span className="inline-block h-2 w-2 animate-pulse rounded-full bg-accent" />
-              <span>{t("home.heroCount", { count })}</span>
-            </p>
-            <h1 className="mt-5 font-display text-4xl font-extrabold leading-[1.05] tracking-tight sm:text-5xl xl:text-6xl">
-              {t.rich("home.heroTitle", {
-                accent: (chunks) => (
-                  <span className="text-accent">{chunks}</span>
-                ),
-              })}
-            </h1>
-            <p className="mt-5 max-w-md text-base text-ink-soft sm:text-lg">
-              {t("home.heroSubtitle")}
-            </p>
+      {/* Hero: search + count panel */}
+      <section className="mx-auto max-w-6xl px-4 pt-6 sm:px-6 sm:pt-8">
+        <div className="grid grid-cols-1 gap-5 lg:grid-cols-[400px_1fr]">
+          <QuickSearch brands={brands} count={count} />
 
-            <div className="mt-7 flex flex-wrap items-center gap-3">
-              <Link href="/auto" className="btn-primary">
-                {t("home.searchButton")}
-                <ArrowRightIcon className="h-4 w-4" />
-              </Link>
-              <a href={telHref(site.phones[0])} className="btn-outline">
-                <PhoneIcon className="h-4 w-4 text-accent" />
-                {site.phoneDisplay[0]}
-              </a>
-            </div>
-
-            <div className="hairline mt-8 grid max-w-md grid-cols-1 gap-x-6 gap-y-2.5 pt-6 sm:grid-cols-2">
-              {checks.map((c) => (
-                <span
-                  key={c}
-                  className="flex items-center gap-2 text-sm font-medium text-ink-soft"
-                >
-                  <CheckIcon className="h-4 w-4 shrink-0 text-ok" />
-                  {c}
-                </span>
-              ))}
-            </div>
-          </div>
-
-          <div className="relative overflow-hidden rounded-3xl shadow-lift">
+          <div className="relative hidden min-h-[360px] overflow-hidden rounded-2xl lg:block">
             <img
               src="/images/hero.webp"
               alt={`${site.name} — ${site.address.full}`}
               width={1400}
               height={1120}
               fetchPriority="high"
-              className="aspect-[5/4] w-full object-cover"
+              className="absolute inset-0 h-full w-full object-cover"
             />
-            <div className="absolute bottom-4 left-4 rounded-xl bg-ink/70 px-4 py-2.5 text-white backdrop-blur">
-              <div className="font-display text-lg font-extrabold leading-tight">
-                {count}+
+            <div className="absolute inset-0 bg-gradient-to-t from-ink/85 via-ink/25 to-transparent" />
+            <div className="absolute bottom-0 left-0 p-7 text-white">
+              <div className="font-display text-5xl font-extrabold leading-none tracking-tight">
+                {count}{" "}
+                <span className="text-2xl font-bold text-white/85">
+                  {t("home.carsForSale")}
+                </span>
               </div>
-              <div className="text-xs text-white/80">
-                {t("about.statsCars")}
-              </div>
+              <p className="mt-2 text-sm font-medium text-white/75">
+                {t("common.tagline")} · {site.address.full}
+              </p>
             </div>
           </div>
         </div>
 
-        <div className="mt-10">
-          <QuickSearch brands={brands} />
-        </div>
-      </section>
-
-      {/* Latest cars */}
-      <section className="mx-auto max-w-6xl px-4 sm:px-6">
-        <div className="mt-16 flex items-end justify-between">
-          <div>
-            <SectionLabel n="01">{t("home.latestLabel")}</SectionLabel>
-            <h2 className="mt-3 font-display text-2xl font-extrabold tracking-tight sm:text-3xl">
-              {t("home.latestTitle")}
-            </h2>
-          </div>
-          <Link
-            href="/auto"
-            className="hidden items-center gap-1.5 text-sm font-bold text-accent transition-colors hover:text-accent-deep sm:flex"
-          >
-            {t("common.viewAll")}
-            <ArrowRightIcon className="h-4 w-4" />
-          </Link>
-        </div>
-
-        <div className="mt-7 grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4">
-          {latest.map((car) => (
-            <CarCard key={car.id} car={car} />
+        {/* Popular searches */}
+        <div className="mt-4 flex flex-wrap items-center gap-2">
+          <span className="text-sm font-bold">{t("home.popular")}</span>
+          {popular.map((p) => (
+            <Link
+              key={`${p.brand}-${p.model}`}
+              href={`/auto?brand=${encodeURIComponent(p.brand)}&model=${encodeURIComponent(p.model.split(" ")[0])}`}
+              className="inline-flex items-center gap-1.5 rounded-full border border-line bg-card px-3 py-1.5 text-xs font-medium text-ink-soft transition-colors hover:border-ink-faint hover:text-ink"
+            >
+              <SearchIcon className="h-3 w-3" />
+              {p.brand} {p.model.split(" ")[0]}
+            </Link>
           ))}
         </div>
+      </section>
 
-        <div className="mt-7 sm:hidden">
-          <Link href="/auto" className="btn-dark w-full">
-            {t("common.viewAll")}
-            <ArrowRightIcon className="h-4 w-4" />
-          </Link>
+      {/* Hot offers */}
+      <section className="mx-auto max-w-6xl px-4 sm:px-6">
+        <div className="mt-12">
+          <SectionHeader
+            title={t("home.hotOffers")}
+            href="/auto?sort=price_desc"
+            linkLabel={t("home.allOffers")}
+          />
+          <div className="mt-5 grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4">
+            {hot.map((car) => (
+              <CarCard key={car.id} car={car} />
+            ))}
+          </div>
         </div>
       </section>
 
-      {/* Why us */}
+      {/* Financing banner */}
       <section className="mx-auto max-w-6xl px-4 sm:px-6">
-        <div className="mt-16">
-          <SectionLabel n="02">{t("home.whyLabel")}</SectionLabel>
-          <h2 className="mt-3 max-w-xl font-display text-2xl font-extrabold tracking-tight sm:text-3xl">
-            {t("home.whyTitle")}
-          </h2>
+        <div className="mt-12 flex flex-col items-start justify-between gap-5 overflow-hidden rounded-2xl bg-gradient-to-r from-accent-deep to-accent px-6 py-8 text-white sm:flex-row sm:items-center sm:px-9">
+          <div>
+            <h2 className="font-display text-xl font-extrabold tracking-tight sm:text-2xl">
+              {t("home.financeTitle")}
+            </h2>
+            <p className="mt-1.5 max-w-lg text-sm text-white/85">
+              {t("home.financeText")}
+            </p>
+          </div>
+          <a
+            href={telHref(site.phones[0])}
+            className="inline-flex h-12 shrink-0 items-center gap-2 rounded-xl bg-white px-6 font-display text-sm font-bold text-accent-deep transition-transform active:scale-[0.98]"
+          >
+            <PhoneIcon className="h-4 w-4" />
+            {site.phoneDisplay[0]}
+          </a>
         </div>
-        <div className="mt-7 grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4">
+      </section>
+
+      {/* Latest */}
+      <section className="mx-auto max-w-6xl px-4 sm:px-6">
+        <div className="mt-12">
+          <SectionHeader
+            title={t("home.latestTitle")}
+            href="/auto"
+            linkLabel={t("home.allCars")}
+          />
+          <div className="mt-5 grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4">
+            {latest.map((car) => (
+              <CarCard key={car.id} car={car} />
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Why us — compact strip */}
+      <section className="mx-auto max-w-6xl px-4 sm:px-6">
+        <div className="mt-12 grid grid-cols-1 gap-px overflow-hidden rounded-2xl border border-line bg-line sm:grid-cols-2 lg:grid-cols-4">
           {(Object.keys(WHY_ICONS) as (keyof typeof WHY_ICONS)[]).map((key) => {
             const Icon = WHY_ICONS[key];
             return (
-              <div
-                key={key}
-                className="rounded-2xl border border-line bg-card p-6 shadow-card"
-              >
-                <span className="icon-tile">
-                  <Icon className="h-5.5 w-5.5" />
+              <div key={key} className="flex items-start gap-3.5 bg-card p-5">
+                <span className="icon-tile shrink-0">
+                  <Icon className="h-5 w-5" />
                 </span>
-                <h3 className="mt-4 font-display text-base font-bold">
-                  {t(`home.why.${key}`)}
-                </h3>
-                <p className="mt-2 text-sm leading-relaxed text-ink-soft">
-                  {t(`home.why.${key}Text`)}
-                </p>
+                <div>
+                  <h3 className="text-sm font-bold">{t(`home.why.${key}`)}</h3>
+                  <p className="mt-1 text-xs leading-relaxed text-ink-soft">
+                    {t(`home.why.${key}Text`)}
+                  </p>
+                </div>
               </div>
             );
           })}
         </div>
       </section>
 
-      {/* How to buy */}
+      {/* Contact strip */}
       <section className="mx-auto max-w-6xl px-4 sm:px-6">
-        <div className="mt-16">
-          <SectionLabel n="03">{t("home.stepsLabel")}</SectionLabel>
-          <h2 className="mt-3 font-display text-2xl font-extrabold tracking-tight sm:text-3xl">
-            {t("home.stepsTitle")}
-          </h2>
-        </div>
-        <ol className="mt-7 grid grid-cols-1 gap-5 md:grid-cols-3">
-          {steps.map((s) => (
-            <li
-              key={s.key}
-              className="rounded-2xl border border-line bg-card p-6 shadow-card"
-            >
-              <span className="flex h-10 w-10 items-center justify-center rounded-full bg-accent font-display text-base font-extrabold text-white">
-                {s.n}
-              </span>
-              <h3 className="mt-4 font-display text-base font-bold">
-                {t(`home.steps.${s.key}`)}
-              </h3>
-              <p className="mt-2 text-sm leading-relaxed text-ink-soft">
-                {t(`home.steps.${s.key}Text`)}
-              </p>
-            </li>
-          ))}
-        </ol>
-      </section>
-
-      {/* Contact band */}
-      <section className="mx-auto max-w-6xl px-4 sm:px-6">
-        <div className="mt-16 overflow-hidden rounded-3xl bg-ink px-6 py-12 text-paper sm:px-12">
-          <SectionLabel n="04">{t("home.contactLabel")}</SectionLabel>
-          <h2 className="mt-4 max-w-lg font-display text-3xl font-extrabold tracking-tight sm:text-4xl">
-            {t("home.contactTitle")}
-          </h2>
-          <p className="mt-3 max-w-md text-sm text-paper/70">
-            {t("home.contactText")}
-          </p>
-          <div className="mt-7 flex flex-wrap items-center gap-3">
-            <a href={telHref(site.phones[0])} className="btn-primary">
-              <PhoneIcon className="h-4 w-4" />
-              {t("common.call")} · {site.phoneDisplay[0]}
-            </a>
-            <a
-              href={waHref(site.whatsapp)}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="inline-flex h-12 items-center gap-2 rounded-xl border border-paper/25 px-6 font-display text-sm font-bold text-paper transition-colors hover:border-paper/60"
-            >
-              <WhatsAppIcon className="h-4.5 w-4.5" />
-              {t("common.whatsapp")}
-            </a>
+        <div className="mt-12 rounded-2xl border border-line bg-card p-6 sm:p-8">
+          <div className="flex flex-col gap-6 lg:flex-row lg:items-center lg:justify-between">
+            <div>
+              <h2 className="font-display text-xl font-extrabold tracking-tight sm:text-2xl">
+                {t("home.contactTitle")}
+              </h2>
+              <div className="mt-3 flex flex-col gap-2 text-sm text-ink-soft sm:flex-row sm:gap-6">
+                <span className="flex items-center gap-2">
+                  <MapPinIcon className="h-4 w-4 text-accent" />
+                  {site.address.full}
+                </span>
+                <span className="flex items-center gap-2">
+                  <ClockIcon className="h-4 w-4 text-accent" />
+                  Lu–Vi 9:00–18:00 · Sâ 9:00–15:00 · Du 9:00–13:00
+                </span>
+              </div>
+            </div>
+            <div className="flex flex-wrap gap-3">
+              <a href={telHref(site.phones[0])} className="btn-primary">
+                <PhoneIcon className="h-4 w-4" />
+                {site.phoneDisplay[0]}
+              </a>
+              <a
+                href={waHref(site.whatsapp)}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="btn-outline"
+              >
+                <WhatsAppIcon className="h-4.5 w-4.5 text-ok" />
+                WhatsApp
+              </a>
+            </div>
           </div>
         </div>
       </section>

@@ -41,7 +41,8 @@
     "color": "Culoare",
     "seats": "Locuri",
     "location": "Parcarea",
-    "cars": "{count, plural, one {# automobil} few {# automobile} other {# de automobile}}"
+    "cars": "{count, plural, one {# automobil} few {# automobile} other {# de automobile}}",
+    "priceDrop": "Preț redus"
   },
   "nav": {
     "home": "Acasă",
@@ -50,25 +51,21 @@
     "contact": "Contacte"
   },
   "home": {
-    "heroTitle": "Mașina ta te așteaptă <accent>aici</accent>.",
-    "heroSubtitle": "Parc auto în Chișinău. Mașini verificate, acte gata în aceeași zi, prima rată de la 100 €.",
-    "heroCount": "{count} automobile în parcare acum",
+    "searchTitle": "Găsește-ți mașina",
     "searchBrand": "Marca",
     "searchModel": "Modelul",
     "searchPriceMax": "Preț până la",
+    "searchFuel": "Combustibil",
     "searchAny": "Oricare",
-    "searchButton": "Arată automobilele",
-    "chips": {
-      "suv": "SUV",
-      "diesel": "Diesel",
-      "automatic": "Automată",
-      "under10k": "până la 10 000 €",
-      "hybrid": "Hybrid"
-    },
-    "latestLabel": "Ultimele adăugate",
-    "latestTitle": "Proaspăt în parcare",
-    "whyLabel": "De ce INAUTO",
-    "whyTitle": "Cumperi simplu, pleci liniștit.",
+    "showCars": "Afișează {count, plural, one {# automobil} few {# automobile} other {# de automobile}}",
+    "carsForSale": "automobile de vânzare",
+    "popular": "Căutări populare:",
+    "hotOffers": "Oferte fierbinți",
+    "allOffers": "Toate ofertele",
+    "latestTitle": "Ultimele adăugate",
+    "allCars": "Toate mașinile",
+    "financeTitle": "Credit auto cu prima rată de la 100 €",
+    "financeText": "Aprobare pe loc, actele în aceeași zi. Vino cu buletinul — de restul ne ocupăm noi.",
     "why": {
       "verified": "Kilometraj real",
       "verifiedText": "Fiecare mașină vine cu istoric verificat și raport tehnic. Ce vezi în anunț e ce găsești în parcare.",
@@ -79,19 +76,8 @@
       "docs": "Acte perfectate pe loc",
       "docsText": "Ne ocupăm noi de tot: contract, transcriere, asigurare. Tu pleci direct cu mașina."
     },
-    "stepsLabel": "Cum cumperi",
-    "stepsTitle": "Trei pași până la mașina ta",
-    "steps": {
-      "one": "Alege mașina",
-      "oneText": "Caută în catalog sau sună-ne — îți spunem sincer ce avem și ce ți se potrivește.",
-      "two": "Vino la test drive",
-      "twoText": "str. Cucorilor 14, Chișinău. Verifici mașina, o conduci, pui orice întrebare.",
-      "three": "Pleacă cu ea azi",
-      "threeText": "Acte gata în aceeași zi, cu plata integrală sau cu prima rată de la 100 €."
-    },
-    "contactLabel": "Contact",
-    "contactTitle": "Vino să le vezi pe viu.",
-    "contactText": "Suntem la str. Cucorilor 14, Chișinău. Deschis în fiecare zi."
+    "contactTitle": "Vino să le vezi pe viu",
+    "contactText": "mun. Chișinău, str. Cucorilor 14. Deschis în fiecare zi."
   },
   "catalog": {
     "title": "Automobile",

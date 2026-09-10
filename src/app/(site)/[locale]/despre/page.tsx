@@ -38,12 +38,7 @@ export default async function AboutPage({
 
   return (
     <div className="mx-auto max-w-6xl px-4 pt-14 sm:px-6">
-      <p className="section-label">
-        <span>01</span>
-        <span className="h-px w-8 bg-line" />
-        <span>{t("label")}</span>
-      </p>
-      <h1 className="mt-4 max-w-2xl font-display text-4xl font-extrabold leading-tight tracking-tight sm:text-5xl">
+      <h1 className=" max-w-2xl font-display text-4xl font-extrabold leading-tight tracking-tight sm:text-5xl">
         {t("title")}
       </h1>
 

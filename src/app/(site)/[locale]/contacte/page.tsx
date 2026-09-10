@@ -44,12 +44,7 @@ export default async function ContactPage({
 
   return (
     <div className="mx-auto max-w-6xl px-4 pt-14 sm:px-6">
-      <p className="section-label">
-        <span>01</span>
-        <span className="h-px w-8 bg-line" />
-        <span>{t("contact.label")}</span>
-      </p>
-      <h1 className="mt-4 font-display text-4xl font-extrabold tracking-tight sm:text-5xl">
+      <h1 className=" font-display text-4xl font-extrabold tracking-tight sm:text-5xl">
         {t("contact.title")}
       </h1>
 
