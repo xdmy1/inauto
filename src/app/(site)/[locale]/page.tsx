@@ -110,13 +110,13 @@ export default async function HomePage({
   return (
     <>
       {/* Hero: search + count panel */}
-      <section className="mx-auto max-w-[1360px] px-4 pt-6 sm:px-6 sm:pt-8">
-        <div className="grid grid-cols-1 gap-5 lg:grid-cols-[400px_1fr]">
-          <div data-reveal className="h-full">
-            <QuickSearch brands={brands} count={count} />
-          </div>
-
-          <div data-reveal className="relative order-first min-h-[240px] overflow-hidden rounded-2xl sm:min-h-[300px] lg:order-none lg:min-h-[420px]">
+      <section className="mx-auto max-w-[1360px] sm:px-6 sm:pt-8">
+        <div className="grid grid-cols-1 lg:grid-cols-[400px_1fr] lg:gap-5">
+          {/* photo — full-bleed on phones, card on desktop */}
+          <div
+            data-reveal
+            className="relative order-first h-[340px] overflow-hidden sm:h-[380px] sm:rounded-2xl lg:order-last lg:h-auto lg:min-h-[420px]"
+          >
             <img
               src="/images/hero.webp"
               alt={`${site.name} — ${site.address.full}`}
@@ -125,25 +125,35 @@ export default async function HomePage({
               fetchPriority="high"
               className="absolute inset-0 h-full w-full object-cover"
             />
-            <div className="absolute inset-0 bg-gradient-to-t from-ink/85 via-ink/25 to-transparent" />
-            <div className="absolute bottom-0 left-0 p-7 text-white">
-              <div className="font-display text-3xl font-extrabold leading-none tracking-tight sm:text-5xl">
+            <div className="absolute inset-0 bg-gradient-to-t from-ink/85 via-ink/20 to-transparent" />
+            <div className="absolute bottom-0 left-0 p-5 pb-14 text-white sm:p-7 lg:pb-7">
+              <div className="font-display text-4xl font-extrabold leading-none tracking-tight sm:text-5xl">
                 {count}{" "}
-                <span className="text-lg font-bold text-white/85 sm:text-2xl">
+                <span className="text-xl font-bold text-white/85 sm:text-2xl">
                   {t("home.carsForSale")}
                 </span>
               </div>
-              <p className="mt-2 text-sm font-medium text-white/75">
-                {t("common.tagline")} · {site.address.full}
+              <p className="mt-2 text-sm font-medium text-white/70">
+                {t("common.tagline")}
               </p>
+            </div>
+          </div>
+
+          {/* search — overlaps the photo on phones */}
+          <div
+            data-reveal
+            className="relative z-10 -mt-9 px-4 sm:px-0 lg:mt-0 lg:h-full"
+          >
+            <div className="h-full overflow-hidden rounded-2xl shadow-lift lg:shadow-none">
+              <QuickSearch brands={brands} count={count} />
             </div>
           </div>
         </div>
 
         {/* Popular searches */}
-        <div data-reveal className="mt-4 flex flex-wrap items-center gap-2">
+        <div data-reveal className="mt-5 flex flex-wrap items-center gap-2 px-4 sm:px-0">
           <span className="text-sm font-bold">{t("home.popular")}</span>
-          {popular.map((p) => (
+          {popular.slice(0, 5).map((p) => (
             <Link
               key={`${p.brand}-${p.model}`}
               href={`/auto?brand=${encodeURIComponent(p.brand)}&model=${encodeURIComponent(p.model.split(" ")[0])}`}
