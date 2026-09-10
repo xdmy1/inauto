@@ -54,18 +54,37 @@ export default async function CarPage({
   const car = await getCar(slug);
   if (!car) notFound();
 
+  // up to 8 similar cars: same brand first, then closest price, topped up
+  // with the newest listings so the section is never almost empty
   const similar = await prisma.car.findMany({
     where: {
       status: "PUBLISHED",
       id: { not: car.id },
       OR: [
         { brand: car.brand },
-        { price: { gte: car.price * 0.8, lte: car.price * 1.2 } },
+        { price: { gte: car.price * 0.7, lte: car.price * 1.3 } },
       ],
     },
-    orderBy: { createdAt: "desc" },
-    take: 4,
+    take: 8,
     include: { images: { orderBy: { order: "asc" }, take: 1 } },
+  });
+  if (similar.length < 8) {
+    const fill = await prisma.car.findMany({
+      where: {
+        status: "PUBLISHED",
+        id: { notIn: [car.id, ...similar.map((s) => s.id)] },
+      },
+      orderBy: { createdAt: "desc" },
+      take: 8 - similar.length,
+      include: { images: { orderBy: { order: "asc" }, take: 1 } },
+    });
+    similar.push(...fill);
+  }
+  similar.sort((a, b) => {
+    const brandDiff =
+      Number(b.brand === car.brand) - Number(a.brand === car.brand);
+    if (brandDiff !== 0) return brandDiff;
+    return Math.abs(a.price - car.price) - Math.abs(b.price - car.price);
   });
 
   const description = locale === "ru" ? car.descriptionRu : car.descriptionRo;
