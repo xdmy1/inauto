@@ -1,12 +1,12 @@
 "use client";
 
 // Live "open now / closed" badge on the ticker bar, on Chișinău time.
-// Mo–Fr 9–18, Sa 9–15, Su 9–13 (site.hours).
+// Mo–Fr 9–19, Sa 9–16, Su 10–14 (site.hours).
 import { useEffect, useState } from "react";
 import { useTranslations } from "next-intl";
 
-const CLOSE_BY_DAY = [13, 18, 18, 18, 18, 18, 15]; // Sun..Sat
-const OPEN_HOUR = 9;
+const OPEN_BY_DAY = [10, 9, 9, 9, 9, 9, 9]; // Sun..Sat
+const CLOSE_BY_DAY = [14, 19, 19, 19, 19, 19, 16]; // Sun..Sat
 
 function chisinauNow() {
   return new Date(
@@ -23,12 +23,13 @@ export function OpenNowBadge() {
   useEffect(() => {
     const tick = () => {
       const now = chisinauNow();
+      const open_ = OPEN_BY_DAY[now.getDay()];
       const close = CLOSE_BY_DAY[now.getDay()];
       const h = now.getHours() + now.getMinutes() / 60;
-      const open = h >= OPEN_HOUR && h < close;
+      const open = h >= open_ && h < close;
       setState({
         open,
-        time: open ? `${close}:00` : `${OPEN_HOUR}:00`,
+        time: open ? `${close}:00` : `${open_}:00`,
       });
     };
     tick();

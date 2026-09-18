@@ -171,3 +171,22 @@ export const GlobeIcon = (p: IconProps) => (
   </I>
 );
 
+export const CloseIcon = (p: IconProps) => (
+  <I {...p}>
+    <path d="M18 6 6 18" />
+    <path d="m6 6 12 12" />
+  </I>
+);
+
+/* filled speech bubble with cut-out dots — the floating contact trigger */
+export const ContactBubbleIcon = (p: IconProps) => (
+  <svg
+    viewBox="0 0 24 24"
+    fill="currentColor"
+    fillRule="evenodd"
+    className={p.className ?? "h-5 w-5"}
+    aria-hidden="true"
+  >
+    <path d="M7 3h10a5 5 0 0 1 5 5v4a5 5 0 0 1-5 5h-4.2l-4.1 3.08A1 1 0 0 1 7 19.28V17a5 5 0 0 1-5-5V8a5 5 0 0 1 5-5Zm1.5 5.65a1.35 1.35 0 1 0 0 2.7 1.35 1.35 0 0 0 0-2.7Zm3.5 0a1.35 1.35 0 1 0 0 2.7 1.35 1.35 0 0 0 0-2.7Zm3.5 0a1.35 1.35 0 1 0 0 2.7 1.35 1.35 0 0 0 0-2.7Z" />
+  </svg>
+);

@@ -11,14 +11,14 @@ export const site = {
     full: "mun. Chișinău, str. Cucorilor 14",
   },
   // international format, no "+"
-  phones: ["37368501002", "37368555226", "37368555227"],
-  phoneDisplay: ["068 501 002", "068 555 226", "068 555 227"],
+  phones: ["37368501002"],
+  phoneDisplay: ["068 501 002"],
   whatsapp: "37368501002",
   email: "office@inauto.md",
   hours: [
-    { days: "Mo-Fr", open: "09:00", close: "18:00" },
-    { days: "Sa", open: "09:00", close: "15:00" },
-    { days: "Su", open: "09:00", close: "13:00" },
+    { days: "Mo-Fr", open: "09:00", close: "19:00" },
+    { days: "Sa", open: "09:00", close: "16:00" },
+    { days: "Su", open: "10:00", close: "14:00" },
   ],
   geo: { lat: 47.0105, lon: 28.8638 },
   social: {

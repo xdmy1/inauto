@@ -36,10 +36,10 @@ export default async function ContactPage({
   const rows = [
     {
       label: t("contact.hoursMoFr"),
-      value: "09:00 – 18:00",
+      value: "09:00 – 19:00",
     },
-    { label: t("contact.hoursSa"), value: "09:00 – 15:00" },
-    { label: t("contact.hoursSu"), value: "09:00 – 13:00" },
+    { label: t("contact.hoursSa"), value: "09:00 – 16:00" },
+    { label: t("contact.hoursSu"), value: "10:00 – 14:00" },
   ];
 
   return (

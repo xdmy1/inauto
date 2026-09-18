@@ -52,7 +52,10 @@
     "seeCar": "Vezi mașina",
     "allBrands": "Toate mărcile",
     "openDaily": "Deschis 7 zile din 7",
-    "city": "Chișinău"
+    "city": "Chișinău",
+    "contactHint": "Apasă aici ca să ne contactezi!",
+    "contactUs": "Contactează-ne",
+    "close": "Închide"
   },
   "nav": {
     "home": "Acasă",
@@ -113,7 +116,7 @@
     "brandsTitle": "Mărci în parcare",
     "hotText": "Prețuri reduse și mașinile pe care le recomandăm acum.",
     "whyTitle": "De ce INAUTO",
-    "contactHours": "Luni – Vineri 09:00–18:00 · Sâmbătă 09:00–15:00 · Duminică 09:00–13:00",
+    "contactHours": "Luni – Vineri 09:00–19:00 · Sâmbătă 09:00–16:00 · Duminică 10:00–14:00",
     "mapCta": "Deschide harta"
   },
   "catalog": {
@@ -189,7 +192,7 @@
     "label": "Contacte",
     "title": "Hai să vorbim.",
     "address": "Adresa",
-    "phones": "Telefoane",
+    "phones": "Telefon",
     "email": "Email",
     "hours": "Program",
     "hoursMoFr": "Luni – Vineri",
