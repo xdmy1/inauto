@@ -582,3 +582,18 @@ input[type="radio"] {
   opacity: 0;
   transform: rotate(-90deg) scale(0.5);
 }
+
+/* filters: tiny spinner shown while the list is being refreshed */
+.filters-spinner {
+  width: 13px;
+  height: 13px;
+  border-radius: 999px;
+  border: 2px solid rgba(16, 19, 31, 0.15);
+  border-top-color: rgba(16, 19, 31, 0.5);
+  animation: filters-spin 0.6s linear infinite;
+}
+@keyframes filters-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}

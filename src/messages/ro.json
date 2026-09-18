@@ -156,7 +156,9 @@
     "more": "Mai multe filtre",
     "less": "Mai puține filtre",
     "h1Body": "{body} de vânzare în Chișinău",
-    "minibusSubtitle": "Microbuze și furgonete din parcarea INAUTO, str. Cucorilor 14 — pasager, marfar și mixt."
+    "minibusSubtitle": "Microbuze și furgonete din parcarea INAUTO, str. Cucorilor 14 — pasager, marfar și mixt.",
+    "applying": "Se aplică filtrele…",
+    "showResults": "Arată {count, plural, one {# rezultat} few {# rezultate} other {# de rezultate}}"
   },
   "car": {
     "specs": "Caracteristici",

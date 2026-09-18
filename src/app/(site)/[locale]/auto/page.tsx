@@ -160,14 +160,26 @@ export default async function CatalogPage({
               </svg>
             </summary>
             <div className="mt-4 border-t border-line pt-4">
-              <CatalogFilters action={action} brands={brands} colors={colors} filters={filters} />
+              <CatalogFilters
+                action={action}
+                brands={brands}
+                colors={colors}
+                filters={filters}
+                total={total}
+              />
             </div>
           </details>
           <div className="card sticky top-24 hidden rounded-2xl p-4 lg:block">
             <h2 className="mb-4 font-display text-sm font-bold uppercase tracking-wide">
               {t("catalog.filters")}
             </h2>
-            <CatalogFilters action={action} brands={brands} colors={colors} filters={filters} />
+            <CatalogFilters
+                action={action}
+                brands={brands}
+                colors={colors}
+                filters={filters}
+                total={total}
+              />
           </div>
         </aside>
 

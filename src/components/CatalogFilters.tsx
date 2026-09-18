@@ -3,9 +3,11 @@
 // Catalog filters — vertical sidebar (desktop) / collapsible panel (mobile).
 // Every criterion from the big local sites, grouped so the common ones come
 // first and the rest sit behind "more filters".
-import { useState } from "react";
+// Filters apply by themselves: selects the moment they change, typed fields
+// shortly after the last keystroke — there is no "apply" button to hunt for.
+import { useEffect, useRef, useState, useTransition } from "react";
 import { useTranslations } from "next-intl";
-import { Link } from "@/i18n/navigation";
+import { Link, useRouter } from "@/i18n/navigation";
 import { Select } from "./ui/Select";
 import { SearchIcon } from "./icons";
 import {
@@ -19,60 +21,33 @@ import {
 } from "@/lib/cars";
 
 const SEATS = [2, 4, 5, 6, 7, 8, 9];
+const TYPING_DELAY = 450;
 
-function NumberField({
-  name,
-  label,
-  defaultValue,
-  placeholder,
-}: {
-  name: string;
-  label?: string;
-  defaultValue?: number;
-  placeholder?: string;
-}) {
-  return (
-    <label className="block min-w-0">
-      {label && <span className="field-label">{label}</span>}
-      <input
-        type="number"
-        name={name}
-        defaultValue={defaultValue ?? ""}
-        placeholder={placeholder}
-        min={0}
-        inputMode="numeric"
-        className="input h-10"
-      />
-    </label>
-  );
-}
+type Values = Record<string, string>;
 
-function Range({
-  label,
-  minName,
-  maxName,
-  min,
-  max,
-  minPh,
-  maxPh,
-}: {
-  label: string;
-  minName: string;
-  maxName: string;
-  min?: number;
-  max?: number;
-  minPh?: string;
-  maxPh?: string;
-}) {
-  return (
-    <div>
-      <span className="field-label">{label}</span>
-      <div className="grid grid-cols-2 gap-2">
-        <NumberField name={minName} defaultValue={min} placeholder={minPh} />
-        <NumberField name={maxName} defaultValue={max} placeholder={maxPh} />
-      </div>
-    </div>
-  );
+const str = (v: string | number | undefined | null) =>
+  v === undefined || v === null ? "" : String(v);
+
+function fromFilters(f: CarFilters): Values {
+  return {
+    q: str(f.q),
+    brand: str(f.brand),
+    model: str(f.model),
+    priceMin: str(f.priceMin),
+    priceMax: str(f.priceMax),
+    yearMin: str(f.yearMin),
+    yearMax: str(f.yearMax),
+    body: str(f.body),
+    fuel: str(f.fuel),
+    transmission: str(f.transmission),
+    drivetrain: str(f.drivetrain),
+    mileageMin: str(f.mileageMin),
+    mileageMax: str(f.mileageMax),
+    engineMin: str(f.engineMin),
+    engineMax: str(f.engineMax),
+    color: str(f.color),
+    seats: str(f.seats),
+  };
 }
 
 export function CatalogFilters({
@@ -80,20 +55,59 @@ export function CatalogFilters({
   brands,
   colors,
   filters,
+  total,
 }: {
   action: string;
   brands: { brand: string; count: number }[];
   colors: string[];
   filters: CarFilters;
+  total: number;
 }) {
   const t = useTranslations();
-  const [brand, setBrand] = useState(filters.brand ?? "");
-  const [body, setBody] = useState(filters.body ?? "");
-  const [fuel, setFuel] = useState(filters.fuel ?? "");
-  const [transmission, setTransmission] = useState(filters.transmission ?? "");
-  const [drivetrain, setDrivetrain] = useState(filters.drivetrain ?? "");
-  const [color, setColor] = useState(filters.color ?? "");
-  const [seats, setSeats] = useState(filters.seats ? String(filters.seats) : "");
+  const router = useRouter();
+  const [pending, startTransition] = useTransition();
+
+  const incoming = fromFilters(filters);
+  const [values, setValues] = useState<Values>(incoming);
+  // follow the URL when it changes from outside (brand chips, nav categories…)
+  const [seen, setSeen] = useState(JSON.stringify(incoming));
+  if (seen !== JSON.stringify(incoming)) {
+    setSeen(JSON.stringify(incoming));
+    setValues(incoming);
+  }
+
+  const typing = useRef<number | undefined>(undefined);
+  useEffect(() => () => window.clearTimeout(typing.current), []);
+
+  function commit(next: Values) {
+    window.clearTimeout(typing.current);
+    const q = new URLSearchParams();
+    for (const [k, v] of Object.entries(next)) {
+      const value = v.trim();
+      if (value !== "") q.set(k, value);
+    }
+    // the order is kept; the list always restarts at page 1 after a change
+    if (filters.sort && filters.sort !== "new") q.set("sort", filters.sort);
+    startTransition(() =>
+      router.replace(`/auto${q.size ? `?${q}` : ""}`, { scroll: false })
+    );
+  }
+
+  /** selects: apply straight away */
+  const pick = (name: string) => (v: string) => {
+    const next = { ...values, [name]: v };
+    setValues(next);
+    commit(next);
+  };
+
+  /** typed fields: apply once the typing stops */
+  const type = (name: string) => (v: string) => {
+    const next = { ...values, [name]: v };
+    setValues(next);
+    window.clearTimeout(typing.current);
+    typing.current = window.setTimeout(() => commit(next), TYPING_DELAY);
+  };
+
   const advancedUsed = !!(
     filters.color ||
     filters.seats ||
@@ -121,8 +135,6 @@ export function CatalogFilters({
   const selectField = (
     label: string,
     name: string,
-    value: string,
-    onChange: (v: string) => void,
     options: { value: string; label: string }[],
     searchable = false
   ) => (
@@ -131,22 +143,63 @@ export function CatalogFilters({
       <Select
         name={name}
         searchable={searchable}
-        value={value}
-        onChange={onChange}
+        value={values[name] ?? ""}
+        onChange={pick(name)}
         placeholder={t("home.searchAny")}
         options={options}
       />
     </div>
   );
 
+  const numberField = (name: string, placeholder?: string) => (
+    <label className="block min-w-0">
+      <input
+        type="number"
+        name={name}
+        value={values[name] ?? ""}
+        onChange={(e) => type(name)(e.target.value)}
+        placeholder={placeholder}
+        min={0}
+        inputMode="numeric"
+        className="input h-10"
+      />
+    </label>
+  );
+
+  const range = (
+    label: string,
+    minName: string,
+    maxName: string,
+    minPh?: string,
+    maxPh?: string
+  ) => (
+    <div>
+      <span className="field-label">{label}</span>
+      <div className="grid grid-cols-2 gap-2">
+        {numberField(minName, minPh)}
+        {numberField(maxName, maxPh)}
+      </div>
+    </div>
+  );
+
+  const dirty = Object.values(values).some((v) => v.trim() !== "");
+
   return (
-    <form action={action} className="space-y-4">
+    <form
+      action={action}
+      onSubmit={(e) => {
+        e.preventDefault();
+        commit(values);
+      }}
+      className={`space-y-4 transition-opacity ${pending ? "opacity-60" : ""}`}
+    >
       <label className="relative block">
         <span className="field-label">{t("catalog.search")}</span>
         <SearchIcon className="pointer-events-none absolute bottom-3 left-3.5 h-4 w-4 text-ink-faint" />
         <input
           name="q"
-          defaultValue={filters.q ?? ""}
+          value={values.q}
+          onChange={(e) => type("q")(e.target.value)}
           placeholder={t("catalog.searchPlaceholder")}
           className="input pl-10"
         />
@@ -155,42 +208,33 @@ export function CatalogFilters({
       {selectField(
         t("home.searchBrand"),
         "brand",
-        brand,
-        setBrand,
         brands.map((b) => ({ value: b.brand, label: `${b.brand} (${b.count})` })),
         true
       )}
       <label className="block">
         <span className="field-label">{t("home.searchModel")}</span>
-        <input name="model" defaultValue={filters.model ?? ""} className="input" />
+        <input
+          name="model"
+          value={values.model}
+          onChange={(e) => type("model")(e.target.value)}
+          className="input"
+        />
       </label>
 
-      <Range
-        label={`${t("common.price")} (€)`}
-        minName="priceMin"
-        maxName="priceMax"
-        min={filters.priceMin}
-        max={filters.priceMax}
-        minPh="0"
-        maxPh="50 000"
-      />
-      <Range
-        label={t("common.year")}
-        minName="yearMin"
-        maxName="yearMax"
-        min={filters.yearMin}
-        max={filters.yearMax}
-        minPh="2000"
-        maxPh={String(new Date().getFullYear())}
-      />
+      {range(`${t("common.price")} (€)`, "priceMin", "priceMax", "0", "50 000")}
+      {range(
+        t("common.year"),
+        "yearMin",
+        "yearMax",
+        "2000",
+        String(new Date().getFullYear())
+      )}
 
-      {selectField(t("common.body"), "body", body, setBody, bodyOptions)}
-      {selectField(t("common.fuel"), "fuel", fuel, setFuel, opts(FUELS, "fuel"))}
+      {selectField(t("common.body"), "body", bodyOptions)}
+      {selectField(t("common.fuel"), "fuel", opts(FUELS, "fuel"))}
       {selectField(
         t("common.transmission"),
         "transmission",
-        transmission,
-        setTransmission,
         opts(TRANSMISSIONS, "transmission")
       )}
 
@@ -219,40 +263,24 @@ export function CatalogFilters({
         {selectField(
           t("common.drivetrain"),
           "drivetrain",
-          drivetrain,
-          setDrivetrain,
           opts(DRIVETRAINS, "drivetrain")
         )}
-        <Range
-          label={t("common.mileage")}
-          minName="mileageMin"
-          maxName="mileageMax"
-          min={filters.mileageMin}
-          max={filters.mileageMax}
-          minPh="0"
-          maxPh="200 000"
-        />
-        <Range
-          label={`${t("common.engine")} (cm³)`}
-          minName="engineMin"
-          maxName="engineMax"
-          min={filters.engineMin}
-          max={filters.engineMax}
-          minPh="1000"
-          maxPh="5000"
-        />
+        {range(t("common.mileage"), "mileageMin", "mileageMax", "0", "200 000")}
+        {range(
+          `${t("common.engine")} (cm³)`,
+          "engineMin",
+          "engineMax",
+          "1000",
+          "5000"
+        )}
         {selectField(
           t("common.color"),
           "color",
-          color,
-          setColor,
           colors.map((c) => ({ value: c, label: c }))
         )}
         {selectField(
           t("common.seats"),
           "seats",
-          seats,
-          setSeats,
           SEATS.map((n) => ({ value: String(n), label: String(n) }))
         )}
       </div>
@@ -262,16 +290,37 @@ export function CatalogFilters({
       )}
 
       <div className="flex flex-col gap-2 pt-1">
-        <button type="submit" className="btn-primary h-11 w-full px-4">
-          <SearchIcon className="h-4 w-4" />
-          {t("catalog.apply")}
-        </button>
-        <Link
-          href="/auto"
-          className="chip-3d flex h-10 items-center justify-center rounded-xl px-4 text-[13px] font-semibold text-ink-soft"
+        {/* phones: the open panel hides the list, so offer a way back to it */}
+        <button
+          type="button"
+          onClick={(e) =>
+            e.currentTarget.closest("details")?.removeAttribute("open")
+          }
+          className="btn-primary h-11 w-full px-4 lg:hidden"
         >
-          {t("catalog.reset")}
-        </Link>
+          {t("catalog.showResults", { count: total })}
+        </button>
+
+        <div
+          aria-live="polite"
+          className="flex h-5 items-center justify-center gap-2 text-[12.5px] font-semibold text-ink-faint"
+        >
+          {pending && (
+            <>
+              <span className="filters-spinner" aria-hidden />
+              {t("catalog.applying")}
+            </>
+          )}
+        </div>
+
+        {dirty && (
+          <Link
+            href="/auto"
+            className="chip-3d flex h-10 items-center justify-center rounded-xl px-4 text-[13px] font-semibold text-ink-soft"
+          >
+            {t("catalog.reset")}
+          </Link>
+        )}
       </div>
     </form>
   );
