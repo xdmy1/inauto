@@ -22,7 +22,9 @@ seed-ul din nou după schimbare, sau schimbă direct în DB).
 |---|---|
 | Site public (RO la `/`, RU la `/ru`) | `src/app/(site)/[locale]/` |
 | Panou admin (login, listă, formular mașină) | `src/app/(admin)/admin/` |
-| Integrare 999.md (client API + mapare) | `src/lib/nnn/` |
+| Integrare 999.md (client API, mapare, export, import) | `src/lib/nnn/` |
+| Cron import 999.md | `src/app/api/nnn/import/route.ts` + `vercel.json` |
+| Pagini pe marcă (SEO) | `src/app/(site)/[locale]/marca/[brand]/` |
 | Poze încărcate (webp pre-redimensionat: `-sm` 640px, `-lg` 1600px) | `uploads/`, servite prin `/uploads/...` |
 | Traduceri | `src/messages/ro.json`, `ru.json` |
 | Date firmă (telefoane, adresă, program) | `src/lib/site.ts` |
@@ -38,22 +40,46 @@ seed-ul din nou după schimbare, sau schimbă direct în DB).
 - La lansare: setează `NEXT_PUBLIC_SITE_URL="https://inauto.md"` în `.env`,
   verifică domeniul în Google Search Console și trimite sitemap-ul
 
-## Integrarea 999.md
+## Integrarea 999.md — în ambele sensuri
 
-Flux: salvezi mașina în admin cu bifa „Publică pe 999.md" (sau butonul din
-panoul lateral) → se urcă pozele, se construiește anunțul cu titlu + descriere
-în RO și RU și toate caracteristicile → anunțul se creează sau se actualizează
-pe contul 999.md al firmei. Butonul „Republică" ridică anunțul în listă.
+**Site → 999.md.** Salvezi mașina în admin cu bifa „Publică / actualizează pe
+999.md" (sau butonul din panoul lateral) → se urcă pozele, se construiește
+anunțul cu titlu + descriere RO/RU, dotările și toate caracteristicile →
+anunțul se creează sau se actualizează pe contul 999.md al firmei. Când marchezi
+mașina **vândută / rezervată / arhivată**, anunțul se **ascunde automat** pe
+999.md (și reapare când o pui din nou „Publicat"). „Republică" ridică anunțul în
+listă; „Ascunde / Arată" controlează vizibilitatea manual.
+
+**999.md → site.** Anunțurile auto ale contului se importă ca mașini publicate
+(poze incluse). Rulează:
+- automat, **o dată pe zi** (cron Vercel din `vercel.json`, ruta
+  `/api/nnn/import`, protejată cu `CRON_SECRET`);
+- automat, când deschizi panoul admin și ultimul import are peste 6 ore;
+- manual, din butonul „Importă din 999.md acum" (panoul de sus din admin).
+
+Regula de conflict: **cine a născut anunțul e sursa de adevăr.** Mașinile
+importate de pe 999.md își reiau de acolo prețul, specificațiile, descrierea și
+pozele la fiecare import; câmpurile doar-de-site (preț vechi, prima rată, rata
+lunară, promovată, status, adresă) nu se ating. Mașinile create pe site nu sunt
+suprascrise de import. Anunțurile care dispar sau expiră pe 999.md își
+**arhivează** mașina automat; când redevin publice, mașina revine.
 
 Activare:
 1. Cere cheia API pentru contul firmei: info@999.md (Partners API —
    https://partners-api.999.md/api/documentation).
-2. În `.env`: `NNN_API_KEY="cheia"` și `NNN_DRY_RUN="0"`.
+2. În `.env`: `NNN_API_KEY="cheia"` și `NNN_DRY_RUN="0"` (importul merge și cu
+   `NNN_DRY_RUN=1` — doar postarea e simulată). Pentru cron: `CRON_SECRET`.
 3. Până atunci totul rulează în **mod simulare** (vezi badge-ul din admin).
 
 Maparea câmpurilor se face dinamic după schema categoriei Transport →
 Autoturisme → Vând; orice câmp care nu poate fi mapat apare ca avertisment în
-admin (nu blochează publicarea).
+admin (nu blochează publicarea). Logica pură de mapare e în
+`src/lib/nnn/mapping.ts` + `import.ts` (`mapAdvert`), testabilă fără rețea.
+
+## Pagini SEO pe marcă
+
+`/marca/bmw`, `/ru/marca/bmw` … — „BMW de vânzare în Chișinău", generate din
+mărcile din parcare (titlu, descriere, `ItemList` JSON-LD, sitemap, footer).
 
 ## Bază de date — alegerea pentru producție
 
@@ -83,4 +109,4 @@ npm start                  # sau pm2 start "npm start" --name inauto
 ```
 
 `.env` în producție: `AUTH_SECRET` nou (lung, aleator), `NEXT_PUBLIC_SITE_URL`,
-`NNN_API_KEY`, `NNN_DRY_RUN=0`, parolă admin nouă.
+`NNN_API_KEY`, `NNN_DRY_RUN=0`, `CRON_SECRET`, parolă admin nouă.

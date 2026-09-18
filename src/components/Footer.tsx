@@ -1,6 +1,7 @@
 import { getTranslations } from "next-intl/server";
 import { Link } from "@/i18n/navigation";
 import { site, telHref, waHref } from "@/lib/site";
+import { brandSlug, getBrandsWithCounts } from "@/lib/cars";
 import { Logo } from "./Logo";
 import {
   ClockIcon,
@@ -12,6 +13,7 @@ import {
 
 export async function Footer() {
   const t = await getTranslations();
+  const brands = await getBrandsWithCounts().catch(() => []);
 
   const navLinks = [
     { href: "/", label: t("nav.home") },
@@ -48,7 +50,7 @@ export async function Footer() {
     <footer className="mt-24 bg-ink text-white">
       <div className="mx-auto max-w-[1360px] px-4 sm:px-6">
         {/* main grid */}
-        <div className="grid grid-cols-1 gap-x-10 gap-y-12 py-14 sm:grid-cols-2 lg:grid-cols-[1.25fr_0.75fr_0.95fr_1.45fr_1.1fr]">
+        <div className="grid grid-cols-1 gap-x-10 gap-y-12 py-14 sm:grid-cols-2 lg:grid-cols-[1.25fr_0.7fr_0.85fr_0.95fr_1.35fr]">
           {/* brand */}
           <div>
             <Link href="/" aria-label={site.name}>
@@ -92,6 +94,23 @@ export async function Footer() {
               ))}
             </ul>
           </nav>
+
+          {/* brands → SEO brand pages */}
+          {brands.length > 0 && (
+            <nav aria-label={t("footer.brands")}>
+              <h3 className={colTitle}>{t("footer.brands")}</h3>
+              <ul className="mt-5 space-y-3">
+                {brands.slice(0, 8).map((b) => (
+                  <li key={b.brand}>
+                    <Link href={`/marca/${brandSlug(b.brand)}`} className={link}>
+                      {b.brand}
+                      <span className="ml-1.5 text-white/35 tabular-nums">{b.count}</span>
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+            </nav>
+          )}
 
           {/* popular categories */}
           <nav aria-label={t("footer.categories")}>

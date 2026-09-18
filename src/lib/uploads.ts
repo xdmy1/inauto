@@ -10,7 +10,7 @@ import { del, put } from "@vercel/blob";
 // or a JSON string {"lg":url,"sm":url} for blob-hosted images.
 export const UPLOADS_DIR = path.join(process.cwd(), "uploads");
 
-const useBlob = () => !!process.env.BLOB_READ_WRITE_TOKEN;
+const blobEnabled = () => !!process.env.BLOB_READ_WRITE_TOKEN;
 
 export type SavedImage = {
   basePath: string;
@@ -18,8 +18,7 @@ export type SavedImage = {
   height: number;
 };
 
-async function makeVariants(file: File) {
-  const buf = Buffer.from(await file.arrayBuffer());
+async function makeVariants(buf: Buffer) {
   const img = sharp(buf, { failOn: "none" }).rotate();
 
   const lg = await img
@@ -41,10 +40,18 @@ export async function saveCarImage(
   carId: string,
   file: File
 ): Promise<SavedImage> {
-  const name = crypto.randomBytes(8).toString("hex");
-  const { lg, sm, width, height } = await makeVariants(file);
+  return saveCarImageBuffer(carId, Buffer.from(await file.arrayBuffer()));
+}
 
-  if (useBlob()) {
+/** same as saveCarImage, from raw bytes (used by the 999.md import) */
+export async function saveCarImageBuffer(
+  carId: string,
+  buf: Buffer
+): Promise<SavedImage> {
+  const name = crypto.randomBytes(8).toString("hex");
+  const { lg, sm, width, height } = await makeVariants(buf);
+
+  if (blobEnabled()) {
     const [lgBlob, smBlob] = await Promise.all([
       put(`cars/${carId}/${name}-lg.webp`, lg, {
         access: "public",

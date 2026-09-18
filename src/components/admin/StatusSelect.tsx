@@ -4,7 +4,7 @@ import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { setStatusAction } from "@/app/(admin)/admin/actions";
 import { Select } from "@/components/ui/Select";
-import { STATUSES } from "@/lib/cars";
+import { STATUS_RO, STATUSES } from "@/lib/cars";
 
 export function StatusSelect({
   carId,
@@ -33,7 +33,7 @@ export function StatusSelect({
       <Select
         value={value}
         onChange={change}
-        options={STATUSES.map((s) => ({ value: s, label: s }))}
+        options={STATUSES.map((s) => ({ value: s, label: STATUS_RO[s] }))}
       />
     </div>
   );

@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { Logo } from "@/components/Logo";
 import { logoutAction } from "../actions";
-import { nnnEnabled } from "@/lib/nnn/client";
+import { nnnMode } from "@/lib/nnn/client";
 
 export default function AdminDashLayout({
   children,
@@ -31,13 +31,20 @@ export default function AdminDashLayout({
           <div className="flex items-center gap-3">
             <span
               className={`hidden rounded-full px-2.5 py-1 text-[11px] font-bold sm:block ${
-                nnnEnabled()
+                nnnMode() === "live"
                   ? "bg-green-100 text-green-800"
-                  : "bg-amber-100 text-amber-800"
+                  : nnnMode() === "read-only"
+                    ? "bg-amber-100 text-amber-800"
+                    : "bg-gray-100 text-gray-600"
               }`}
               title="Starea integrării 999.md"
             >
-              999.md: {nnnEnabled() ? "activ" : "simulare"}
+              999.md:{" "}
+              {nnnMode() === "live"
+                ? "activ"
+                : nnnMode() === "read-only"
+                  ? "doar import"
+                  : "simulare"}
             </span>
             <a
               href="/"

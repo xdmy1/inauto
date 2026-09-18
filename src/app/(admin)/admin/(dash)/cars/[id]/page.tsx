@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import { CarForm } from "@/components/admin/CarForm";
 import { NnnPanel } from "@/components/admin/NnnPanel";
+import { nnnAdvertUrl } from "@/lib/nnn/client";
 
 export default async function EditCarPage({
   params,
@@ -48,9 +49,15 @@ export default async function EditCarPage({
               car.advert
                 ? {
                     advertId: car.advert.advertId,
+                    source: car.advert.source,
                     state: car.advert.state,
+                    nnnState: car.advert.nnnState,
                     lastError: car.advert.lastError,
                     lastSyncAt: car.advert.lastSyncAt?.toISOString() ?? null,
+                    url:
+                      car.advert.advertId && car.advert.advertId !== "DRY-RUN"
+                        ? nnnAdvertUrl(car.advert.advertId)
+                        : null,
                   }
                 : null
             }

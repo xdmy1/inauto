@@ -1,6 +1,10 @@
 import type { MetadataRoute } from "next";
 import { prisma } from "@/lib/prisma";
 import { site } from "@/lib/site";
+import { brandSlug, getBrandsWithCounts } from "@/lib/cars";
+
+// cars come and go daily — build the sitemap per request, never at build time
+export const dynamic = "force-dynamic";
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const cars = await prisma.car
@@ -11,6 +15,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     })
     .catch(() => []);
 
+  const brands = await getBrandsWithCounts().catch(() => []);
   const staticPaths = ["", "/auto", "/despre", "/contacte"];
 
   const entry = (
@@ -31,6 +36,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
 
   return [
     ...staticPaths.map((p) => entry(p, undefined, p === "" ? 1 : 0.8)),
+    ...brands.map((b) => entry(`/marca/${brandSlug(b.brand)}`, undefined, 0.75)),
     ...cars.map((c) => entry(`/auto/${c.slug}`, c.updatedAt, 0.7)),
   ];
 }

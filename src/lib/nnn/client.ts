@@ -4,13 +4,35 @@
 
 const BASE = "https://partners-api.999.md";
 
+/** an API key is present — reading (import) is possible */
+export function nnnConfigured() {
+  return !!process.env.NNN_API_KEY;
+}
+
+/** key present AND dry-run off — writing (create/update adverts) is real */
 export function nnnEnabled() {
-  return !!process.env.NNN_API_KEY && process.env.NNN_DRY_RUN !== "1";
+  return nnnConfigured() && process.env.NNN_DRY_RUN !== "1";
+}
+
+export type NnnMode = "live" | "read-only" | "off";
+
+/** live = full two-way sync, read-only = import works but posting is simulated */
+export function nnnMode(): NnnMode {
+  if (!nnnConfigured()) return "off";
+  return nnnEnabled() ? "live" : "read-only";
 }
 
 function authHeader() {
   const key = process.env.NNN_API_KEY ?? "";
   return `Basic ${Buffer.from(`${key}:`).toString("base64")}`;
+}
+
+export class NnnApiError extends Error {
+  status: number;
+  constructor(status: number, message: string) {
+    super(message);
+    this.status = status;
+  }
 }
 
 async function request<T>(
@@ -30,7 +52,10 @@ async function request<T>(
   });
   if (!res.ok) {
     const text = await res.text().catch(() => "");
-    throw new Error(`999.md API ${res.status} ${path}: ${text.slice(0, 500)}`);
+    throw new NnnApiError(
+      res.status,
+      `999.md API ${res.status} ${path}: ${text.slice(0, 500)}`
+    );
   }
   return (await res.json()) as T;
 }
@@ -57,6 +82,48 @@ export type NnnFeatureValue = {
   unit?: string;
 };
 
+export type NnnAdvertState =
+  | "public"
+  | "blocked"
+  | "blocked_commercial"
+  | "need_pay"
+  | "hidden"
+  | "expired";
+
+export type NnnAdvertListItem = {
+  id: string;
+  title: string;
+  state: NnnAdvertState | string;
+  categories?: {
+    category?: { id: string; title: string; url: string };
+    subcategory?: { id: string; title: string; url: string };
+  };
+  type?: string;
+  views_counter?: number;
+  posted?: string;
+  republished?: string;
+  expire?: string;
+};
+
+export type NnnAdvertListResponse = {
+  adverts: NnnAdvertListItem[];
+  page_size: number;
+  page: number;
+  subtotal: number;
+  total: number;
+};
+
+export type NnnAdvert = {
+  id: string;
+  state: NnnAdvertState | string;
+  categories?: NnnAdvertListItem["categories"];
+  offer_type?: { title: string; value: string };
+  title?: string;
+  body?: string;
+  price?: { value: number; unit: string };
+  features: NnnFeatureValue[];
+};
+
 // ——— endpoints ———
 
 export function getFeatures(params: {
@@ -73,11 +140,37 @@ export function getDependentOptions(params: {
   subcategory_id: string;
   dependency_feature_id: string;
   parent_option_id: string;
+  lang?: string;
 }) {
   const q = new URLSearchParams({ lang: "ru", ...params });
   return request<{ options: { id: string; title: string }[] }>(
     `/dependent_options?${q}`
   );
+}
+
+export function listAdverts(params: {
+  page?: number;
+  page_size?: number;
+  states?: string;
+  lang?: string;
+} = {}) {
+  const q = new URLSearchParams({
+    lang: params.lang ?? "ro",
+    page: String(params.page ?? 1),
+    page_size: String(params.page_size ?? 100),
+    ...(params.states ? { states: params.states } : {}),
+  });
+  return request<NnnAdvertListResponse>(`/adverts?${q}`);
+}
+
+export function getAdvert(advertId: string, lang = "ro") {
+  const q = new URLSearchParams({ lang });
+  return request<NnnAdvert>(`/adverts/${advertId}?${q}`);
+}
+
+export function getAdvertFeatures(advertId: string, lang = "ru") {
+  const q = new URLSearchParams({ lang });
+  return request<NnnFeaturesResponse>(`/adverts/${advertId}/features?${q}`);
 }
 
 export async function uploadImage(buf: Buffer, filename: string) {
@@ -127,4 +220,18 @@ export function setAccessPolicy(advertId: string, policy: "private" | "public") 
 
 export function getCash() {
   return request<{ cash: number }>(`/cash`);
+}
+
+// ——— helpers ———
+
+/** public page of an advert on 999.md */
+export function nnnAdvertUrl(advertId: string, locale: "ro" | "ru" = "ro") {
+  return `https://999.md/${locale}/${advertId}`;
+}
+
+/** CDN url of an advert photo (image ids come from the upload_images feature) */
+export function nnnImageUrl(imageId: string, size: "320x240" | "900x900" = "900x900") {
+  // ids look like "<hash>.jpg?metadata=..." — the CDN path wants only the file
+  const file = imageId.split("?")[0];
+  return `https://i.simpalsmedia.com/999.md/BoardImages/${size}/${file}`;
 }

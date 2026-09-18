@@ -14,6 +14,13 @@ export function MobileMenu() {
   const pathname = usePathname();
   const [open, setOpen] = useState(false);
   const [closing, setClosing] = useState(false);
+  // close the panel whenever navigation happens (state adjusted during render)
+  const [seenPath, setSeenPath] = useState(pathname);
+  if (seenPath !== pathname) {
+    setSeenPath(pathname);
+    setOpen(false);
+    setClosing(false);
+  }
   const timer = useRef<number | undefined>(undefined);
 
   function close() {
@@ -35,11 +42,6 @@ export function MobileMenu() {
     };
   }, [open]);
 
-  useEffect(() => {
-    setOpen(false);
-    setClosing(false);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [pathname]);
 
   const nav = [
     { href: "/", label: t("nav.home") },

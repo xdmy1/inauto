@@ -9,6 +9,7 @@ import {
   BODIES,
   DRIVETRAINS,
   FUELS,
+  STATUS_RO,
   STATUSES,
   TRANSMISSIONS,
 } from "@/lib/cars";
@@ -42,6 +43,8 @@ export type CarFormData = {
   location: string | null;
   descriptionRo: string;
   descriptionRu: string;
+  equipmentRo: string;
+  equipmentRu: string;
   status: string;
   featured: boolean;
   images: { id: string; path: string; order: number }[];
@@ -86,6 +89,7 @@ export function CarForm({ car }: { car: CarFormData }) {
   const [transmission, setTransmission] = useState(car?.transmission ?? "automatic");
   const [drivetrain, setDrivetrain] = useState(car?.drivetrain ?? "");
   const [status, setStatus] = useState(car?.status ?? "PUBLISHED");
+  const [picked, setPicked] = useState<string[]>([]);
 
   return (
     <form action={action} className="space-y-8">
@@ -216,6 +220,37 @@ export function CarForm({ car }: { car: CarFormData }) {
         </div>
       </section>
 
+      {/* Equipment */}
+      <section className="rounded-2xl border border-line bg-card p-5">
+        <h2 className="mb-1 font-display text-sm font-bold uppercase tracking-wide">
+          Dotări
+        </h2>
+        <p className="mb-4 text-xs text-ink-faint">
+          Câte o dotare pe rând (Climatronic, Scaune încălzite, Camera marșarier…).
+          Apar ca listă cu bife pe pagina mașinii și se trimit pe 999.md.
+        </p>
+        <div className="grid grid-cols-1 gap-3 lg:grid-cols-2">
+          <Field label="Română">
+            <textarea
+              name="equipmentRo"
+              rows={6}
+              defaultValue={car?.equipmentRo}
+              placeholder={"Climatronic\nScaune încălzite\nCamera marșarier"}
+              className="w-full rounded-lg border border-line bg-paper px-2.5 py-2 text-sm outline-none focus:border-ink"
+            />
+          </Field>
+          <Field label="Русский">
+            <textarea
+              name="equipmentRu"
+              rows={6}
+              defaultValue={car?.equipmentRu}
+              placeholder={"Климат-контроль\nПодогрев сидений\nКамера заднего вида"}
+              className="w-full rounded-lg border border-line bg-paper px-2.5 py-2 text-sm outline-none focus:border-ink"
+            />
+          </Field>
+        </div>
+      </section>
+
       {/* Photos */}
       <section className="rounded-2xl border border-line bg-card p-5">
         <h2 className="mb-4 font-display text-sm font-bold uppercase tracking-wide">
@@ -248,15 +283,30 @@ export function CarForm({ car }: { car: CarFormData }) {
             ))}
           </div>
         )}
-        <input
-          type="file"
-          name="photos"
-          multiple
-          accept="image/jpeg,image/png,image/webp,image/avif"
-          className="block w-full text-sm file:mr-3 file:rounded-lg file:border-0 file:bg-ink file:px-4 file:py-2 file:text-sm file:font-semibold file:text-paper hover:file:bg-black"
-        />
+        <label className="flex cursor-pointer flex-col items-center justify-center gap-1.5 rounded-xl border border-dashed border-ink-faint/60 bg-paper px-4 py-7 text-center transition-colors hover:border-ink hover:bg-card">
+          <input
+            type="file"
+            name="photos"
+            multiple
+            accept="image/jpeg,image/png,image/webp,image/avif"
+            className="sr-only"
+            onChange={(e) =>
+              setPicked(Array.from(e.target.files ?? []).map((f) => f.name))
+            }
+          />
+          <span className="chip-3d rounded-lg px-4 py-2 text-sm font-semibold">
+            {picked.length
+              ? `${picked.length} ${picked.length === 1 ? "fotografie aleasă" : "fotografii alese"}`
+              : "Alege fotografii"}
+          </span>
+          <span className="text-xs text-ink-faint">
+            {picked.length
+              ? picked.slice(0, 4).join(", ") + (picked.length > 4 ? "…" : "")
+              : "JPG / PNG / WebP, max 15 MB per fotografie. Poți alege mai multe odată."}
+          </span>
+        </label>
         <p className="mt-2 text-xs text-ink-faint">
-          JPG / PNG / WebP, max 15 MB per fotografie. Prima fotografie (ordinea 0) e cea principală.
+          Prima fotografie (ordinea 0) e cea principală — schimbă numărul ca să reordonezi.
         </p>
       </section>
 
@@ -267,7 +317,7 @@ export function CarForm({ car }: { car: CarFormData }) {
         </h2>
         <div className="flex flex-wrap items-center gap-6">
           <Field label="Status" className="w-44">
-            <Select name="status" value={status} onChange={setStatus} options={STATUSES.map((s) => ({ value: s, label: s }))} />
+            <Select name="status" value={status} onChange={setStatus} options={STATUSES.map((s) => ({ value: s, label: STATUS_RO[s] }))} />
           </Field>
           <label className="flex items-center gap-2 pt-4 text-sm font-medium">
             <input type="checkbox" name="featured" defaultChecked={car?.featured} />

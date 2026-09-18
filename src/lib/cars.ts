@@ -35,6 +35,14 @@ export const STATUSES = [
   "ARCHIVED",
 ] as const;
 
+export const STATUS_RO: Record<(typeof STATUSES)[number], string> = {
+  DRAFT: "Ciornă",
+  PUBLISHED: "Publicat",
+  RESERVED: "Rezervat",
+  SOLD: "Vândut",
+  ARCHIVED: "Arhivat",
+};
+
 export const PER_PAGE = 12;
 
 export type CarFilters = {
@@ -105,10 +113,19 @@ export function parseFilters(
 export function filtersToWhere(f: CarFilters): Prisma.CarWhereInput {
   const where: Prisma.CarWhereInput = { status: "PUBLISHED" };
   if (f.q) {
-    where.OR = [{ brand: { contains: f.q } }, { model: { contains: f.q } }];
+    // "bmw x3" → every word must match brand or model
+    where.AND = f.q
+      .split(/\s+/)
+      .filter(Boolean)
+      .map((word) => ({
+        OR: [
+          { brand: { contains: word, mode: "insensitive" } },
+          { model: { contains: word, mode: "insensitive" } },
+        ],
+      }));
   }
-  if (f.brand) where.brand = f.brand;
-  if (f.model) where.model = { contains: f.model };
+  if (f.brand) where.brand = { equals: f.brand, mode: "insensitive" };
+  if (f.model) where.model = { contains: f.model, mode: "insensitive" };
   if (f.body) where.body = f.body;
   if (f.fuel) where.fuel = f.fuel;
   if (f.transmission) where.transmission = f.transmission;
@@ -157,7 +174,9 @@ export async function getPublishedCars(f: CarFilters) {
   return { total, cars, pages: Math.max(1, Math.ceil(total / PER_PAGE)) };
 }
 
-export async function getBrandsWithCounts() {
+export type BrandCount = { brand: string; count: number };
+
+export async function getBrandsWithCounts(): Promise<BrandCount[]> {
   const rows = await prisma.car.groupBy({
     by: ["brand"],
     where: { status: "PUBLISHED" },
@@ -165,6 +184,44 @@ export async function getBrandsWithCounts() {
     orderBy: { brand: "asc" },
   });
   return rows.map((r) => ({ brand: r.brand, count: r._count.brand }));
+}
+
+export async function getBodyCounts() {
+  const rows = await prisma.car.groupBy({
+    by: ["body"],
+    where: { status: "PUBLISHED" },
+    _count: { body: true },
+  });
+  const map = new Map(rows.map((r) => [r.body, r._count.body]));
+  return BODIES.map((b) => ({ body: b, count: map.get(b) ?? 0 }));
+}
+
+export const BUDGETS = [
+  { key: "under", query: "priceMax=9999", min: 0, max: 9999 },
+  { key: "mid", query: "priceMin=10000&priceMax=20000", min: 10000, max: 20000 },
+  { key: "over", query: "priceMin=20001", min: 20001, max: undefined },
+] as const;
+
+export async function getBudgetCounts() {
+  return Promise.all(
+    BUDGETS.map(async (b) => ({
+      ...b,
+      count: await prisma.car.count({
+        where: { status: "PUBLISHED", price: { gte: b.min, lte: b.max } },
+      }),
+    }))
+  );
+}
+
+/** brand → URL segment ("Mercedes-Benz" → "mercedes-benz") */
+export function brandSlug(brand: string) {
+  return slugify(brand);
+}
+
+/** resolve a brand URL segment back to the exact brand stored in the DB */
+export async function brandFromSlug(slug: string) {
+  const brands = await getBrandsWithCounts();
+  return brands.find((b) => brandSlug(b.brand) === slug.toLowerCase());
 }
 
 export function slugify(input: string) {
@@ -196,4 +253,22 @@ export function fmtPrice(eur: number) {
 
 export function fmtKm(km: number) {
   return `${new Intl.NumberFormat("ro-RO").format(km)} km`;
+}
+
+/** 1995 → "2.0 L" */
+export function fmtEngine(cc: number) {
+  return `${(Math.round(cc / 100) / 10).toFixed(1)} L`;
+}
+
+/** listed in the last 10 days */
+export function isNewListing(createdAt: Date) {
+  return Date.now() - createdAt.getTime() < 10 * 24 * 60 * 60 * 1000;
+}
+
+/** "Climatronic\nScaune încălzite" → ["Climatronic", "Scaune încălzite"] */
+export function equipmentList(text: string) {
+  return text
+    .split(/\r?\n/)
+    .map((l) => l.trim())
+    .filter(Boolean);
 }

@@ -1,8 +1,10 @@
 "use client";
 
-import { useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { imageUrl } from "@/lib/images";
+import { CarMark } from "./Logo";
 
+// Main photo + thumbnail strip; arrows, keyboard ← →, swipe on phones.
 export function Gallery({
   images,
   alt,
@@ -11,62 +13,93 @@ export function Gallery({
   alt: string;
 }) {
   const [index, setIndex] = useState(0);
-  if (images.length === 0) {
+  const [touchX, setTouchX] = useState<number | null>(null);
+  const n = images.length;
+
+  const go = useCallback(
+    (d: number) => setIndex((i) => (n ? (i + d + n) % n : 0)),
+    [n]
+  );
+
+  useEffect(() => {
+    if (n < 2) return;
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "ArrowLeft") go(-1);
+      if (e.key === "ArrowRight") go(1);
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [n, go]);
+
+  if (n === 0) {
     return (
-      <div className="flex aspect-[4/3] items-center justify-center rounded-2xl border border-line bg-card text-ink-faint">
-        —
+      <div className="card flex aspect-[4/3] items-center justify-center rounded-2xl text-line">
+        <CarMark className="h-16 w-auto" />
       </div>
     );
   }
-  const current = images[Math.min(index, images.length - 1)];
+  const current = images[Math.min(index, n - 1)];
+
+  const arrow =
+    "absolute top-1/2 flex h-11 w-11 -translate-y-1/2 items-center justify-center rounded-full bg-card/90 text-ink shadow-lift backdrop-blur transition-all hover:bg-card active:scale-95";
 
   return (
     <div>
-      <div className="relative overflow-hidden rounded-2xl border border-line bg-card">
+      <div
+        className="card relative overflow-hidden rounded-2xl bg-line/40"
+        onTouchStart={(e) => setTouchX(e.touches[0].clientX)}
+        onTouchEnd={(e) => {
+          if (touchX == null) return;
+          const dx = e.changedTouches[0].clientX - touchX;
+          if (Math.abs(dx) > 40) go(dx < 0 ? 1 : -1);
+          setTouchX(null);
+        }}
+      >
+        {/* eslint-disable-next-line @next/next/no-img-element */}
         <img
+          key={current.path}
           src={imageUrl(current.path, "lg")}
-          alt={alt}
+          alt={`${alt} — ${index + 1}`}
+          width={1600}
+          height={1200}
+          fetchPriority="high"
           className="aspect-[4/3] w-full object-cover"
         />
-        {images.length > 1 && (
+        {n > 1 && (
           <>
-            <button
-              type="button"
-              aria-label="Prev"
-              onClick={() =>
-                setIndex((i) => (i - 1 + images.length) % images.length)
-              }
-              className="absolute left-3 top-1/2 flex h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full bg-ink/60 text-white backdrop-blur transition-colors hover:bg-ink"
-            >
-              ←
+            <button type="button" aria-label="Prev" onClick={() => go(-1)} className={`${arrow} left-3`}>
+              <svg viewBox="0 0 24 24" className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+                <path d="m15 6-6 6 6 6" />
+              </svg>
             </button>
-            <button
-              type="button"
-              aria-label="Next"
-              onClick={() => setIndex((i) => (i + 1) % images.length)}
-              className="absolute right-3 top-1/2 flex h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full bg-ink/60 text-white backdrop-blur transition-colors hover:bg-ink"
-            >
-              →
+            <button type="button" aria-label="Next" onClick={() => go(1)} className={`${arrow} right-3`}>
+              <svg viewBox="0 0 24 24" className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+                <path d="m9 6 6 6-6 6" />
+              </svg>
             </button>
-            <span className="absolute bottom-3 right-3 rounded-full bg-ink/60 px-2.5 py-1 text-xs font-semibold text-white backdrop-blur">
-              {index + 1} / {images.length}
+            <span className="photo-badge photo-badge-ink absolute bottom-3 right-3 h-7 px-2.5 text-xs normal-case tracking-normal">
+              {index + 1} / {n}
             </span>
           </>
         )}
       </div>
 
-      {images.length > 1 && (
-        <div className="mt-3 grid grid-cols-5 gap-2 sm:grid-cols-6">
+      {n > 1 && (
+        <div className="scroll-row mt-3">
           {images.map((img, i) => (
             <button
               key={img.path}
               type="button"
               onClick={() => setIndex(i)}
               aria-label={`Photo ${i + 1}`}
-              className={`overflow-hidden rounded-lg border-2 transition-colors ${
-                i === index ? "border-accent" : "border-transparent opacity-70 hover:opacity-100"
+              aria-current={i === index}
+              className={`w-[104px] shrink-0 overflow-hidden rounded-lg border-2 transition-all sm:w-[120px] ${
+                i === index
+                  ? "border-accent"
+                  : "border-transparent opacity-65 hover:opacity-100"
               }`}
             >
+              {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
                 src={imageUrl(img.path, "sm")}
                 alt=""

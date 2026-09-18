@@ -9,6 +9,8 @@ import {
 import { canonicalFor, localizedAlternates } from "@/lib/seo";
 import { CarCard } from "@/components/CarCard";
 import { CatalogFilters } from "@/components/CatalogFilters";
+import { SortSelect } from "@/components/SortSelect";
+import { BrandRow } from "@/components/home/BrandRow";
 import { prisma } from "@/lib/prisma";
 
 export async function generateMetadata({
@@ -51,7 +53,6 @@ export default async function CatalogPage({
     }),
   ]);
   const colors = colorRows.map((c) => c.color!).filter(Boolean);
-
   const action = getPathname({ locale, href: "/auto" });
 
   const pageHref = (page: number) => {
@@ -63,83 +64,82 @@ export default async function CatalogPage({
     return `/auto${q.size ? `?${q}` : ""}`;
   };
 
-  const sortOptions = [
-    "new",
-    "price_asc",
-    "price_desc",
-    "year_desc",
-    "mileage_asc",
-  ] as const;
+  const activeBrand = brands.find(
+    (b) => b.brand.toLowerCase() === filters.brand?.toLowerCase()
+  )?.brand;
 
   return (
-    <div className="mx-auto max-w-[1360px] px-4 pt-10 sm:px-6">
-      <div className="flex flex-wrap items-end justify-between gap-4">
+    <div className="mx-auto max-w-[1360px] px-4 pt-6 sm:px-6 sm:pt-8">
+      <nav className="flex items-center gap-2 text-xs text-ink-faint" aria-label="Breadcrumb">
+        <Link href="/" className="hover:text-ink">
+          {t("nav.home")}
+        </Link>
+        <span aria-hidden>/</span>
+        <span className="text-ink-soft">{t("nav.catalog")}</span>
+      </nav>
+
+      <div className="mt-3 flex flex-wrap items-end justify-between gap-4">
         <div>
-          <h1 className="font-display text-3xl font-extrabold tracking-tight sm:text-4xl">
-            {t("catalog.title")}
+          <h1 className="font-display text-[28px] font-extrabold leading-tight tracking-tight sm:text-4xl">
+            {t("catalog.h1")}
           </h1>
           <p className="mt-2 text-sm text-ink-soft">
-            {t("catalog.found", { count: total })}
+            <span className="font-semibold text-ink">{t("catalog.found", { count: total })}</span>
+            {" · "}
+            {t("catalog.subtitle")}
           </p>
         </div>
-
-        {/* Sort — plain links keep this zero-JS */}
-        <nav aria-label={t("catalog.sort.label")} className="flex flex-wrap gap-1.5">
-          {sortOptions.map((s) => {
-            const q = new URLSearchParams();
-            for (const [k, v] of Object.entries(sp)) {
-              if (typeof v === "string" && v !== "" && k !== "page" && k !== "sort")
-                q.set(k, v);
-            }
-            if (s !== "new") q.set("sort", s);
-            const active = filters.sort === s;
-            return (
-              <Link
-                key={s}
-                href={`/auto${q.size ? `?${q}` : ""}`}
-                className={`rounded-full px-3 py-1.5 text-xs font-semibold transition-colors ${
-                  active ? "chip-dark" : "chip-3d text-ink-soft hover:text-ink"
-                }`}
-              >
-                {t(`catalog.sort.${s}`)}
-              </Link>
-            );
-          })}
-        </nav>
+        <SortSelect value={filters.sort ?? "new"} />
       </div>
 
-      {/* Filters — horizontal bar, collapsible on mobile */}
-      <div data-reveal className="mt-6">
-        <details className="group rounded-2xl border border-line bg-card p-4 shadow-card lg:hidden">
-          <summary className="cursor-pointer list-none font-display text-sm font-bold">
-            {t("catalog.filters")} ▾
-          </summary>
-          <div className="mt-4">
+      <div className="mt-5">
+        <BrandRow brands={brands} active={activeBrand} />
+      </div>
+
+      <div className="mt-6 grid grid-cols-1 gap-6 lg:grid-cols-[270px_1fr]">
+        {/* filters */}
+        <aside>
+          <details className="card group rounded-2xl p-4 lg:hidden">
+            <summary className="flex cursor-pointer list-none items-center justify-between font-display text-sm font-bold">
+              {t("catalog.filters")}
+              <svg
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2.5"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                className="h-4 w-4 text-ink-soft transition-transform group-open:rotate-180"
+                aria-hidden
+              >
+                <path d="m6 9 6 6 6-6" />
+              </svg>
+            </summary>
+            <div className="mt-4 border-t border-line pt-4">
+              <CatalogFilters action={action} brands={brands} colors={colors} filters={filters} />
+            </div>
+          </details>
+          <div className="card sticky top-24 hidden rounded-2xl p-4 lg:block">
+            <h2 className="mb-4 font-display text-sm font-bold uppercase tracking-wide">
+              {t("catalog.filters")}
+            </h2>
             <CatalogFilters action={action} brands={brands} colors={colors} filters={filters} />
           </div>
-        </details>
-        <div className="hidden rounded-2xl border border-line bg-card p-5 shadow-card lg:block">
-          <CatalogFilters action={action} brands={brands} colors={colors} filters={filters} />
-        </div>
-      </div>
+        </aside>
 
-      <div className="mt-8">
-        {/* Results */}
+        {/* results */}
         <div>
           {cars.length === 0 ? (
-            <div className="rounded-2xl border border-line bg-card px-6 py-16 text-center">
+            <div className="card rounded-2xl px-6 py-16 text-center">
               <p className="text-ink-soft">{t("catalog.empty")}</p>
-              <Link
-                href="/auto"
-                className="btn-dark mt-4 h-11 px-5"
-              >
+              <Link href="/auto" className="btn-dark mt-4 h-11 px-5">
                 {t("catalog.emptyCta")}
               </Link>
             </div>
           ) : (
-            <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-              {cars.map((car) => (
-                <CarCard key={car.id} car={car} />
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3 lg:gap-5">
+              {cars.map((car, i) => (
+                <CarCard key={car.id} car={car} priority={i < 3} />
               ))}
             </div>
           )}

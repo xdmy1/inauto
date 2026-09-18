@@ -132,6 +132,37 @@ export const InstagramIcon = (p: IconProps) => (
   </svg>
 );
 
+export const CameraIcon = (p: IconProps) => (
+  <svg viewBox="0 0 24 24" fill="currentColor" className={p.className ?? "h-5 w-5"} aria-hidden="true">
+    <path d="M9 3a1 1 0 0 0-.8.4L6.5 5.5H4a2 2 0 0 0-2 2V18a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V7.5a2 2 0 0 0-2-2h-2.5L15.8 3.4A1 1 0 0 0 15 3H9Zm3 5.5a4.25 4.25 0 1 1 0 8.5 4.25 4.25 0 0 1 0-8.5Zm0 2a2.25 2.25 0 1 0 0 4.5 2.25 2.25 0 0 0 0-4.5Z" />
+  </svg>
+);
+
+export const SlidersIcon = (p: IconProps) => (
+  <I {...p}>
+    <path d="M4 6h10M18 6h2M4 12h2M10 12h10M4 18h12M20 18h0" />
+    <circle cx="16" cy="6" r="2" />
+    <circle cx="8" cy="12" r="2" />
+    <circle cx="18" cy="18" r="2" />
+  </I>
+);
+
+export const ShareIcon = (p: IconProps) => (
+  <I {...p}>
+    <path d="M12 3v12" />
+    <path d="m7 8 5-5 5 5" />
+    <path d="M5 13v6a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-6" />
+  </I>
+);
+
+export const ExternalIcon = (p: IconProps) => (
+  <I {...p}>
+    <path d="M14 4h6v6" />
+    <path d="M20 4 10 14" />
+    <path d="M18 13v6a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1h6" />
+  </I>
+);
+
 export const GlobeIcon = (p: IconProps) => (
   <I {...p}>
     <circle cx="12" cy="12" r="10" />

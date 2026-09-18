@@ -1,0 +1,8 @@
+{
+  "crons": [
+    {
+      "path": "/api/nnn/import",
+      "schedule": "0 6 * * *"
+    }
+  ]
+}

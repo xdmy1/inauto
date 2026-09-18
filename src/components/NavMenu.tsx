@@ -11,6 +11,13 @@ export function NavMenu() {
   const pathname = usePathname();
   const [open, setOpen] = useState(false);
   const [closing, setClosing] = useState(false);
+  // close the panel whenever navigation happens (state adjusted during render)
+  const [seenPath, setSeenPath] = useState(pathname);
+  if (seenPath !== pathname) {
+    setSeenPath(pathname);
+    setOpen(false);
+    setClosing(false);
+  }
   const rootRef = useRef<HTMLDivElement>(null);
   const timer = useRef<number | undefined>(undefined);
 
@@ -24,12 +31,6 @@ export function NavMenu() {
   }
 
   useEffect(() => () => window.clearTimeout(timer.current), []);
-  // close the panel whenever navigation happens
-  useEffect(() => {
-    setOpen(false);
-    setClosing(false);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [pathname]);
 
   useEffect(() => {
     if (!open) return;

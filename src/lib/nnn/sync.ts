@@ -1,4 +1,4 @@
-// Sync a local car listing to 999.md (create / update advert).
+// Export: sync a local car listing to 999.md (create / update / hide advert).
 //
 // The Partners API describes adverts through dynamic "features" whose ids and
 // option ids differ per account/category, so we resolve them at runtime:
@@ -14,16 +14,23 @@ import {
   getFeatures,
   nnnEnabled,
   republishAdvert,
+  setAccessPolicy,
   updateAdvert,
   uploadImage,
   type NnnFeature,
   type NnnFeatureValue,
 } from "./client";
-
-// Fixed ids from the Partners API docs (Transport / Cars / Sell)
-const CATEGORY_ID = "658";
-const SUBCATEGORY_ID = "659";
-const OFFER_TYPE = "776";
+import {
+  BODY_RU,
+  CATEGORY_ID,
+  DRIVETRAIN_RU,
+  FEATURE_KEYS,
+  FUEL_RU,
+  OFFER_TYPE,
+  SUBCATEGORY_ID,
+  TRANSMISSION_RU,
+  norm,
+} from "./mapping";
 
 const MAX_IMAGES = 10;
 
@@ -31,7 +38,7 @@ type FlatFeature = NnnFeature;
 
 let featureCache: { at: number; features: FlatFeature[] } | null = null;
 
-async function loadFeatures(): Promise<FlatFeature[]> {
+export async function loadFeatures(): Promise<FlatFeature[]> {
   if (featureCache && Date.now() - featureCache.at < 60 * 60 * 1000) {
     return featureCache.features;
   }
@@ -45,13 +52,12 @@ async function loadFeatures(): Promise<FlatFeature[]> {
   return features;
 }
 
-const norm = (s: string) => s.toLowerCase().replace(/ё/g, "е").trim();
-
-function findFeature(features: FlatFeature[], keywords: string[]) {
-  return features.find((f) => {
-    const t = norm(f.title);
-    return keywords.some((k) => t.includes(k));
-  });
+function findFeature(features: FlatFeature[], keywords: readonly string[]) {
+  // exact title first, then "contains"
+  return (
+    features.find((f) => keywords.some((k) => norm(f.title) === norm(k))) ??
+    features.find((f) => keywords.some((k) => norm(f.title).includes(norm(k))))
+  );
 }
 
 function findOption(
@@ -66,52 +72,15 @@ function findOption(
   );
 }
 
-// RU synonyms for our canonical option keys
-const FUEL_RU: Record<string, string[]> = {
-  petrol: ["бензин"],
-  diesel: ["дизель"],
-  hybrid: ["гибрид"],
-  phev: ["плагин-гибрид", "плагин гибрид", "phev", "гибрид"],
-  electric: ["электричество", "электро"],
-  gas: ["газ", "газ / бензин", "метан", "пропан"],
-};
-
-const TRANSMISSION_RU: Record<string, string[]> = {
-  automatic: ["автомат"],
-  manual: ["механика", "механическая"],
-  robotic: ["робот"],
-  cvt: ["вариатор"],
-};
-
-const BODY_RU: Record<string, string[]> = {
-  sedan: ["седан"],
-  hatchback: ["хэтчбек", "хетчбек"],
-  wagon: ["универсал"],
-  suv: ["внедорожник", "кроссовер", "джип"],
-  coupe: ["купе"],
-  cabrio: ["кабриолет"],
-  minivan: ["минивэн", "минивен"],
-  van: ["фургон"],
-  pickup: ["пикап"],
-};
-
-const DRIVETRAIN_RU: Record<string, string[]> = {
-  fwd: ["передний"],
-  rwd: ["задний"],
-  awd: ["полный", "4x4", "4х4"],
-};
-
 export type SyncReport = {
   ok: boolean;
   advertId?: string;
-  action: "created" | "updated" | "dry-run" | "error";
+  action: "created" | "updated" | "hidden" | "shown" | "dry-run" | "error";
   warnings: string[];
   error?: string;
 };
 
-type CarWithImages = NonNullable<
-  Awaited<ReturnType<typeof loadCar>>
->;
+type CarWithImages = NonNullable<Awaited<ReturnType<typeof loadCar>>>;
 
 function loadCar(carId: string) {
   return prisma.car.findUnique({
@@ -132,9 +101,11 @@ async function buildFeatureValues(
   const warnings: string[] = [];
 
   const push = (
-    keywords: string[],
+    keywords: readonly string[],
     label: string,
-    make: (f: FlatFeature) => NnnFeatureValue | undefined | Promise<NnnFeatureValue | undefined>
+    make: (
+      f: FlatFeature
+    ) => NnnFeatureValue | undefined | Promise<NnnFeatureValue | undefined>
   ) => {
     const f = findFeature(features, keywords);
     if (!f) {
@@ -147,8 +118,8 @@ async function buildFeatureValues(
     });
   };
 
-  // Brand (dropdown) → Model (often depends on brand)
-  const brandFeature = findFeature(features, ["марка"]);
+  // Brand (dropdown) → Model (depends on brand)
+  const brandFeature = findFeature(features, FEATURE_KEYS.brand);
   let brandOptionId: string | undefined;
   if (brandFeature) {
     const opt = findOption(brandFeature.options, [car.brand]);
@@ -162,7 +133,7 @@ async function buildFeatureValues(
     warnings.push("Câmp 999.md negăsit: marca");
   }
 
-  const modelFeature = findFeature(features, ["модель"]);
+  const modelFeature = findFeature(features, FEATURE_KEYS.model);
   if (modelFeature) {
     let options = modelFeature.options;
     if (modelFeature.depends_on && brandOptionId) {
@@ -177,23 +148,23 @@ async function buildFeatureValues(
         warnings.push("Nu s-au putut încărca modelele dependente de marcă");
       }
     }
-    const opt = findOption(options, [car.model]);
+    // "X3 xDrive20d" → try the full model, then the first word ("X3")
+    const opt =
+      findOption(options, [car.model]) ??
+      findOption(options, [car.model.split(" ")[0]]);
     if (opt) values.push({ id: modelFeature.id, value: opt.id });
     else if (modelFeature.type.startsWith("textbox"))
       values.push({ id: modelFeature.id, value: car.model });
     else warnings.push(`Modelul „${car.model}" nu există în lista 999.md`);
   }
 
-  await push(["год"], "anul producerii", (f) =>
-    f.options
-      ? findOption(f.options, [String(car.year)]) && {
-          id: f.id,
-          value: findOption(f.options, [String(car.year)])!.id,
-        }
-      : { id: f.id, value: car.year }
-  );
+  await push(FEATURE_KEYS.year, "anul producerii", (f) => {
+    if (!f.options) return { id: f.id, value: car.year };
+    const opt = findOption(f.options, [String(car.year)]);
+    return opt && { id: f.id, value: opt.id };
+  });
 
-  await push(["заголовок"], "titlu", (f) => ({
+  await push(FEATURE_KEYS.title, "titlu", (f) => ({
     id: f.id,
     value: {
       ro: `${car.brand} ${car.model}, ${car.year}`,
@@ -201,32 +172,37 @@ async function buildFeatureValues(
     },
   }));
 
-  await push(["описание"], "descriere", (f) => ({
+  await push(FEATURE_KEYS.description, "descriere", (f) => ({
     id: f.id,
     value: {
-      ro: car.descriptionRo || `${car.brand} ${car.model} ${car.year}. ${site.name}, ${site.address.full}.`,
-      ru: car.descriptionRu || car.descriptionRo || `${car.brand} ${car.model} ${car.year}. ${site.name}.`,
+      ro:
+        car.descriptionRo ||
+        `${car.brand} ${car.model} ${car.year}. ${site.name}, ${site.address.full}.`,
+      ru:
+        car.descriptionRu ||
+        car.descriptionRo ||
+        `${car.brand} ${car.model} ${car.year}. ${site.name}.`,
     },
   }));
 
-  await push(["цена"], "preț", (f) => ({
+  await push(FEATURE_KEYS.price, "preț", (f) => ({
     id: f.id,
     value: car.price,
     unit: f.units?.includes("eur") ? "eur" : f.units?.[0],
   }));
 
-  await push(["пробег"], "kilometraj", (f) => ({
+  await push(FEATURE_KEYS.mileage, "kilometraj", (f) => ({
     id: f.id,
     value: car.mileage,
     unit: f.units?.includes("km") ? "km" : f.units?.[0],
   }));
 
-  await push(["топлив"], "combustibil", (f) => {
+  await push(FEATURE_KEYS.fuel, "combustibil", (f) => {
     const opt = findOption(f.options, FUEL_RU[car.fuel] ?? [car.fuel]);
     return opt && { id: f.id, value: opt.id };
   });
 
-  await push(["коробка"], "cutia de viteze", (f) => {
+  await push(FEATURE_KEYS.transmission, "cutia de viteze", (f) => {
     const opt = findOption(
       f.options,
       TRANSMISSION_RU[car.transmission] ?? [car.transmission]
@@ -234,13 +210,13 @@ async function buildFeatureValues(
     return opt && { id: f.id, value: opt.id };
   });
 
-  await push(["кузов"], "caroserie", (f) => {
+  await push(FEATURE_KEYS.body, "caroserie", (f) => {
     const opt = findOption(f.options, BODY_RU[car.body] ?? [car.body]);
     return opt && { id: f.id, value: opt.id };
   });
 
   if (car.drivetrain) {
-    await push(["привод"], "tracțiune", (f) => {
+    await push(FEATURE_KEYS.drivetrain, "tracțiune", (f) => {
       const opt = findOption(
         f.options,
         DRIVETRAIN_RU[car.drivetrain!] ?? [car.drivetrain!]
@@ -250,19 +226,58 @@ async function buildFeatureValues(
   }
 
   if (car.engineCc) {
-    await push(["объем двигателя", "объём двигателя"], "capacitate motor", (f) => ({
-      id: f.id,
-      value: car.engineCc!,
-      unit: f.units?.includes("cm3") ? "cm3" : f.units?.[0],
-    }));
+    await push(FEATURE_KEYS.engine, "capacitate motor", (f) => {
+      const cm3 = f.units?.find((u) => u.toLowerCase() === "cm3");
+      const l = f.units?.find((u) => u.toLowerCase() === "l");
+      if (cm3) return { id: f.id, value: car.engineCc!, unit: cm3 };
+      if (l) return { id: f.id, value: Math.round(car.engineCc! / 100) / 10, unit: l };
+      return { id: f.id, value: car.engineCc!, unit: f.units?.[0] };
+    });
   }
 
   if (car.powerHp) {
-    await push(["мощность"], "putere", (f) => ({
+    await push(FEATURE_KEYS.power, "putere", (f) => ({
       id: f.id,
       value: car.powerHp!,
-      unit: f.units?.includes("hp") ? "hp" : f.units?.[0],
+      unit: f.units?.find((u) => u.toLowerCase() === "hp") ?? f.units?.[0],
     }));
+  }
+
+  if (car.color) {
+    await push(FEATURE_KEYS.color, "culoare", (f) => {
+      if (!f.options) return { id: f.id, value: car.color! };
+      // our colours are RO labels; 999.md options are RU — match through the dictionary
+      const ruTitles = Object.entries(COLOR_RO_RU).find(
+        ([ro]) => norm(ro) === norm(car.color!)
+      )?.[1];
+      const opt = findOption(f.options, ruTitles ? [ruTitles] : [car.color!]);
+      return opt && { id: f.id, value: opt.id };
+    });
+  }
+
+  if (car.seats) {
+    await push(FEATURE_KEYS.seats, "locuri", (f) => {
+      if (!f.options) return { id: f.id, value: car.seats! };
+      const opt = findOption(f.options, [String(car.seats)]);
+      return opt && { id: f.id, value: opt.id };
+    });
+  }
+
+  if (car.vin) {
+    const f = findFeature(features, FEATURE_KEYS.vin);
+    if (f) values.push({ id: f.id, value: car.vin });
+  }
+
+  // Equipment: check_box features whose RU title matches a line of equipmentRu
+  const equipment = [car.equipmentRu, car.equipmentRo]
+    .flatMap((s) => s.split(/\r?\n/))
+    .map(norm)
+    .filter(Boolean);
+  if (equipment.length) {
+    for (const f of features) {
+      if (f.type !== "check_box") continue;
+      if (equipment.includes(norm(f.title))) values.push({ id: f.id, value: true });
+    }
   }
 
   // Photos + contacts
@@ -281,6 +296,28 @@ async function buildFeatureValues(
   return { values, warnings };
 }
 
+// RO colour label → RU option title (reverse of the import dictionary)
+const COLOR_RO_RU: Record<string, string> = {
+  Alb: "белый",
+  Negru: "черный",
+  Gri: "серый",
+  Argintiu: "серебристый",
+  Albastru: "синий",
+  Bleu: "голубой",
+  Roșu: "красный",
+  Verde: "зеленый",
+  Galben: "желтый",
+  Portocaliu: "оранжевый",
+  Maro: "коричневый",
+  Bej: "бежевый",
+  Bordo: "бордовый",
+  Violet: "фиолетовый",
+  Auriu: "золотистый",
+};
+
+const isRealAdvertId = (id: string | null | undefined): id is string =>
+  !!id && id !== "DRY-RUN";
+
 export async function syncCarTo999(carId: string): Promise<SyncReport> {
   const car = await loadCar(carId);
   if (!car) return { ok: false, action: "error", warnings: [], error: "Mașina nu există" };
@@ -288,16 +325,21 @@ export async function syncCarTo999(carId: string): Promise<SyncReport> {
   const record = async (data: {
     advertId?: string | null;
     state: string;
+    nnnState?: string | null;
     lastError?: string | null;
   }) =>
     prisma.advert999.upsert({
       where: { carId },
-      create: { carId, ...data, lastSyncAt: new Date() },
+      create: { carId, source: "site", ...data, lastSyncAt: new Date() },
       update: { ...data, lastSyncAt: new Date() },
     });
 
   if (!nnnEnabled()) {
-    await record({ state: "DRY_RUN", lastError: null, advertId: car.advert?.advertId ?? "DRY-RUN" });
+    await record({
+      state: "DRY_RUN",
+      lastError: null,
+      advertId: car.advert?.advertId ?? "DRY-RUN",
+    });
     return {
       ok: true,
       action: "dry-run",
@@ -322,9 +364,13 @@ export async function syncCarTo999(carId: string): Promise<SyncReport> {
 
     // 3. create or update
     const existingId = car.advert?.advertId;
-    if (existingId && existingId !== "DRY-RUN") {
+    if (isRealAdvertId(existingId)) {
       await updateAdvert(existingId, { features: values });
-      await record({ advertId: existingId, state: "SYNCED", lastError: warnings.join("; ") || null });
+      await record({
+        advertId: existingId,
+        state: "SYNCED",
+        lastError: warnings.join("; ") || null,
+      });
       return { ok: true, action: "updated", advertId: existingId, warnings };
     }
 
@@ -335,7 +381,12 @@ export async function syncCarTo999(carId: string): Promise<SyncReport> {
       features: values,
     });
     const advertId = res.advert.id;
-    await record({ advertId, state: "SYNCED", lastError: warnings.join("; ") || null });
+    await record({
+      advertId,
+      state: "SYNCED",
+      nnnState: "public",
+      lastError: warnings.join("; ") || null,
+    });
     return { ok: true, action: "created", advertId, warnings };
   } catch (e) {
     const msg = e instanceof Error ? e.message : String(e);
@@ -347,7 +398,7 @@ export async function syncCarTo999(carId: string): Promise<SyncReport> {
 export async function republishCarOn999(carId: string): Promise<SyncReport> {
   const car = await loadCar(carId);
   const advertId = car?.advert?.advertId;
-  if (!advertId || advertId === "DRY-RUN")
+  if (!isRealAdvertId(advertId))
     return { ok: false, action: "error", warnings: [], error: "Anunțul nu e încă publicat pe 999.md" };
   try {
     await republishAdvert(advertId);
@@ -363,5 +414,49 @@ export async function republishCarOn999(carId: string): Promise<SyncReport> {
       data: { state: "ERROR", lastError: msg },
     });
     return { ok: false, action: "error", warnings: [], error: msg };
+  }
+}
+
+/**
+ * Keep the 999.md advert's visibility in step with the car's status on the
+ * site: PUBLISHED → public, anything else (sold, reserved, archived, draft)
+ * → private. Silently no-op when the car has no real advert or in dry-run.
+ */
+export async function syncVisibilityOn999(
+  carId: string,
+  status: string
+): Promise<SyncReport | null> {
+  const car = await loadCar(carId);
+  const advertId = car?.advert?.advertId;
+  if (!car || !isRealAdvertId(advertId) || !nnnEnabled()) return null;
+
+  const wantPublic = status === "PUBLISHED";
+  const current = car.advert?.nnnState;
+  if ((wantPublic && current === "public") || (!wantPublic && current === "hidden"))
+    return null;
+
+  try {
+    await setAccessPolicy(advertId, wantPublic ? "public" : "private");
+    await prisma.advert999.update({
+      where: { carId },
+      data: {
+        nnnState: wantPublic ? "public" : "hidden",
+        lastSyncAt: new Date(),
+        lastError: null,
+      },
+    });
+    return {
+      ok: true,
+      action: wantPublic ? "shown" : "hidden",
+      advertId,
+      warnings: [],
+    };
+  } catch (e) {
+    const msg = e instanceof Error ? e.message : String(e);
+    await prisma.advert999.update({
+      where: { carId },
+      data: { state: "ERROR", lastError: msg },
+    });
+    return { ok: false, action: "error", advertId, warnings: [], error: msg };
   }
 }

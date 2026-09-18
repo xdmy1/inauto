@@ -3,13 +3,15 @@
 import { useEffect, useRef, useState } from "react";
 import { useTranslations } from "next-intl";
 import { Link, useRouter } from "@/i18n/navigation";
-import { ArrowRightIcon } from "./icons";
+import { FUELS } from "@/lib/cars";
+import { ArrowRightIcon, SlidersIcon } from "./icons";
 import { Select } from "./ui/Select";
 
 const PRICE_STEPS = [5000, 7500, 10000, 15000, 20000, 30000, 50000];
 const nf = new Intl.NumberFormat("ro-RO");
 
-// Small, simple hero search — the full filter set lives on /auto
+// Hero search bar — one row on desktop (brand / model / price / fuel / CTA),
+// live result counter, quick-filter chips underneath. Full filters on /auto.
 export function QuickSearch({
   brands,
   count: initialCount,
@@ -23,19 +25,26 @@ export function QuickSearch({
   const [brand, setBrand] = useState("");
   const [model, setModel] = useState("");
   const [priceMax, setPriceMax] = useState("");
+  const [fuel, setFuel] = useState("");
   const [count, setCount] = useState(initialCount);
   const debounce = useRef<number | undefined>(undefined);
+  const first = useRef(true);
 
   function buildParams() {
     const p = new URLSearchParams();
     if (brand) p.set("brand", brand);
     if (model) p.set("model", model);
     if (priceMax) p.set("priceMax", priceMax);
+    if (fuel) p.set("fuel", fuel);
     return p;
   }
 
   // live result counter
   useEffect(() => {
+    if (first.current) {
+      first.current = false;
+      return;
+    }
     window.clearTimeout(debounce.current);
     debounce.current = window.setTimeout(async () => {
       try {
@@ -47,7 +56,7 @@ export function QuickSearch({
     }, 250);
     return () => window.clearTimeout(debounce.current);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [brand, model, priceMax]);
+  }, [brand, model, priceMax, fuel]);
 
   function submit(e: React.FormEvent) {
     e.preventDefault();
@@ -55,16 +64,23 @@ export function QuickSearch({
     router.push(`/auto${p.size ? `?${p}` : ""}`);
   }
 
-  const label = "mb-1.5 block text-xs font-medium text-ink-soft";
+  const quick = [
+    { href: "/auto?fuel=diesel", label: t("options.fuel.diesel") },
+    { href: "/auto?fuel=hybrid", label: t("options.fuel.hybrid") },
+    { href: "/auto?transmission=automatic", label: t("options.transmission.automatic") },
+    { href: "/auto?drivetrain=awd", label: "4x4" },
+    { href: "/auto?body=suv", label: t("options.body.suv") },
+    { href: "/auto?priceMax=10000", label: t("footer.under10k") },
+  ];
+
+  const label = "mb-1.5 block text-[11px] font-semibold uppercase tracking-wide text-ink-faint";
 
   return (
-    <form
-      onSubmit={submit}
-      className="flex h-full flex-col rounded-2xl border border-line bg-card p-6"
-    >
-      <h2 className="font-display text-xl font-bold">{t("home.searchTitle")}</h2>
-
-      <div className="mt-5 space-y-4">
+    <div className="card rounded-2xl p-4 shadow-lift sm:p-5">
+      <form
+        onSubmit={submit}
+        className="grid grid-cols-2 gap-3 lg:grid-cols-[1.1fr_1fr_1fr_1fr_auto] lg:items-end"
+      >
         <label className="block">
           <span className={label}>{t("home.searchBrand")}</span>
           <Select
@@ -101,21 +117,44 @@ export function QuickSearch({
             }))}
           />
         </label>
-      </div>
 
-      <div className="mt-auto pt-6">
-        <button type="submit" className="btn-primary w-full">
+        <label className="block">
+          <span className={label}>{t("home.searchFuel")}</span>
+          <Select
+            value={fuel}
+            onChange={setFuel}
+            placeholder={t("home.searchAny")}
+            options={FUELS.map((f) => ({ value: f, label: t(`options.fuel.${f}`) }))}
+          />
+        </label>
+
+        <button
+          type="submit"
+          className="btn-primary col-span-2 h-11 whitespace-nowrap px-5 lg:col-span-1"
+        >
           {t("home.showCars", { count })}
           <ArrowRightIcon className="h-4 w-4" />
         </button>
-        <Link
-          href="/auto"
-          className="mt-3.5 flex items-center justify-center gap-1.5 text-[13px] font-semibold text-ink-soft transition-colors hover:text-ink"
-        >
+      </form>
+
+      <div className="mt-3.5 flex flex-wrap items-center gap-x-3 gap-y-2 border-t border-line pt-3.5">
+        <span className="text-xs font-semibold text-ink-faint">{t("home.quickFilters")}</span>
+        <div className="flex flex-1 flex-wrap gap-2">
+          {quick.map((q) => (
+            <Link
+              key={q.href}
+              href={q.href}
+              className="chip-3d rounded-full px-3 py-1.5 text-xs font-semibold text-ink-soft hover:text-ink"
+            >
+              {q.label}
+            </Link>
+          ))}
+        </div>
+        <Link href="/auto" className="link-more ml-auto shrink-0 text-[13px]">
+          <SlidersIcon className="h-3.5 w-3.5" />
           {t("home.advanced")}
-          <ArrowRightIcon className="h-3.5 w-3.5" />
         </Link>
       </div>
-    </form>
+    </div>
   );
 }

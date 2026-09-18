@@ -16,7 +16,14 @@ import {
   uniqueCarSlug,
 } from "@/lib/cars";
 import { deleteCarImageFiles, saveCarImage } from "@/lib/uploads";
-import { republishCarOn999, syncCarTo999, type SyncReport } from "@/lib/nnn/sync";
+import {
+  republishCarOn999,
+  syncCarTo999,
+  syncVisibilityOn999,
+  type SyncReport,
+} from "@/lib/nnn/sync";
+import { importFrom999, type ImportReport } from "@/lib/nnn/import";
+import { nnnEnabled, setAccessPolicy } from "@/lib/nnn/client";
 
 // ——— auth ———
 
@@ -71,9 +78,20 @@ const carSchema = z.object({
   location: z.string().max(120).optional(),
   descriptionRo: z.string().max(8000).optional(),
   descriptionRu: z.string().max(8000).optional(),
+  equipmentRo: z.string().max(4000).optional(),
+  equipmentRu: z.string().max(4000).optional(),
   status: z.enum(STATUSES),
   featured: z.boolean(),
 });
+
+// "one item per line" textareas → trimmed, de-duplicated lines
+function cleanLines(v: FormDataEntryValue | null) {
+  const lines = String(v ?? "")
+    .split(/\r?\n/)
+    .map((l) => l.replace(/^[-•*]\s*/, "").trim())
+    .filter(Boolean);
+  return Array.from(new Set(lines)).join("\n");
+}
 
 function parseCarForm(formData: FormData) {
   const opt = (k: string) => {
@@ -101,6 +119,8 @@ function parseCarForm(formData: FormData) {
     location: opt("location"),
     descriptionRo: opt("descriptionRo"),
     descriptionRu: opt("descriptionRu"),
+    equipmentRo: cleanLines(formData.get("equipmentRo")),
+    equipmentRu: cleanLines(formData.get("equipmentRu")),
     status: opt("status") ?? "DRAFT",
     featured: formData.get("featured") === "on",
   });
@@ -181,7 +201,13 @@ export async function saveCarAction(
   const carId = String(formData.get("carId") ?? "");
 
   let id = carId;
+  let previousStatus: string | undefined;
   if (carId) {
+    const before = await prisma.car.findUnique({
+      where: { id: carId },
+      select: { status: true },
+    });
+    previousStatus = before?.status;
     await prisma.car.update({ where: { id: carId }, data });
   } else {
     const slug = await uniqueCarSlug(data.brand, data.model, data.year);
@@ -194,6 +220,9 @@ export async function saveCarAction(
   let nnn: SyncReport | undefined;
   if (formData.get("syncNnn") === "on" && data.status === "PUBLISHED") {
     nnn = await syncCarTo999(id);
+  } else if (previousStatus && previousStatus !== data.status) {
+    // sold / reserved / archived on the site → hidden on 999.md (and back)
+    nnn = (await syncVisibilityOn999(id, data.status)) ?? undefined;
   }
 
   revalidateSite();
@@ -216,6 +245,7 @@ export async function setStatusAction(formData: FormData) {
   const status = String(formData.get("status") ?? "");
   if (!id || !STATUSES.includes(status as (typeof STATUSES)[number])) return;
   await prisma.car.update({ where: { id }, data: { status } });
+  await syncVisibilityOn999(id, status);
   revalidateSite();
 }
 
@@ -236,5 +266,38 @@ export async function republishNnnAction(
   const id = String(formData.get("carId") ?? "");
   const report = await republishCarOn999(id);
   revalidatePath(`/admin/cars/${id}`);
+  return report;
+}
+
+export async function toggleNnnVisibilityAction(
+  _prev: SyncReport | undefined,
+  formData: FormData
+): Promise<SyncReport> {
+  const id = String(formData.get("carId") ?? "");
+  const advertId = String(formData.get("advertId") ?? "");
+  const makePublic = formData.get("policy") === "public";
+  if (!id || !advertId || advertId === "DRY-RUN")
+    return { ok: false, action: "error", warnings: [], error: "Anunțul nu e publicat pe 999.md" };
+  if (!nnnEnabled())
+    return { ok: false, action: "error", warnings: [], error: "Mod simulare — activează cheia API" };
+  try {
+    await setAccessPolicy(advertId, makePublic ? "public" : "private");
+    await prisma.advert999.update({
+      where: { carId: id },
+      data: { nnnState: makePublic ? "public" : "hidden", lastSyncAt: new Date(), lastError: null },
+    });
+    revalidatePath(`/admin/cars/${id}`);
+    return { ok: true, action: makePublic ? "shown" : "hidden", advertId, warnings: [] };
+  } catch (e) {
+    const msg = e instanceof Error ? e.message : String(e);
+    return { ok: false, action: "error", advertId, warnings: [], error: msg };
+  }
+}
+
+export async function importNnnAction(
+  _prev: ImportReport | undefined
+): Promise<ImportReport> {
+  const report = await importFrom999("manual");
+  revalidatePath("/admin");
   return report;
 }

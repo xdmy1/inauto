@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Inter, Manrope } from "next/font/google";
 import { notFound } from "next/navigation";
+import Script from "next/script";
 import { hasLocale, NextIntlClientProvider } from "next-intl";
 import { getTranslations, setRequestLocale } from "next-intl/server";
 import { routing } from "@/i18n/routing";
@@ -67,13 +68,18 @@ export default async function LocaleLayout({
   setRequestLocale(locale);
 
   return (
-    <html lang={locale} className={`${inter.variable} ${manrope.variable}`}>
+    <html
+      lang={locale}
+      className={`${inter.variable} ${manrope.variable}`}
+      // data-anim is set by the inline script before hydration (scroll-reveal)
+      suppressHydrationWarning
+    >
       <body className="min-h-dvh flex flex-col">
-        <script
-          dangerouslySetInnerHTML={{
-            __html: "document.documentElement.setAttribute('data-anim','')",
-          }}
-        />
+        {/* marks the document before hydration so scroll-reveal can hide
+            sections without a flash; without JS everything stays visible */}
+        <Script id="anim-flag" strategy="beforeInteractive">
+          {"document.documentElement.setAttribute('data-anim','')"}
+        </Script>
         <NextIntlClientProvider>
           <ScrollReveal />
           <Header />
