@@ -7,7 +7,6 @@ import { useTranslations } from "next-intl";
 import { useSearchParams } from "next/navigation";
 import { Link, usePathname } from "@/i18n/navigation";
 import { MINIBUS } from "@/lib/cars";
-import { MinivanIcon } from "./bodyIcons";
 import { ArrowRightIcon } from "./icons";
 
 export function NavMenu() {
@@ -172,11 +171,7 @@ export function NavMenu() {
         )}
       </div>
       {divider}
-      <Link
-        href={`/auto?body=${MINIBUS}`}
-        className={`${itemCls(isMinibus)} gap-1.5`}
-      >
-        <MinivanIcon className="h-4 w-9 shrink-0 text-ink-faint" />
+      <Link href={`/auto?body=${MINIBUS}`} className={itemCls(isMinibus)}>
         {t("nav.minibus")}
       </Link>
       {divider}
