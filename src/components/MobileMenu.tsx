@@ -4,7 +4,9 @@
 import { useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { useTranslations } from "next-intl";
+import { useSearchParams } from "next/navigation";
 import { Link, usePathname } from "@/i18n/navigation";
+import { MINIBUS } from "@/lib/cars";
 import { site, telHref, waHref } from "@/lib/site";
 import { Logo } from "./Logo";
 import { ArrowRightIcon, PhoneIcon } from "./icons";
@@ -12,6 +14,7 @@ import { ArrowRightIcon, PhoneIcon } from "./icons";
 export function MobileMenu() {
   const t = useTranslations();
   const pathname = usePathname();
+  const searchParams = useSearchParams();
   const [open, setOpen] = useState(false);
   const [closing, setClosing] = useState(false);
   // close the panel whenever navigation happens (state adjusted during render)
@@ -43,11 +46,26 @@ export function MobileMenu() {
   }, [open]);
 
 
+  const isMinibus =
+    pathname.startsWith("/auto") && searchParams.get("body") === MINIBUS;
   const nav = [
-    { href: "/", label: t("nav.home") },
-    { href: "/auto", label: t("nav.catalog") },
-    { href: "/despre", label: t("nav.about") },
-    { href: "/contacte", label: t("nav.contact") },
+    { href: "/", label: t("nav.home"), active: pathname === "/" },
+    {
+      href: "/auto",
+      label: t("nav.catalog"),
+      active: pathname.startsWith("/auto") && !isMinibus,
+    },
+    {
+      href: `/auto?body=${MINIBUS}`,
+      label: t("nav.minibus"),
+      active: isMinibus,
+    },
+    { href: "/despre", label: t("nav.about"), active: pathname === "/despre" },
+    {
+      href: "/contacte",
+      label: t("nav.contact"),
+      active: pathname === "/contacte",
+    },
   ];
 
   const categories = [
@@ -114,7 +132,7 @@ export function MobileMenu() {
             <div className="flex-1 overflow-y-auto px-5 py-4">
               <nav aria-label="Mobile">
                 {nav.map((item) => {
-                  const active = pathname === item.href;
+                  const active = item.active;
                   return (
                     <Link
                       key={item.href}

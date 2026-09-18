@@ -10,6 +10,8 @@ import { Select } from "./ui/Select";
 import { SearchIcon } from "./icons";
 import {
   BODIES,
+  MINIBUS,
+  MINIBUS_BODIES,
   DRIVETRAINS,
   FUELS,
   TRANSMISSIONS,
@@ -108,6 +110,14 @@ export function CatalogFilters({
     ns: "body" | "fuel" | "transmission" | "drivetrain"
   ) => keys.map((k) => ({ value: k, label: t(`options.${ns}.${k}`) }));
 
+  // the two minibus bodies are sold as one category, so they filter as one
+  const bodyOptions = [
+    ...BODIES.filter(
+      (b) => !(MINIBUS_BODIES as readonly string[]).includes(b)
+    ).map((b) => ({ value: b, label: t(`options.body.${b}`) })),
+    { value: MINIBUS, label: t("options.body.minibus") },
+  ];
+
   const selectField = (
     label: string,
     name: string,
@@ -174,7 +184,7 @@ export function CatalogFilters({
         maxPh={String(new Date().getFullYear())}
       />
 
-      {selectField(t("common.body"), "body", body, setBody, opts(BODIES, "body"))}
+      {selectField(t("common.body"), "body", body, setBody, bodyOptions)}
       {selectField(t("common.fuel"), "fuel", fuel, setFuel, opts(FUELS, "fuel"))}
       {selectField(
         t("common.transmission"),

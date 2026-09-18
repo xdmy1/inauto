@@ -7,10 +7,14 @@ export async function BrandRow({
   brands,
   active,
   showAll = true,
+  scope,
 }: {
   brands: BrandCount[];
   active?: string;
   showAll?: boolean;
+  /** query string of the active category, e.g. "body=minivan,van" — keeps
+   *  the chips inside it instead of jumping to the brand page */
+  scope?: string;
 }) {
   const t = await getTranslations("common");
   if (brands.length === 0) return null;
@@ -18,7 +22,7 @@ export async function BrandRow({
     <div className="scroll-row">
       {showAll && (
         <Link
-          href="/auto"
+          href={scope ? `/auto?${scope}` : "/auto"}
           className={`shrink-0 rounded-full px-3.5 py-2 text-[13px] font-semibold ${
             !active ? "chip-dark" : "chip-3d text-ink-soft hover:text-ink"
           }`}
@@ -29,7 +33,11 @@ export async function BrandRow({
       {brands.map((b) => (
         <Link
           key={b.brand}
-          href={`/marca/${brandSlug(b.brand)}`}
+          href={
+            scope
+              ? `/auto?${scope}&brand=${encodeURIComponent(b.brand)}`
+              : `/marca/${brandSlug(b.brand)}`
+          }
           className={`shrink-0 rounded-full px-3.5 py-2 text-[13px] font-semibold ${
             active === b.brand ? "chip-dark" : "chip-3d text-ink hover:text-accent"
           }`}

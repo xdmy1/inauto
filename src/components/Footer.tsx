@@ -1,5 +1,6 @@
 import { getTranslations } from "next-intl/server";
 import { Link } from "@/i18n/navigation";
+import { MINIBUS } from "@/lib/cars";
 import { site, telHref, waHref } from "@/lib/site";
 import { brandSlug, getBrandsWithCounts } from "@/lib/cars";
 import { Logo } from "./Logo";
@@ -25,6 +26,7 @@ export async function Footer() {
   const categoryLinks = [
     { href: "/auto?body=suv", label: t("options.body.suv") },
     { href: "/auto?body=sedan", label: t("options.body.sedan") },
+    { href: `/auto?body=${MINIBUS}`, label: t("options.body.minibus") },
     { href: "/auto?fuel=diesel", label: t("options.fuel.diesel") },
     { href: "/auto?fuel=hybrid", label: t("options.fuel.hybrid") },
     { href: "/auto?transmission=automatic", label: t("options.transmission.automatic") },
@@ -32,9 +34,9 @@ export async function Footer() {
   ];
 
   const hours = [
-    { d: t("contact.hoursMoFr"), h: "09:00 – 18:00" },
-    { d: t("contact.hoursSa"), h: "09:00 – 15:00" },
-    { d: t("contact.hoursSu"), h: "09:00 – 13:00" },
+    { d: t("contact.hoursMoFr"), h: "09:00 – 19:00" },
+    { d: t("contact.hoursSa"), h: "09:00 – 16:00" },
+    { d: t("contact.hoursSu"), h: "10:00 – 14:00" },
   ];
 
   const mapsUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(

@@ -27,6 +27,11 @@ export const TRANSMISSIONS = ["automatic", "manual", "robotic", "cvt"] as const;
 
 export const DRIVETRAINS = ["fwd", "rwd", "awd"] as const;
 
+// The minibus category groups the two body types the dealer sells as one:
+// passenger minibuses ("minivan") and cargo vans ("van").
+export const MINIBUS_BODIES = ["minivan", "van"] as const;
+export const MINIBUS = MINIBUS_BODIES.join(",");
+
 export const STATUSES = [
   "DRAFT",
   "PUBLISHED",
@@ -126,7 +131,10 @@ export function filtersToWhere(f: CarFilters): Prisma.CarWhereInput {
   }
   if (f.brand) where.brand = { equals: f.brand, mode: "insensitive" };
   if (f.model) where.model = { contains: f.model, mode: "insensitive" };
-  if (f.body) where.body = f.body;
+  if (f.body)
+    where.body = f.body.includes(",")
+      ? { in: f.body.split(",").filter(Boolean) }
+      : f.body;
   if (f.fuel) where.fuel = f.fuel;
   if (f.transmission) where.transmission = f.transmission;
   if (f.drivetrain) where.drivetrain = f.drivetrain;
@@ -176,10 +184,12 @@ export async function getPublishedCars(f: CarFilters) {
 
 export type BrandCount = { brand: string; count: number };
 
-export async function getBrandsWithCounts(): Promise<BrandCount[]> {
+export async function getBrandsWithCounts(
+  scope?: Prisma.CarWhereInput
+): Promise<BrandCount[]> {
   const rows = await prisma.car.groupBy({
     by: ["brand"],
-    where: { status: "PUBLISHED" },
+    where: { status: "PUBLISHED", ...scope },
     _count: { brand: true },
     orderBy: { brand: "asc" },
   });

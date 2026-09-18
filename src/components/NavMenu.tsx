@@ -1,14 +1,19 @@
 "use client";
 
-// Main nav: active-page indicator + "Automobile" category dropdown
+// Main nav: active-page indicator, "Automobile" dropdown and the
+// separate "Microbuze" category (minivan + van)
 import { useEffect, useRef, useState } from "react";
 import { useTranslations } from "next-intl";
+import { useSearchParams } from "next/navigation";
 import { Link, usePathname } from "@/i18n/navigation";
+import { MINIBUS } from "@/lib/cars";
+import { MinivanIcon } from "./bodyIcons";
 import { ArrowRightIcon } from "./icons";
 
 export function NavMenu() {
   const t = useTranslations();
   const pathname = usePathname();
+  const searchParams = useSearchParams();
   const [open, setOpen] = useState(false);
   const [closing, setClosing] = useState(false);
   // close the panel whenever navigation happens (state adjusted during render)
@@ -56,7 +61,7 @@ export function NavMenu() {
     { href: "/auto?body=sedan", label: t("options.body.sedan") },
     { href: "/auto?body=hatchback", label: t("options.body.hatchback") },
     { href: "/auto?body=wagon", label: t("options.body.wagon") },
-    { href: "/auto?body=minivan", label: t("options.body.minivan") },
+    { href: `/auto?body=${MINIBUS}`, label: t("options.body.minibus") },
   ];
   const quick = [
     { href: "/auto?fuel=diesel", label: t("options.fuel.diesel") },
@@ -78,7 +83,9 @@ export function NavMenu() {
   const underline = null;
   const divider = null;
 
-  const isCatalog = pathname.startsWith("/auto");
+  const isMinibus =
+    pathname.startsWith("/auto") && searchParams.get("body") === MINIBUS;
+  const isCatalog = pathname.startsWith("/auto") && !isMinibus;
 
   return (
     <nav
@@ -164,6 +171,14 @@ export function NavMenu() {
           </div>
         )}
       </div>
+      {divider}
+      <Link
+        href={`/auto?body=${MINIBUS}`}
+        className={`${itemCls(isMinibus)} gap-1.5`}
+      >
+        <MinivanIcon className="h-4 w-9 shrink-0 text-ink-faint" />
+        {t("nav.minibus")}
+      </Link>
       {divider}
       <Link href="/despre" className={itemCls(pathname === "/despre")}>
         {t("nav.about")}

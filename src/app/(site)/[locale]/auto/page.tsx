@@ -2,6 +2,9 @@ import type { Metadata } from "next";
 import { getTranslations, setRequestLocale } from "next-intl/server";
 import { getPathname, Link } from "@/i18n/navigation";
 import {
+  BODIES,
+  MINIBUS,
+  MINIBUS_BODIES,
   getBrandsWithCounts,
   getPublishedCars,
   parseFilters,
@@ -13,16 +16,31 @@ import { SortSelect } from "@/components/SortSelect";
 import { BrandRow } from "@/components/home/BrandRow";
 import { prisma } from "@/lib/prisma";
 
+
+/** translation key for the active body category, or null for the full catalog */
+function bodyKey(body?: string | string[]) {
+  if (typeof body !== "string" || body === "") return null;
+  if (body === MINIBUS) return "minibus";
+  return (BODIES as readonly string[]).includes(body) ? body : null;
+}
+
 export async function generateMetadata({
   params,
+  searchParams,
 }: {
   params: Promise<{ locale: string }>;
+  searchParams: Promise<Record<string, string | string[] | undefined>>;
 }): Promise<Metadata> {
-  const { locale } = await params;
+  const [{ locale }, sp] = await Promise.all([params, searchParams]);
   const t = await getTranslations({ locale, namespace: "meta.catalog" });
+  const tb = await getTranslations({ locale, namespace: "options.body" });
+  const key = bodyKey(sp.body);
+  const category = key ? tb(key) : null;
   return {
-    title: { absolute: t("title") },
-    description: t("description"),
+    title: { absolute: category ? t("titleBody", { body: category }) : t("title") },
+    description: category
+      ? t("descriptionBody", { body: category })
+      : t("description"),
     alternates: {
       canonical: canonicalFor(locale, "/auto"),
       languages: localizedAlternates("/auto").languages,
@@ -42,9 +60,16 @@ export default async function CatalogPage({
   const t = await getTranslations();
 
   const filters = parseFilters(sp);
+  const categoryKey = bodyKey(sp.body);
+  const categoryWhere =
+    categoryKey === "minibus"
+      ? { body: { in: [...MINIBUS_BODIES] } }
+      : categoryKey
+        ? { body: categoryKey }
+        : undefined;
   const [{ cars, total, pages }, brands, colorRows] = await Promise.all([
     getPublishedCars(filters),
-    getBrandsWithCounts(),
+    getBrandsWithCounts(categoryWhere),
     prisma.car.findMany({
       where: { status: "PUBLISHED", color: { not: null } },
       select: { color: true },
@@ -54,6 +79,7 @@ export default async function CatalogPage({
   ]);
   const colors = colorRows.map((c) => c.color!).filter(Boolean);
   const action = getPathname({ locale, href: "/auto" });
+  const category = categoryKey ? t(`options.body.${categoryKey}`) : null;
 
   const pageHref = (page: number) => {
     const q = new URLSearchParams();
@@ -75,25 +101,43 @@ export default async function CatalogPage({
           {t("nav.home")}
         </Link>
         <span aria-hidden>/</span>
-        <span className="text-ink-soft">{t("nav.catalog")}</span>
+        {category ? (
+          <>
+            <Link href="/auto" className="hover:text-ink">
+              {t("nav.catalog")}
+            </Link>
+            <span aria-hidden>/</span>
+            <span className="text-ink-soft">{category}</span>
+          </>
+        ) : (
+          <span className="text-ink-soft">{t("nav.catalog")}</span>
+        )}
       </nav>
 
       <div className="mt-3 flex flex-wrap items-end justify-between gap-4">
         <div>
           <h1 className="font-display text-[28px] font-extrabold leading-tight tracking-tight sm:text-4xl">
-            {t("catalog.h1")}
+            {category
+              ? t("catalog.h1Body", { body: category })
+              : t("catalog.h1")}
           </h1>
           <p className="mt-2 text-sm text-ink-soft">
             <span className="font-semibold text-ink">{t("catalog.found", { count: total })}</span>
             {" · "}
-            {t("catalog.subtitle")}
+            {categoryKey === "minibus"
+              ? t("catalog.minibusSubtitle")
+              : t("catalog.subtitle")}
           </p>
         </div>
         <SortSelect value={filters.sort ?? "new"} />
       </div>
 
       <div className="mt-5">
-        <BrandRow brands={brands} active={activeBrand} />
+        <BrandRow
+          brands={brands}
+          active={activeBrand}
+          scope={categoryKey ? `body=${sp.body as string}` : undefined}
+        />
       </div>
 
       <div className="mt-6 grid grid-cols-1 gap-6 lg:grid-cols-[270px_1fr]">

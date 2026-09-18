@@ -6,7 +6,9 @@
     },
     "catalog": {
       "title": "Automobile de vânzare în Chișinău — catalog INAUTO.MD",
-      "description": "Catalog complet de automobile second-hand în Chișinău: SUV, sedan, diesel, hybrid. Filtrează după marcă, preț și an. Prima rată de la 100 €."
+      "description": "Catalog complet de automobile second-hand în Chișinău: SUV, sedan, diesel, hybrid. Filtrează după marcă, preț și an. Prima rată de la 100 €.",
+      "titleBody": "{body} de vânzare în Chișinău — INAUTO.MD",
+      "descriptionBody": "{body} disponibile în parcarea INAUTO din Chișinău. Kilometraj real, acte perfectate pe loc, prima rată de la 100 €."
     },
     "about": {
       "title": "Despre INAUTO.MD — parc auto în Chișinău",
@@ -61,7 +63,8 @@
     "home": "Acasă",
     "catalog": "Automobile",
     "about": "Despre noi",
-    "contact": "Contacte"
+    "contact": "Contacte",
+    "minibus": "Microbuze"
   },
   "home": {
     "searchTitle": "Găsește-ți mașina",
@@ -151,7 +154,9 @@
     "search": "Caută",
     "searchPlaceholder": "Marcă, model…",
     "more": "Mai multe filtre",
-    "less": "Mai puține filtre"
+    "less": "Mai puține filtre",
+    "h1Body": "{body} de vânzare în Chișinău",
+    "minibusSubtitle": "Microbuze și furgonete din parcarea INAUTO, str. Cucorilor 14 — pasager, marfar și mixt."
   },
   "car": {
     "specs": "Caracteristici",
@@ -223,7 +228,8 @@
       "cabrio": "Cabriolet",
       "minivan": "Minivan",
       "van": "Furgon",
-      "pickup": "Pickup"
+      "pickup": "Pickup",
+      "minibus": "Microbuze"
     },
     "fuel": {
       "petrol": "Benzină",
