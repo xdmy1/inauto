@@ -1,4 +1,5 @@
-// Sync the Prisma schema before build.
+// Sync the Prisma schema before build (and regenerate the client:
+// Vercel caches node_modules, so a stale client breaks the type check).
 // Picks the Neon (DATABASE1_*) env first, preferring the unpooled URL for DDL;
 // when nothing is in the process env (local dev), prisma reads .env itself.
 import { spawnSync } from "node:child_process";
@@ -19,7 +20,7 @@ else delete env.DATABASE_URL; // let prisma load it from .env
 
 const res = spawnSync(
   "npx",
-  ["prisma", "db", "push", "--accept-data-loss", "--skip-generate"],
+  ["prisma", "db", "push", "--accept-data-loss"],
   { stdio: "inherit", env }
 );
 process.exit(res.status ?? 1);
