@@ -190,7 +190,7 @@ export function CarForm({ car }: { car: CarFormData }) {
             <input type="number" name="seats" min={1} max={12} defaultValue={car?.seats ?? ""} className={inputCls} />
           </Field>
           <Field label="Parcarea (adresa)" className="col-span-2 sm:col-span-3">
-            <input name="location" defaultValue={car?.location ?? ""} placeholder="mun. Chișinău, str. Cucorilor 14" className={inputCls} />
+            <input name="location" defaultValue={car?.location ?? ""} placeholder="mun. Chișinău, str. Socoleni 19" className={inputCls} />
           </Field>
         </div>
       </section>

@@ -5,10 +5,10 @@ export const site = {
   domain: "inauto.md",
   url: process.env.NEXT_PUBLIC_SITE_URL ?? "https://inauto.md",
   address: {
-    street: "str. Cucorilor 14",
+    street: "str. Socoleni 19",
     city: "Chișinău",
     country: "MD",
-    full: "mun. Chișinău, str. Cucorilor 14",
+    full: "mun. Chișinău, str. Socoleni 19",
   },
   // international format, no "+"
   phones: ["37368501002"],
@@ -20,10 +20,12 @@ export const site = {
     { days: "Sa", open: "09:00", close: "16:00" },
     { days: "Su", open: "10:00", close: "14:00" },
   ],
-  geo: { lat: 47.0105, lon: 28.8638 },
+  geo: { lat: 47.0604, lon: 28.8396 },
   social: {
     // the only social profile that actually exists on the old site
     facebook: "https://www.facebook.com/INauto.md/",
+    // the dealer profile all the adverts are published from
+    nnn: "https://999.md/ro/profile/INauto",
   },
 } as const;
 

@@ -2,7 +2,7 @@
   "meta": {
     "home": {
       "title": "INAUTO.MD — Parc auto în Chișinău | Mașini second-hand cu prima rată",
-      "description": "Parc auto în Chișinău, str. Cucorilor 14. Mașini verificate, acte gata, prima rată de la 100 €. Vezi ofertele și programează un test drive."
+      "description": "Parc auto în Chișinău, str. Socoleni 19. Mașini verificate, acte gata, prima rată de la 100 €. Vezi ofertele și programează un test drive."
     },
     "catalog": {
       "title": "Automobile de vânzare în Chișinău — catalog INAUTO.MD",
@@ -15,8 +15,8 @@
       "description": "INAUTO — parc auto în Chișinău. Mașini verificate, kilometraj real, finanțare cu prima rată mică și acte perfectate pe loc."
     },
     "contact": {
-      "title": "Contacte INAUTO.MD — str. Cucorilor 14, Chișinău",
-      "description": "Vino la parcarea INAUTO: mun. Chișinău, str. Cucorilor 14. Program zilnic, telefon 068 501 002."
+      "title": "Contacte INAUTO.MD — str. Socoleni 19, Chișinău",
+      "description": "Vino la parcarea INAUTO: mun. Chișinău, str. Socoleni 19. Program zilnic, telefon 068 501 002."
     }
   },
   "common": {
@@ -93,11 +93,11 @@
       "docsText": "Contract, transcriere, asigurare — toate la noi."
     },
     "contactTitle": "Vino să le vezi pe viu",
-    "contactText": "mun. Chișinău, str. Cucorilor 14. Deschis în fiecare zi.",
+    "contactText": "mun. Chișinău, str. Socoleni 19. Deschis în fiecare zi.",
     "advanced": "Filtre avansate",
     "heroLine": "{count, plural, one {# mașină} few {# mașini} other {# de mașini}} în parcare chiar acum",
     "searchPlaceholder": "Caută după marcă sau model…",
-    "heroEyebrow": "Parc auto în Chișinău · str. Cucorilor 14",
+    "heroEyebrow": "Parc auto în Chișinău · str. Socoleni 19",
     "heroCountLabel": "{count, plural, one {automobil} other {automobile}} de vânzare",
     "heroSub": "Mașini verificate, cu kilometraj real, acte gata și prima rată de la 100 €. Vino, alegi, conduci.",
     "heroCta": "Vezi automobilele",
@@ -146,7 +146,7 @@
     "prev": "Înapoi",
     "next": "Înainte",
     "h1": "Automobile de vânzare în Chișinău",
-    "subtitle": "Toate mașinile din parcarea INAUTO, str. Cucorilor 14. Prețurile includ actele perfectate pe loc.",
+    "subtitle": "Toate mașinile din parcarea INAUTO, str. Socoleni 19. Prețurile includ actele perfectate pe loc.",
     "sortBy": "Sortare",
     "brands": "Mărci",
     "showing": "{count, plural, one {# automobil} few {# automobile} other {# de automobile}}",
@@ -156,7 +156,7 @@
     "more": "Mai multe filtre",
     "less": "Mai puține filtre",
     "h1Body": "{body} de vânzare în Chișinău",
-    "minibusSubtitle": "Microbuze și furgonete din parcarea INAUTO, str. Cucorilor 14 — pasager, marfar și mixt.",
+    "minibusSubtitle": "Microbuze și furgonete din parcarea INAUTO, str. Socoleni 19 — pasager, marfar și mixt.",
     "applying": "Se aplică filtrele…",
     "showResults": "Arată {count, plural, one {# rezultat} few {# rezultate} other {# de rezultate}}"
   },
@@ -183,12 +183,17 @@
     },
     "visit": "Vino să o vezi",
     "callUs": "Sună-ne",
-    "gallery": "Fotografii"
+    "gallery": "Fotografii",
+    "galleryOpen": "Deschide fotografia pe tot ecranul",
+    "galleryClose": "Închide",
+    "galleryPrev": "Fotografia anterioară",
+    "galleryNext": "Fotografia următoare",
+    "galleryPhoto": "Fotografia {n}"
   },
   "about": {
     "label": "Despre noi",
     "title": "Un parc auto care lucrează cinstit.",
-    "p1": "INAUTO este un parc auto din Chișinău, pe str. Cucorilor 14. Aducem și vindem mașini verificate, cu kilometraj real și istoric transparent — exact așa cum ne-am dori să cumpărăm noi înșine.",
+    "p1": "INAUTO este un parc auto din Chișinău, pe str. Socoleni 19. Aducem și vindem mașini verificate, cu kilometraj real și istoric transparent — exact așa cum ne-am dori să cumpărăm noi înșine.",
     "p2": "Fiecare automobil trece printr-o verificare tehnică înainte să ajungă în parcare. Nu ascundem nimic: ce e de spus despre o mașină, îți spunem direct, la telefon sau față în față.",
     "p3": "Cumperi cu plata integrală sau cu finanțare — prima rată începe de la 100 €, iar actele se perfectează pe loc, în aceeași zi.",
     "statsCars": "automobile în parcare",
@@ -209,7 +214,7 @@
   },
   "footer": {
     "rights": "© {year} INAUTO.MD — Toate drepturile rezervate.",
-    "address": "str. Cucorilor 14, Chișinău",
+    "address": "str. Socoleni 19, Chișinău",
     "about": "Parc auto în Chișinău. Mașini verificate cu kilometraj real, finanțare cu prima rată de la 100 € și acte perfectate pe loc.",
     "navigation": "Navigare",
     "categories": "Automobile populare",
@@ -218,7 +223,8 @@
     "under10k": "Până la 10 000 €",
     "madeBy": "Site creat de",
     "brands": "Mărci",
-    "nnn": "Anunțurile noastre pe 999.md"
+    "nnn": "Anunțurile noastre pe 999.md",
+    "today": "azi"
   },
   "options": {
     "body": {
@@ -266,11 +272,11 @@
   },
   "brand": {
     "title": "{brand} de vânzare în Chișinău",
-    "intro": "{count, plural, one {# automobil {brand}} few {# automobile {brand}} other {# de automobile {brand}}} în parcarea INAUTO, str. Cucorilor 14 — verificate, cu kilometraj real și acte gata.",
+    "intro": "{count, plural, one {# automobil {brand}} few {# automobile {brand}} other {# de automobile {brand}}} în parcarea INAUTO, str. Socoleni 19 — verificate, cu kilometraj real și acte gata.",
     "empty": "Momentan nu avem {brand} în parcare. Sună-ne — aducem la comandă.",
     "otherBrands": "Alte mărci în parcare",
     "allCars": "Toate automobilele",
     "metaTitle": "{brand} de vânzare în Chișinău — {count, plural, one {# automobil} few {# automobile} other {# de automobile}} | INAUTO.MD",
-    "metaDescription": "Vânzări auto {brand} în Chișinău: {count, plural, one {# automobil} few {# automobile} other {# de automobile}} second-hand verificate, kilometraj real, prima rată de la 100 €. Parc auto INAUTO, str. Cucorilor 14."
+    "metaDescription": "Vânzări auto {brand} în Chișinău: {count, plural, one {# automobil} few {# automobile} other {# de automobile}} second-hand verificate, kilometraj real, prima rată de la 100 €. Parc auto INAUTO, str. Socoleni 19."
   }
 }

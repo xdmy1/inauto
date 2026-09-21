@@ -127,10 +127,10 @@ async function main() {
         ...data,
         slug: slugify(`${c.brand}-${c.model}-${c.year}`),
         status: status ?? "PUBLISHED",
-        location: "mun. Chișinău, str. Cucorilor 14",
+        location: "mun. Chișinău, str. Socoleni 19",
         seats: 5,
-        descriptionRo: `${c.brand} ${c.model}, ${c.year}. Stare tehnică foarte bună, kilometraj real verificat, istoric transparent. Adusă recent, un singur proprietar. Posibilitate de finanțare cu prima rată de la ${c.downPayment ?? 100} €. Test drive la parcarea noastră din str. Cucorilor 14, Chișinău.`,
-        descriptionRu: `${c.brand} ${c.model}, ${c.year} г. Отличное техническое состояние, проверенный реальный пробег, прозрачная история. Недавно пригнан, один владелец. Возможно финансирование с первым взносом от ${c.downPayment ?? 100} €. Тест-драйв на нашей площадке: ул. Кукорилор 14, Кишинёв.`,
+        descriptionRo: `${c.brand} ${c.model}, ${c.year}. Stare tehnică foarte bună, kilometraj real verificat, istoric transparent. Adusă recent, un singur proprietar. Posibilitate de finanțare cu prima rată de la ${c.downPayment ?? 100} €. Test drive la parcarea noastră din str. Socoleni 19, Chișinău.`,
+        descriptionRu: `${c.brand} ${c.model}, ${c.year} г. Отличное техническое состояние, проверенный реальный пробег, прозрачная история. Недавно пригнан, один владелец. Возможно финансирование с первым взносом от ${c.downPayment ?? 100} €. Тест-драйв на нашей площадке: ул. Соколень 19, Кишинёв.`,
       },
     });
     const img = await importPhoto(car.id, photo);

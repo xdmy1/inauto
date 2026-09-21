@@ -105,17 +105,18 @@ export default async function HomePage({
     <>
       {/* ——— Hero: the real parking, the real count, the real slogan ——— */}
       <section className="relative overflow-hidden bg-ink text-white">
-        {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img
-          src="/images/hero.webp"
-          alt={`${site.name} — ${site.address.full}`}
-          width={1400}
-          height={1120}
-          fetchPriority="high"
-          className="hero-photo absolute inset-0 h-full w-full object-cover object-[62%_45%]"
-        />
-        <div className="hero-shade absolute inset-0" aria-hidden />
-        <div className={`${wrap} relative pb-24 pt-10 sm:pb-28 sm:pt-14 lg:pb-32 lg:pt-16`}>
+        <div className="hero-media">
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src="/images/hero.webp"
+            alt={`${site.name} — ${site.address.full}`}
+            width={1280}
+            height={960}
+            fetchPriority="high"
+            className="hero-photo h-full w-full object-cover object-top lg:object-center"
+          />
+        </div>
+        <div className={`${wrap} relative -mt-12 pb-24 sm:-mt-16 sm:pb-28 lg:mt-0 lg:pb-36 lg:pt-20`}>
           <p className="text-[11.5px] font-semibold uppercase tracking-[0.12em] text-white/70 sm:text-[12px] sm:tracking-[0.18em]">
             {t("home.heroEyebrow")}
           </p>

@@ -108,9 +108,9 @@ export default async function AboutPage({
             <img
               src="/images/hero.webp"
               alt={`${site.name} — ${site.address.full}`}
-              width={1400}
-              height={1120}
-              className="aspect-[5/4] w-full object-cover"
+              width={1280}
+              height={960}
+              className="aspect-[4/3] w-full object-cover"
             />
           </div>
           <div className="-mt-10 mx-4 grid grid-cols-3 gap-px overflow-hidden rounded-2xl border border-line bg-line shadow-lift sm:mx-8">
