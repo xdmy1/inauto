@@ -24,5 +24,6 @@ export default async function proxy(request: NextRequest) {
 }
 
 export const config = {
-  matcher: ["/((?!api|_next|_vercel|uploads|.*\\..*).*)"],
+  // car/ and listings/ are the old site's URLs — src/lib/legacy.ts redirects them
+  matcher: ["/((?!api|_next|_vercel|uploads|car/|listings/|.*\\..*).*)"],
 };
