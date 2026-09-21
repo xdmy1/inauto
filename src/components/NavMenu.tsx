@@ -88,7 +88,7 @@ export function NavMenu() {
 
   return (
     <nav
-      className="chip-3d hidden items-center gap-0.5 rounded-xl p-1 md:flex"
+      className="chip-3d hidden items-center gap-0.5 rounded-xl p-1 lg:flex"
       aria-label="Main"
     >
       <Link href="/" className={itemCls(pathname === "/")}>
