@@ -50,8 +50,12 @@ mașina **vândută / rezervată / arhivată**, anunțul se **ascunde automat** 
 999.md (și reapare când o pui din nou „Publicat"). „Republică" ridică anunțul în
 listă; „Ascunde / Arată" controlează vizibilitatea manual.
 
-**999.md → site.** Anunțurile auto ale contului se importă ca mașini publicate
-(poze incluse). Rulează:
+**999.md → site.** Anunțurile din Autoturisme și Microbuze/furgonete se importă
+ca mașini publicate. Pozele nu se copiază — site-ul le afișează direct de pe
+CDN-ul 999.md (i.simpalsmedia.com). API-ul limitează ritmul (~2 cereri/s), așa
+că un anunț e recitit doar când 999.md arată o schimbare (data republicării
+sau prețul), iar o rulare citește cât încape în 4 minute și lasă restul pentru
+următoarea. Rulează:
 - automat, **o dată pe zi** (cron Vercel din `vercel.json`, ruta
   `/api/nnn/import`, protejată cu `CRON_SECRET`);
 - automat, când deschizi panoul admin și ultimul import are peste 6 ore;
@@ -64,12 +68,15 @@ lunară, promovată, status, adresă) nu se ating. Mașinile create pe site nu s
 suprascrise de import. Anunțurile care dispar sau expiră pe 999.md își
 **arhivează** mașina automat; când redevin publice, mașina revine.
 
-Activare:
-1. Cere cheia API pentru contul firmei: info@999.md (Partners API —
-   https://partners-api.999.md/api/documentation).
-2. În `.env`: `NNN_API_KEY="cheia"` și `NNN_DRY_RUN="0"` (importul merge și cu
-   `NNN_DRY_RUN=1` — doar postarea e simulată). Pentru cron: `CRON_SECRET`.
-3. Până atunci totul rulează în **mod simulare** (vezi badge-ul din admin).
+Activare (făcută pe 22.09.2026 — cheia e în Vercel):
+1. Cheia API se generează din contul 999.md al firmei (Setări → API / „Generează
+   un cod unic"; documentația: https://partners-api.999.md/api/documentation).
+2. În `.env` / Vercel: `NNN_API_KEY="cheia"` și `NNN_DRY_RUN="0"` (importul merge
+   și cu `NNN_DRY_RUN=1` — doar postarea e simulată). Pentru cron: `CRON_SECRET`.
+3. Fără cheie totul rulează în **mod simulare** (vezi badge-ul din admin).
+
+Exportul (site → 999.md) nu a fost încă exersat cu o postare reală — prima
+publicare din admin trebuie urmărită în panoul 999.
 
 Maparea câmpurilor se face dinamic după schema categoriei Transport →
 Autoturisme → Vând; orice câmp care nu poate fi mapat apare ca avertisment în

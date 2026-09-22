@@ -14,8 +14,8 @@ export const norm = (s: string) =>
 export const FUEL_RU: Record<string, string[]> = {
   petrol: ["бензин"],
   diesel: ["дизель"],
-  hybrid: ["гибрид"],
-  phev: ["плагин-гибрид", "плагин гибрид", "phev"],
+  hybrid: ["гибрид", "мягкий гибрид", "гибрид (бензин)", "гибрид (дизель)"],
+  phev: ["плагин-гибрид (бензин)", "плагин-гибрид (дизель)", "плагин-гибрид", "плагин гибрид", "phev"],
   electric: ["электричество", "электро"],
   gas: ["газ", "газ / бензин", "газ/бензин", "метан", "пропан"],
 };
@@ -29,12 +29,12 @@ export const TRANSMISSION_RU: Record<string, string[]> = {
 
 export const BODY_RU: Record<string, string[]> = {
   sedan: ["седан"],
-  hatchback: ["хэтчбек", "хетчбек", "лифтбек"],
-  wagon: ["универсал"],
+  hatchback: ["хэтчбек", "хетчбек", "хетчбэк", "лифтбек"],
+  wagon: ["универсал", "комби"],
   suv: ["внедорожник", "кроссовер", "джип"],
   coupe: ["купе"],
   cabrio: ["кабриолет", "родстер"],
-  minivan: ["минивэн", "минивен"],
+  minivan: ["минивэн", "минивен", "микровэн"],
   van: ["фургон", "микроавтобус"],
   pickup: ["пикап"],
 };
@@ -56,9 +56,16 @@ export function keyFromRu(
   for (const [key, syns] of Object.entries(dict)) {
     if (syns.some((s) => norm(s) === t)) return key;
   }
+  // then the longest synonym contained in the title, so
+  // "плагин-гибрид (бензин)" is phev, not petrol
+  let best: { key: string; len: number } | undefined;
   for (const [key, syns] of Object.entries(dict)) {
-    if (syns.some((s) => t.includes(norm(s)))) return key;
+    for (const s of syns) {
+      const n = norm(s);
+      if (t.includes(n) && (!best || n.length > best.len)) best = { key, len: n.length };
+    }
   }
+  if (best) return best.key;
   return undefined;
 }
 
@@ -68,14 +75,14 @@ export const FEATURE_KEYS = {
   model: ["модель"],
   year: ["год выпуска", "год"],
   title: ["заголовок"],
-  description: ["описание"],
+  description: ["текст объявления", "описание"],
   price: ["цена"],
   mileage: ["пробег"],
   fuel: ["тип топлива", "топлив"],
-  transmission: ["коробка передач", "коробка"],
+  transmission: ["коробка передач", "кпп", "коробка"],
   body: ["тип кузова", "кузов"],
   drivetrain: ["привод"],
-  engine: ["объем двигателя", "объём двигателя", "объем", "объём"],
+  engine: ["объем двигателя", "объём двигателя", "двигатель", "объем", "объём"],
   power: ["мощность"],
   color: ["цвет"],
   seats: ["количество мест", "мест"],

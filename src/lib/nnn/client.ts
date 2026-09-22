@@ -35,10 +35,21 @@ export class NnnApiError extends Error {
   }
 }
 
+const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
+
+// The API rate-limits bursts (429 after ~10 quick calls); ~2 calls/s is fine.
+// Calls are spaced out and a 429 is retried after a pause.
+const MIN_GAP_MS = 400;
+let lastCallAt = 0;
+
 async function request<T>(
   path: string,
-  init: RequestInit = {}
+  init: RequestInit = {},
+  attempt = 0
 ): Promise<T> {
+  const wait = lastCallAt + MIN_GAP_MS - Date.now();
+  if (wait > 0) await sleep(wait);
+  lastCallAt = Date.now();
   const res = await fetch(`${BASE}${path}`, {
     ...init,
     headers: {
@@ -50,6 +61,10 @@ async function request<T>(
     },
     cache: "no-store",
   });
+  if (res.status === 429 && attempt < 3 && !(init.body instanceof FormData)) {
+    await sleep(3000 * (attempt + 1));
+    return request<T>(path, init, attempt + 1);
+  }
   if (!res.ok) {
     const text = await res.text().catch(() => "");
     throw new NnnApiError(
@@ -90,10 +105,21 @@ export type NnnAdvertState =
   | "hidden"
   | "expired";
 
+export type NnnAdvertFeature = {
+  id: string;
+  type: string;
+  title: string;
+  value: unknown;
+  units: string[] | null;
+  options: { id: string; title: string }[] | null;
+};
+
 export type NnnAdvertListItem = {
   id: string;
   title: string;
   state: NnnAdvertState | string;
+  price?: { value: number; unit: string };
+  images?: { value: string[] | null };
   categories?: {
     category?: { id: string; title: string; url: string };
     subcategory?: { id: string; title: string; url: string };
@@ -168,9 +194,36 @@ export function getAdvert(advertId: string, lang = "ro") {
   return request<NnnAdvert>(`/adverts/${advertId}?${q}`);
 }
 
-export function getAdvertFeatures(advertId: string, lang = "ru") {
+/** one advert's filled-in features — a different shape from the schema:
+ *  { featuresGroups: [{ title: {translated}, feature: [{ id, type, title, value, options }] }] } */
+export async function getAdvertFeatures(advertId: string, lang = "ru") {
   const q = new URLSearchParams({ lang });
-  return request<NnnFeaturesResponse>(`/adverts/${advertId}/features?${q}`);
+  const res = await request<{
+    featuresGroups?: {
+      feature?: {
+        id: string | number;
+        type: string;
+        title: string | { translated?: string };
+        value: unknown;
+        units: string[] | null;
+        options: { id: string | number; title: string }[] | null;
+      }[];
+    }[];
+  }>(`/adverts/${advertId}/features?${q}`);
+  const out: NnnAdvertFeature[] = [];
+  for (const g of res.featuresGroups ?? []) {
+    for (const f of g.feature ?? []) {
+      out.push({
+        id: String(f.id),
+        type: f.type ?? "",
+        title: typeof f.title === "string" ? f.title : (f.title?.translated ?? ""),
+        value: f.value,
+        units: f.units ?? null,
+        options: f.options?.map((o) => ({ id: String(o.id), title: o.title })) ?? null,
+      });
+    }
+  }
+  return out;
 }
 
 export async function uploadImage(buf: Buffer, filename: string) {

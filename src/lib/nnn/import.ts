@@ -1,27 +1,27 @@
-// Import: bring the company's 999.md car adverts onto the site.
+// Import: bring the company's 999.md adverts onto the site.
 //
-// Every advert in Transport → Легковые автомобили on the account becomes a
-// published car here (photos included). Adverts that were born on 999.md are
-// re-read on each run — 999.md stays the master for their specs, price and
-// description; admin-only fields (old price, down payment, featured, status,
-// location) are never touched. Cars that were born on the site are left alone
-// (the site is their master). Adverts that disappear or stop being public
-// archive their car on the site.
+// Every public advert in Transport → Autoturisme / Microbuze și furgonete on
+// the account becomes a published car here. Adverts that were born on 999.md
+// are re-read on each run — 999.md stays the master for their specs, price,
+// description and photos; admin-only fields (old price, down payment,
+// featured, status, location) are never touched. Cars that were born on the
+// site are left alone (the site is their master). Adverts that disappear or
+// stop being public archive their car on the site.
+//
+// Photos are not copied: the site shows them straight from 999.md's CDN
+// (i.simpalsmedia.com), the same way the catalogue was first filled.
 import { prisma } from "../prisma";
 import { revalidatePath } from "next/cache";
-import { saveCarImageBuffer, deleteCarImageFiles } from "../uploads";
 import { uniqueCarSlug } from "../cars";
 import { site } from "../site";
 import {
-  getAdvert,
-  getDependentOptions,
+  getAdvertFeatures,
   getFeatures,
   listAdverts,
   nnnConfigured,
   nnnImageUrl,
-  type NnnAdvert,
+  type NnnAdvertFeature,
   type NnnAdvertListItem,
-  type NnnFeature,
 } from "./client";
 import {
   BODY_RU,
@@ -30,7 +30,6 @@ import {
   FEATURE_KEYS,
   FUEL_RU,
   OFFER_TYPE,
-  SUBCATEGORY_ID,
   TRANSMISSION_RU,
   colorFromRu,
   engineToCc,
@@ -41,8 +40,17 @@ import {
   type FeatureKey,
 } from "./mapping";
 
-const MAX_IMAGES = 15;
+const MAX_IMAGES = 20;
 const ALL_STATES = "public,blocked,blocked_commercial,need_pay,hidden,expired";
+// The cron route may run for 300 s; reading one advert takes ~0.5 s (the API
+// is rate-limited), so a run reads what fits and leaves the rest for the next.
+const READ_BUDGET_MS = 230_000;
+
+// the 999.md subcategories that have a place on the site
+const SUBCATEGORIES: Record<string, { bodyFallback: string }> = {
+  "659": { bodyFallback: "sedan" }, // Autoturisme
+  "660": { bodyFallback: "van" }, // Microbuze și furgonete
+};
 
 export type ImportReport = {
   ok: boolean;
@@ -79,12 +87,6 @@ export type MappedCar = {
   imageIds: string[];
 };
 
-export type Schema = {
-  byId: Map<string, NnnFeature>;
-  roTitleById: Map<string, string>;
-  fieldOf: (f: NnnFeature) => FeatureKey | undefined;
-};
-
 // Priority order: specific titles first so "объем двигателя" isn't read as "год"
 const FIELD_ORDER: FeatureKey[] = [
   "brand",
@@ -105,53 +107,18 @@ const FIELD_ORDER: FeatureKey[] = [
   "vin",
 ];
 
-export function buildSchema(
-  ru: { features_groups: { features: NnnFeature[] }[] },
-  ro?: { features_groups: { features: NnnFeature[] }[] }
-): Schema {
-  const byId = new Map<string, NnnFeature>();
-  for (const g of ru.features_groups) for (const f of g.features) byId.set(f.id, f);
-  const roTitleById = new Map<string, string>();
-  if (ro) for (const g of ro.features_groups) for (const f of g.features) roTitleById.set(f.id, f.title);
-
-  const cache = new Map<string, FeatureKey | undefined>();
-  const fieldOf = (f: NnnFeature) => {
-    if (cache.has(f.id)) return cache.get(f.id);
-    const t = norm(f.title);
-    let found: FeatureKey | undefined;
-    for (const key of FIELD_ORDER) {
-      const kws = FEATURE_KEYS[key] as readonly string[];
-      if (kws.some((k) => t === norm(k))) {
-        found = key;
-        break;
-      }
-    }
-    if (!found) {
-      for (const key of FIELD_ORDER) {
-        const kws = FEATURE_KEYS[key] as readonly string[];
-        if (kws.some((k) => t.includes(norm(k)))) {
-          found = key;
-          break;
-        }
-      }
-    }
-    cache.set(f.id, found);
-    return found;
-  };
-  return { byId, roTitleById, fieldOf };
-}
-
-async function loadSchema(): Promise<Schema> {
-  const params = {
-    category_id: CATEGORY_ID,
-    subcategory_id: SUBCATEGORY_ID,
-    offer_type: OFFER_TYPE,
-  };
-  const [ru, ro] = await Promise.all([
-    getFeatures({ ...params, lang: "ru" }),
-    getFeatures({ ...params, lang: "ro" }).catch(() => undefined),
-  ]);
-  return buildSchema(ru, ro);
+/** which of our fields a 999.md feature title (RU) stands for */
+function fieldOf(title: string): { key: FeatureKey; exact: boolean } | undefined {
+  const t = norm(title);
+  for (const key of FIELD_ORDER) {
+    const kws = FEATURE_KEYS[key] as readonly string[];
+    if (kws.some((k) => t === norm(k))) return { key, exact: true };
+  }
+  for (const key of FIELD_ORDER) {
+    const kws = FEATURE_KEYS[key] as readonly string[];
+    if (kws.some((k) => t.includes(norm(k)))) return { key, exact: false };
+  }
+  return undefined;
 }
 
 const toNumber = (v: unknown): number | undefined => {
@@ -163,86 +130,94 @@ const toNumber = (v: unknown): number | undefined => {
   return undefined;
 };
 
-const optionTitle = (f: NnnFeature, value: unknown): string | undefined => {
-  const id = String(value);
-  const opt = f.options?.find((o) => o.id === id);
-  return opt?.title ?? (f.options ? undefined : id);
+/** the chosen option's title, or the raw value for free-text features */
+const optionTitle = (f: NnnAdvertFeature): string | undefined => {
+  if (f.value == null) return undefined;
+  const id = String(f.value);
+  if (f.options) return f.options.find((o) => o.id === id)?.title;
+  return typeof f.value === "string" ? f.value : id;
 };
 
-export type ModelResolver = (
-  modelFeatureId: string,
-  brandOptionId: string
-) => Promise<{ id: string; title: string }[]>;
+const isOn = (v: unknown) => v === true || v === "true" || v === 1 || v === "1" || v === "True";
+
+// The dealer's adverts share one template: promo lines, then the car-specific
+// part under "#### DESCRIERE SUPLIMENTARĂ ####", then payment options, links
+// and the address. Only the car-specific part belongs on the site.
+export function cleanDescription(text: string) {
+  const lines = text.replace(/\r/g, "").split("\n");
+  const isMarker = (l: string) => /^\s*#{3,}/.test(l);
+  const start = lines.findIndex((l) => isMarker(l) && /suplimentar|дополнительн/i.test(l));
+  let body: string[];
+  if (start >= 0) {
+    body = [];
+    for (const l of lines.slice(start + 1)) {
+      if (isMarker(l)) break;
+      body.push(l);
+    }
+  } else {
+    // no template: keep the text, minus the lines that are just links
+    body = lines.filter((l) => !/https?:\/\/|999\.md/i.test(l));
+  }
+  return body
+    .map((l) => l.replace(/\s+$/, "").replace(/^\s+(?=[-•*])/, ""))
+    .join("\n")
+    .replace(/\n{3,}/g, "\n\n")
+    .trim();
+}
 
 /**
- * Pure mapping of one 999.md advert onto our car fields. Exported so it can
- * be unit-tested with a fake schema/advert without touching the network.
+ * Pure mapping of one 999.md advert (list item + its RU features) onto our
+ * car fields. Exported so it can be tested without touching the network.
  */
-export async function mapAdvert(
-  advert: NnnAdvert,
-  schema: Schema,
-  resolveModels: ModelResolver
-): Promise<{ car: MappedCar | null; warnings: string[] }> {
+export function mapAdvert(
+  item: NnnAdvertListItem,
+  features: NnnAdvertFeature[],
+  roTitleById: Map<string, string>,
+  bodyFallback = "sedan"
+): { car: MappedCar | null; warnings: string[] } {
   const warnings: string[] = [];
-  const raw: Partial<Record<FeatureKey, { f: NnnFeature; value: unknown; unit?: string }>> = {};
+  const raw: Partial<Record<FeatureKey, NnnAdvertFeature>> = {};
   const equipmentRu: string[] = [];
   const equipmentRo: string[] = [];
-  let imageIds: string[] = [];
+  let imageIds: string[] = item.images?.value ?? [];
 
-  for (const fv of advert.features ?? []) {
-    const f = schema.byId.get(String(fv.id));
-    if (!f) continue;
-    if (f.type === "upload_images") {
-      imageIds = Array.isArray(fv.value) ? fv.value.map(String) : [];
-      continue;
+  const matched = features
+    .map((f) => ({ f, m: fieldOf(f.title) }))
+    .filter((x): x is { f: NnnAdvertFeature; m: NonNullable<typeof x.m> } => !!x.m)
+    // exact titles first, so "Старая цена" never takes the price slot
+    .sort((a, b) => Number(b.m.exact) - Number(a.m.exact));
+  for (const f of features) {
+    if (f.type === "upload_images" && Array.isArray(f.value) && !imageIds.length) {
+      imageIds = f.value.map(String);
+    } else if (f.type === "check_box" && isOn(f.value)) {
+      equipmentRu.push(f.title);
+      equipmentRo.push(roTitleById.get(f.id) ?? f.title);
     }
-    if (f.type === "check_box") {
-      const on = fv.value === true || fv.value === "true" || fv.value === 1 || fv.value === "1";
-      if (on) {
-        equipmentRu.push(f.title);
-        equipmentRo.push(schema.roTitleById.get(f.id) ?? f.title);
-      }
-      continue;
-    }
-    const key = schema.fieldOf(f);
-    if (key && !raw[key]) raw[key] = { f, value: fv.value, unit: fv.unit };
+  }
+  for (const { f, m } of matched) {
+    if (f.type === "check_box" || f.type === "upload_images") continue;
+    if (!raw[m.key]) raw[m.key] = f;
   }
 
-  // brand → model (dependent options)
-  const brand = raw.brand ? optionTitle(raw.brand.f, raw.brand.value) : undefined;
-  let model: string | undefined;
-  if (raw.model) {
-    const mf = raw.model.f;
-    if (mf.options) model = optionTitle(mf, raw.model.value);
-    else if (mf.depends_on && raw.brand) {
-      try {
-        const opts = await resolveModels(mf.id, String(raw.brand.value));
-        model = opts.find((o) => o.id === String(raw.model!.value))?.title;
-      } catch {
-        warnings.push("Nu s-au putut încărca modelele dependente de marcă");
-      }
-    }
-    if (!model && typeof raw.model.value === "string" && !/^\d+$/.test(raw.model.value))
-      model = raw.model.value;
-  }
-  // last resort: "BMW X3, 2018" style titles
-  const titleParts = (advert.title ?? "").replace(/,.*$/, "").trim().split(/\s+/);
-  const brandFinal = brand ?? (titleParts[0] || undefined);
-  const modelFinal = model ?? (titleParts.slice(1).join(" ") || undefined);
+  // brand from its option; model from its option / free text, else from the
+  // generated "Brand Model" title (the model list is not exposed by the API)
+  const brand = raw.brand ? optionTitle(raw.brand) : undefined;
+  let model = raw.model ? optionTitle(raw.model) : undefined;
+  if (model && /^\d+$/.test(model)) model = undefined;
+  const title = (item.title ?? "").replace(/\\s/g, " ").replace(/\s+/g, " ").trim();
+  const brandFinal = brand ?? (title.split(" ")[0] || undefined);
+  if (!model && brandFinal && title.toLowerCase().startsWith(brandFinal.toLowerCase()))
+    model = title.slice(brandFinal.length).trim() || undefined;
+  const modelFinal = model?.trim();
 
-  const year = raw.year
-    ? toNumber(raw.year.f.options ? optionTitle(raw.year.f, raw.year.value) : raw.year.value)
-    : undefined;
+  const year = raw.year ? toNumber(optionTitle(raw.year)) : undefined;
 
   // price: the advert-level price is authoritative; fall back to the feature
-  let price: number | undefined;
-  let priceUnit = "";
-  if (advert.price && typeof advert.price.value === "number") {
-    price = advert.price.value;
-    priceUnit = advert.price.unit ?? "";
-  } else if (raw.price) {
+  let price = item.price && typeof item.price.value === "number" ? item.price.value : undefined;
+  let priceUnit = item.price?.unit ?? "";
+  if (price == null && raw.price) {
     price = toNumber(raw.price.value);
-    priceUnit = raw.price.unit ?? "";
+    priceUnit = "eur";
   }
   if (price != null && priceUnit && priceUnit.toLowerCase() !== "eur") {
     warnings.push(`Preț în ${priceUnit.toUpperCase()} (nu EUR) — anunț sărit`);
@@ -259,33 +234,29 @@ export async function mapAdvert(
     return { car: null, warnings };
   }
 
-  const pick = (
-    key: FeatureKey,
-    dict: Record<string, string[]>,
-    fallback: string,
-    label: string
-  ) => {
-    const r = raw[key];
-    const title = r ? optionTitle(r.f, r.value) : undefined;
-    const k = keyFromRu(dict, title);
-    if (!k) warnings.push(`${label}: „${title ?? "—"}" nemapat, folosit „${fallback}"`);
+  const pick = (key: FeatureKey, dict: Record<string, string[]>, fallback: string, label: string) => {
+    const t = raw[key] ? optionTitle(raw[key]!) : undefined;
+    const k = keyFromRu(dict, t);
+    if (!k) warnings.push(`${label}: „${t ?? "—"}" nemapat, folosit „${fallback}"`);
     return k ?? fallback;
   };
 
   const mileageRaw = raw.mileage ? toNumber(raw.mileage.value) : undefined;
-  let mileage = mileageRaw ?? 0;
-  if (raw.mileage?.unit?.toLowerCase() === "mi") mileage = Math.round(mileage * 1.609);
   if (mileageRaw == null) warnings.push("Kilometraj lipsă — setat 0");
 
-  const drivetrainTitle = raw.drivetrain ? optionTitle(raw.drivetrain.f, raw.drivetrain.value) : undefined;
-  const engine = raw.engine ? toNumber(raw.engine.f.options ? optionTitle(raw.engine.f, raw.engine.value) : raw.engine.value) : undefined;
+  const engine = raw.engine ? toNumber(optionTitle(raw.engine)) : undefined;
+  const engineUnit = raw.engine?.units?.[0]?.includes("CENTIMETER") ? "cm3" : "l";
   const power = raw.power ? toNumber(raw.power.value) : undefined;
-  const seats = raw.seats ? toNumber(raw.seats.f.options ? optionTitle(raw.seats.f, raw.seats.value) : raw.seats.value) : undefined;
+  const seats = raw.seats ? toNumber(optionTitle(raw.seats)) : undefined;
 
-  const body = (advert.body ?? "").trim();
-  const descriptionRu = looksRussian(body) ? body : body;
-  const descriptionRo = body;
-  if (body && looksRussian(body)) warnings.push("Descrierea e doar în rusă — tradu în admin");
+  const descRaw = raw.description?.value;
+  const desc =
+    descRaw && typeof descRaw === "object"
+      ? (descRaw as { ro?: string; ru?: string })
+      : { ro: typeof descRaw === "string" ? descRaw : "" };
+  const descriptionRo = cleanDescription(desc.ro ?? desc.ru ?? "");
+  const ruSource = desc.ru && desc.ru !== desc.ro && looksRussian(desc.ru) ? desc.ru : undefined;
+  const descriptionRu = ruSource ? cleanDescription(ruSource) : descriptionRo;
 
   return {
     warnings,
@@ -294,16 +265,16 @@ export async function mapAdvert(
       model: modelFinal!,
       year: Math.round(year!),
       price: Math.round(price!),
-      mileage: Math.round(mileage),
-      body: pick("body", BODY_RU, "sedan", "Caroserie"),
+      mileage: Math.round(mileageRaw ?? 0),
+      body: pick("body", BODY_RU, bodyFallback, "Caroserie"),
       fuel: pick("fuel", FUEL_RU, "petrol", "Combustibil"),
       transmission: pick("transmission", TRANSMISSION_RU, "manual", "Cutie"),
-      drivetrain: keyFromRu(DRIVETRAIN_RU, drivetrainTitle),
-      engineCc: engine != null ? engineToCc(engine, raw.engine?.unit) : undefined,
-      powerHp: power != null ? powerToHp(power, raw.power?.unit) : undefined,
-      color: raw.color ? colorFromRu(optionTitle(raw.color.f, raw.color.value)) : undefined,
-      seats: seats != null && seats > 0 && seats <= 12 ? Math.round(seats) : undefined,
-      vin: raw.vin && typeof raw.vin.value === "string" ? raw.vin.value.trim() : undefined,
+      drivetrain: keyFromRu(DRIVETRAIN_RU, raw.drivetrain ? optionTitle(raw.drivetrain) : undefined),
+      engineCc: engine != null ? engineToCc(engine, engineUnit) : undefined,
+      powerHp: power != null ? powerToHp(power, "hp") : undefined,
+      color: raw.color ? colorFromRu(optionTitle(raw.color)) : undefined,
+      seats: seats != null && seats > 0 && seats <= 60 ? Math.round(seats) : undefined,
+      vin: typeof raw.vin?.value === "string" ? raw.vin.value.trim() || undefined : undefined,
       descriptionRo,
       descriptionRu,
       equipmentRo: equipmentRo.join("\n"),
@@ -313,8 +284,13 @@ export async function mapAdvert(
   };
 }
 
-const isCarAdvert = (a: NnnAdvertListItem) =>
-  !a.categories?.subcategory?.id || a.categories.subcategory.id === SUBCATEGORY_ID;
+/** CarImage.path for a 999.md photo — both sizes straight from the CDN */
+export function imagePath(imageId: string) {
+  return JSON.stringify({
+    lg: nnnImageUrl(imageId, "900x900"),
+    sm: nnnImageUrl(imageId, "320x240"),
+  });
+}
 
 async function fetchAllAdverts(): Promise<NnnAdvertListItem[]> {
   const out: NnnAdvertListItem[] = [];
@@ -325,23 +301,23 @@ async function fetchAllAdverts(): Promise<NnnAdvertListItem[]> {
     if (out.length >= (res.total ?? 0) || (res.adverts ?? []).length === 0 || page > 50) break;
     page++;
   }
-  return out.filter(isCarAdvert);
+  return out;
 }
 
-async function downloadImages(carId: string, imageIds: string[]) {
-  const saved: { path: string; width: number; height: number }[] = [];
-  for (const id of imageIds) {
-    try {
-      const res = await fetch(nnnImageUrl(id, "900x900"), { cache: "no-store" });
-      if (!res.ok) continue;
-      const buf = Buffer.from(await res.arrayBuffer());
-      const img = await saveCarImageBuffer(carId, buf);
-      saved.push({ path: img.basePath, width: img.width, height: img.height });
-    } catch {
-      /* skip broken photo */
-    }
+/** RO titles of every feature (equipment labels), across our subcategories */
+async function loadRoTitles(): Promise<Map<string, string>> {
+  const map = new Map<string, string>();
+  for (const subcategory_id of Object.keys(SUBCATEGORIES)) {
+    const ro = await getFeatures({
+      category_id: CATEGORY_ID,
+      subcategory_id,
+      offer_type: OFFER_TYPE,
+      lang: "ro",
+    }).catch(() => undefined);
+    for (const g of ro?.features_groups ?? [])
+      for (const f of g.features) map.set(String(f.id), f.title);
   }
-  return saved;
+  return map;
 }
 
 type Diffable = Omit<MappedCar, "imageIds">;
@@ -355,12 +331,16 @@ function specsChanged(mapped: MappedCar, car: Record<string, unknown>) {
   return specKeys.some((k) => (mapped[k] ?? null) !== (car[k] ?? null));
 }
 
+const subcategoryOf = (a: NnnAdvertListItem) => a.categories?.subcategory?.id ?? "";
+
 export async function importFrom999(
-  trigger: "manual" | "cron" | "auto" = "manual"
+  trigger: "manual" | "cron" | "auto" = "manual",
+  { budgetMs = READ_BUDGET_MS, force = false }: { budgetMs?: number; force?: boolean } = {}
 ): Promise<ImportReport> {
   const report: ImportReport = {
     ok: false, created: 0, updated: 0, archived: 0, skipped: 0, unchanged: 0, warnings: [],
   };
+  const startedAt = Date.now();
 
   if (!nnnConfigured()) {
     report.error = "Cheia API 999.md lipsește (NNN_API_KEY în .env)";
@@ -374,35 +354,63 @@ export async function importFrom999(
   report.runId = run.id;
 
   try {
-    const [adverts, schema, links] = await Promise.all([
+    const [adverts, roTitles, links] = await Promise.all([
       fetchAllAdverts(),
-      loadSchema(),
+      loadRoTitles(),
       prisma.advert999.findMany({
         where: { advertId: { not: null } },
-        include: { car: { include: { images: true } } },
+        include: { car: { include: { images: { orderBy: { order: "asc" } } } } },
       }),
     ]);
     const linkByAdvert = new Map(links.map((l) => [l.advertId!, l]));
-    const seen = new Set<string>();
+    const seen = new Set(adverts.map((a) => a.id));
 
-    const modelCache = new Map<string, { id: string; title: string }[]>();
-    const resolveModels: ModelResolver = async (featureId, brandOptionId) => {
-      const key = `${featureId}:${brandOptionId}`;
-      if (!modelCache.has(key)) {
-        const dep = await getDependentOptions({
-          subcategory_id: SUBCATEGORY_ID,
-          dependency_feature_id: featureId,
-          parent_option_id: brandOptionId,
-        });
-        modelCache.set(key, dep.options ?? []);
-      }
-      return modelCache.get(key)!;
+    // An advert is re-read only when 999.md shows a change (republished
+    // timestamp or price) — the list already tells us that much. New adverts
+    // go first, then changed ones, then whatever was left over last time.
+    const stamp = (a: NnnAdvertListItem) => a.republished ?? a.posted ?? null;
+    const untouched = (a: NnnAdvertListItem) => {
+      const link = linkByAdvert.get(a.id);
+      if (force || !link || link.state !== "SYNCED" || link.car.status !== "PUBLISHED") return false;
+      const s = stamp(a);
+      return (
+        !!s &&
+        link.nnnUpdatedAt?.getTime() === new Date(s).getTime() &&
+        a.price?.value === link.car.price
+      );
     };
+    const rank = (a: NnnAdvertListItem) => (!linkByAdvert.get(a.id) ? 0 : 1);
+    const toRead = adverts
+      .filter((a) => {
+        const link = linkByAdvert.get(a.id);
+        return (
+          a.state === "public" &&
+          SUBCATEGORIES[subcategoryOf(a)] &&
+          (!link || link.source === "nnn") &&
+          !untouched(a)
+        );
+      })
+      .sort((a, b) => rank(a) - rank(b));
+    // network first (one call at a time, the API is rate-limited), then the database
+    const featuresById = new Map<string, NnnAdvertFeature[] | Error>();
+    const skippedUnchanged = new Set(adverts.filter(untouched).map((a) => a.id));
+    let deferred = 0;
+    for (const a of toRead) {
+      if (Date.now() - startedAt > budgetMs) {
+        deferred++;
+        continue;
+      }
+      try {
+        featuresById.set(a.id, await getAdvertFeatures(a.id, "ru"));
+      } catch (e) {
+        featuresById.set(a.id, e instanceof Error ? e : new Error(String(e)));
+      }
+    }
+    if (deferred) report.warnings.push(`${deferred} anunțuri amânate pentru următoarea rulare (limită de timp)`);
 
     for (const item of adverts) {
-      seen.add(item.id);
       const link = linkByAdvert.get(item.id);
-      const label = `#${item.id} ${item.title ?? ""}`.trim();
+      const label = `#${item.id} ${(item.title ?? "").replace(/\\s/g, " ")}`.trim();
       const nnnUpdatedAt = item.republished || item.posted ? new Date(item.republished ?? item.posted!) : null;
 
       // born on the site → the site is the master; only note the 999.md state
@@ -413,6 +421,12 @@ export async function importFrom999(
             data: { nnnState: item.state, nnnUpdatedAt },
           });
         report.unchanged++;
+        continue;
+      }
+
+      // a category the site does not show (camioane, moto…) → leave it be
+      if (!SUBCATEGORIES[subcategoryOf(item)]) {
+        report.skipped++;
         continue;
       }
 
@@ -435,31 +449,45 @@ export async function importFrom999(
         continue;
       }
 
-      let advert: NnnAdvert;
-      try {
-        advert = await getAdvert(item.id, "ro");
-      } catch (e) {
-        report.warnings.push(`${label}: ${e instanceof Error ? e.message : String(e)}`);
+      const features = featuresById.get(item.id);
+      if (!features) {
+        // nothing changed on 999.md since the last read, or deferred to the next run
+        if (skippedUnchanged.has(item.id)) report.unchanged++;
+        else report.skipped++;
+        continue;
+      }
+      if (features instanceof Error) {
+        report.warnings.push(`${label}: ${features.message}`);
         report.skipped++;
         continue;
       }
 
-      const { car: mapped, warnings } = await mapAdvert(advert, schema, resolveModels);
+      const { car: mapped, warnings } = mapAdvert(
+        item,
+        features,
+        roTitles,
+        SUBCATEGORIES[subcategoryOf(item)].bodyFallback
+      );
       for (const w of warnings) report.warnings.push(`${label}: ${w}`);
       if (!mapped) {
         report.skipped++;
         continue;
       }
       const { imageIds, ...specs } = mapped;
+      const paths = imageIds.map(imagePath);
+      if (!paths.length) report.warnings.push(`${label}: fără fotografii`);
 
       if (!link) {
         const slug = await uniqueCarSlug(specs.brand, specs.model, specs.year);
-        const car = await prisma.car.create({
+        await prisma.car.create({
           data: {
             ...specs,
             slug,
             status: "PUBLISHED",
             location: site.address.full,
+            // "new" on the site means new on 999.md, not first seen by us
+            ...(item.posted ? { createdAt: new Date(item.posted) } : {}),
+            images: { create: paths.map((path, i) => ({ path, order: i })) },
             advert: {
               create: {
                 advertId: item.id,
@@ -472,19 +500,14 @@ export async function importFrom999(
             },
           },
         });
-        const imgs = await downloadImages(car.id, imageIds);
-        if (imgs.length)
-          await prisma.carImage.createMany({
-            data: imgs.map((img, i) => ({ carId: car.id, ...img, order: i })),
-          });
-        else report.warnings.push(`${label}: fără fotografii`);
         report.created++;
         continue;
       }
 
-      // already imported: refresh specs when 999.md changed them
+      // already imported: refresh whatever 999.md changed
       const changed = specsChanged(mapped, link.car as unknown as Record<string, unknown>);
-      const photosChanged = imageIds.length !== link.car.images.length;
+      const photosChanged =
+        paths.length !== link.car.images.length || paths.some((p, i) => p !== link.car.images[i].path);
       if (!changed && !photosChanged) {
         await prisma.advert999.update({
           where: { id: link.id },
@@ -499,18 +522,11 @@ export async function importFrom999(
           ...specs,
           // an archived (expired) advert that is public again comes back too
           ...(link.car.status === "ARCHIVED" ? { status: "PUBLISHED" } : {}),
+          ...(photosChanged
+            ? { images: { deleteMany: {}, create: paths.map((path, i) => ({ path, order: i })) } }
+            : {}),
         },
       });
-      if (photosChanged) {
-        const imgs = await downloadImages(link.carId, imageIds);
-        if (imgs.length) {
-          for (const old of link.car.images) await deleteCarImageFiles(old.path);
-          await prisma.carImage.deleteMany({ where: { carId: link.carId } });
-          await prisma.carImage.createMany({
-            data: imgs.map((img, i) => ({ carId: link.carId, ...img, order: i })),
-          });
-        }
-      }
       await prisma.advert999.update({
         where: { id: link.id },
         data: { nnnState: item.state, nnnUpdatedAt, state: "SYNCED", lastSyncAt: new Date(), lastError: null },
@@ -548,7 +564,13 @@ export async function importFrom999(
     },
   });
 
-  if (report.created || report.updated || report.archived) revalidatePath("/", "layout");
+  if (report.created || report.updated || report.archived) {
+    try {
+      revalidatePath("/", "layout");
+    } catch {
+      /* outside a request (script) — nothing to revalidate */
+    }
+  }
   return report;
 }
 
