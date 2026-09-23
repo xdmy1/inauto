@@ -1,7 +1,8 @@
 /* eslint-disable @next/next/no-img-element */
-// Original INAUTO.MD logo (red car + INAUTO.MD + "Noi avem mașina ta").
-// logo.png       — recolored for light backgrounds (white text → ink)
-// logo-white.png — untouched original, for dark backgrounds
+// Original INAUTO.MD logo (red car + INAUTO.MD + "Noi avem mașina ta"),
+// vectorised from the only file the client has (a 195×75 PNG), so it stays
+// crisp on retina screens. logo.svg — ink text for light backgrounds;
+// logo-white.svg — white text for dark backgrounds.
 
 export function Logo({
   className,
@@ -15,7 +16,7 @@ export function Logo({
 }) {
   return (
     <img
-      src={variant === "dark" ? "/images/logo-white.png" : "/images/logo.png"}
+      src={variant === "dark" ? "/images/logo-white.svg" : "/images/logo.svg"}
       alt="INAUTO.MD — Noi avem mașina ta"
       width={195}
       height={75}
