@@ -1,7 +1,7 @@
 import { getTranslations } from "next-intl/server";
 import { Link } from "@/i18n/navigation";
 import { fmtEngine, fmtPrice, isNewListing } from "@/lib/cars";
-import { imageUrl } from "@/lib/images";
+import { imageSrcSet, imageUrl } from "@/lib/images";
 import { CarMark } from "./Logo";
 import { CameraIcon } from "./icons";
 
@@ -61,7 +61,9 @@ export async function CarCard({
         {img ? (
           // eslint-disable-next-line @next/next/no-img-element
           <img
-            src={imageUrl(img.path, "sm")}
+            src={imageUrl(img.path, "md")}
+            srcSet={imageSrcSet(img.path)}
+            sizes="(min-width: 1024px) 320px, (min-width: 640px) 50vw, 100vw"
             alt={`${car.brand} ${car.model} ${car.year}`}
             width={640}
             height={480}

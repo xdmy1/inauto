@@ -3,9 +3,10 @@
 // Mobile navigation — right-side drawer with nav, categories and contact CTAs
 import { useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
-import { useTranslations } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 import { useSearchParams } from "next/navigation";
-import { Link, usePathname } from "@/i18n/navigation";
+import { Link, usePathname, useRouter } from "@/i18n/navigation";
+import { routing } from "@/i18n/routing";
 import { MINIBUS } from "@/lib/cars";
 import { site, telHref, waHref } from "@/lib/site";
 import { Logo } from "./Logo";
@@ -13,6 +14,8 @@ import { ArrowRightIcon, PhoneIcon } from "./icons";
 
 export function MobileMenu() {
   const t = useTranslations();
+  const locale = useLocale();
+  const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
   const [open, setOpen] = useState(false);
@@ -36,6 +39,14 @@ export function MobileMenu() {
   }
 
   useEffect(() => () => window.clearTimeout(timer.current), []);
+
+  // same page, other language
+  function switchLocale(next: string) {
+    if (next === locale) return;
+    const qs = searchParams.toString();
+    router.replace(`${pathname}${qs ? `?${qs}` : ""}`, { locale: next });
+    close();
+  }
 
   // lock body scroll while the drawer is open
   useEffect(() => {
@@ -150,6 +161,28 @@ export function MobileMenu() {
                   );
                 })}
               </nav>
+
+              {/* language, RO / RU */}
+              <div className="mt-5 flex items-center justify-between">
+                <span className="text-[11px] font-semibold uppercase tracking-[0.14em] text-ink-faint">
+                  {t("common.language")}
+                </span>
+                <div className="chip-3d flex rounded-xl p-1" role="group" aria-label={t("common.language")}>
+                  {routing.locales.map((l) => (
+                    <button
+                      key={l}
+                      type="button"
+                      onClick={() => switchLocale(l)}
+                      aria-pressed={l === locale}
+                      className={`rounded-lg px-3.5 py-1.5 text-[13px] font-bold uppercase transition-colors ${
+                        l === locale ? "bg-ink text-white" : "text-ink-soft"
+                      }`}
+                    >
+                      {l}
+                    </button>
+                  ))}
+                </div>
+              </div>
 
               <div className="mt-6">
                 <div className="text-[11px] font-semibold uppercase tracking-[0.14em] text-ink-faint">

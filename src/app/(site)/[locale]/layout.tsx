@@ -78,7 +78,7 @@ export default async function LocaleLayout({
         {/* marks the document before hydration so scroll-reveal can hide
             sections without a flash; without JS everything stays visible */}
         <Script id="anim-flag" strategy="beforeInteractive">
-          {"document.documentElement.setAttribute('data-anim','')"}
+          {"document.documentElement.setAttribute('data-anim','');if(/iPhone|iPad|iPod/.test(navigator.userAgent)){var v=document.querySelector('meta[name=viewport]');v&&v.setAttribute('content','width=device-width, initial-scale=1, maximum-scale=1')}"}
         </Script>
         <NextIntlClientProvider>
           <ScrollReveal />

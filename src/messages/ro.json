@@ -1,7 +1,7 @@
 {
   "meta": {
     "home": {
-      "title": "INAUTO.MD — Parc auto în Chișinău | Mașini second-hand cu prima rată",
+      "title": "INAUTO — Noi avem mașina ta! Parc auto în Chișinău, mașini second-hand",
       "description": "Parc auto în Chișinău, str. Socoleni 19. Mașini verificate, acte gata, prima rată de la 100 €. Vezi ofertele și programează un test drive."
     },
     "catalog": {
@@ -21,6 +21,7 @@
   },
   "common": {
     "brand": "INAUTO.MD",
+    "language": "Limba",
     "tagline": "Noi avem mașina ta!",
     "call": "Sună acum",
     "whatsapp": "Scrie pe WhatsApp",

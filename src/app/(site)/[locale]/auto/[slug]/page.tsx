@@ -36,14 +36,23 @@ export async function generateMetadata({
   const { locale, slug } = await params;
   const car = await getCar(slug);
   if (!car) return {};
-  const title = `${car.brand} ${car.model} ${car.year} — ${fmtPrice(car.price)}`;
-  const description =
-    (locale === "ru" ? car.descriptionRu : car.descriptionRo).slice(0, 155) ||
-    title;
+  const name = `${car.brand} ${car.model} ${car.year}`;
+  // the words the old inauto.md ranked on: model + Chișinău + Moldova + INAUTO
+  const title =
+    locale === "ru"
+      ? `${name} — ${fmtPrice(car.price)}, продажа в Кишинёве`
+      : `${name} de vânzare în Chișinău — ${fmtPrice(car.price)}`;
+  const lead =
+    locale === "ru"
+      ? `${name}, ${fmtPrice(car.price)} — INAUTO, автопарк в Кишинёве (Молдова). `
+      : `${name}, ${fmtPrice(car.price)} — INAUTO, parc auto în Chișinău (Moldova). `;
+  const body = (locale === "ru" ? car.descriptionRu : car.descriptionRo).replace(/\s+/g, " ").trim();
+  const description = (lead + body).slice(0, 158);
   const og = car.images[0] ? [imageUrl(car.images[0].path, "lg")] : [];
   return {
     title: { absolute: `${title} | ${site.name}` },
     description,
+    keywords: [`${car.brand} ${car.model}`, locale === "ru" ? "Кишинёв" : "Chișinău", "Moldova", "inauto.md"],
     alternates: {
       canonical: canonicalFor(locale, `/auto/${slug}`),
       languages: localizedAlternates(`/auto/${slug}`).languages,

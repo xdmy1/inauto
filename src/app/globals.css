@@ -394,12 +394,13 @@ body {
   background-size: 100% 1px;
 }
 
-/* iOS Safari zooms the page when a focused field is under 16px — never let it */
-@media (max-width: 767px) {
+/* iOS Safari zooms the page when a focused field is under 16px — never let it,
+   on any touch device, at any width */
+@media (max-width: 767px), (hover: none) and (pointer: coarse) {
   input,
   select,
   textarea {
-    font-size: 16px;
+    font-size: 16px !important;
   }
 }
 

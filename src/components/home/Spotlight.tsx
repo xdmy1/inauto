@@ -69,7 +69,7 @@ export async function Spotlight({ car }: { car: SpotlightCar }) {
               // eslint-disable-next-line @next/next/no-img-element
               <img
                 key={img.path}
-                src={imageUrl(img.path, "sm")}
+                src={imageUrl(img.path, "md")}
                 alt=""
                 className="h-12 w-16 rounded-md border-2 border-white/90 object-cover shadow-card"
               />

@@ -76,7 +76,9 @@ export async function Header() {
           <NavMenu />
 
           <div className="flex items-center gap-2.5">
-            <LocaleSwitcher />
+            <div className="hidden lg:block">
+              <LocaleSwitcher />
+            </div>
             <a
               href={telHref(site.phones[0])}
               className="chip-3d hidden h-10 items-center gap-2 rounded-xl px-3.5 text-sm font-semibold tabular-nums sm:flex lg:hidden xl:flex"
