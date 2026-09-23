@@ -67,7 +67,8 @@ export function createScene() {
   const rand = mulberry(20260923);
   let W = 0; // canvas width (the dark side)
   let H = 0;
-  let sectionW = 0;
+  let sectionW = 0; // 0 on phones: no photo on the side
+  let skyTop = 0; // phones: the photo's bottom edge — stars live below it
   const stars: Star[] = [];
   let meteors: Meteor[] = [];
   let nextMeteorAt = 0;
@@ -84,7 +85,8 @@ export function createScene() {
     return {
       layer,
       x: atRightEdge ? W + 6 : rand() * W,
-      y: rand() * H,
+      // phones: only where the sky is — from the photo's fade-out down
+      y: skyTop ? skyTop * 0.78 + rand() * (H - skyTop * 0.78) : rand() * H,
       r: between(L.r[0], L.r[1]) * (bright ? 1.25 : 1),
       alpha: between(L.alpha[0], L.alpha[1]),
       tint: TINTS[Math.floor(rand() * TINTS.length)],
@@ -94,13 +96,15 @@ export function createScene() {
     };
   }
 
-  function resize(w: number, h: number, sw: number) {
+  function resize(w: number, h: number, sw: number, photoBottom = 0) {
     const sx = W ? w / W : 1;
     const sy = H ? h / H : 1;
     W = w;
     H = h;
     sectionW = sw;
-    const n = Math.min(260, Math.max(120, Math.round((W * H) / 3200)));
+    skyTop = photoBottom;
+    const area = W * Math.max(120, H - skyTop * 0.8);
+    const n = Math.min(260, Math.max(40, Math.round(area / 3200)));
     if (stars.length) {
       for (const s of stars) { s.x *= sx; s.y *= sy; }
       while (stars.length > n) stars.pop();
@@ -133,7 +137,7 @@ export function createScene() {
       const fromLeft = rand() < 0.7;
       meteors.push({
         x: fromLeft ? between(0.02, 0.35) * W : between(0.35, 0.6) * W,
-        y: between(0.04, 0.4) * H,
+        y: skyTop + between(0.04, 0.4) * (H - skyTop),
         vx: Math.cos(angle) * speed * (fromLeft ? 1 : -1),
         vy: Math.sin(angle) * speed,
         len: between(110, 190),
@@ -154,8 +158,12 @@ export function createScene() {
   // px/py: smoothed pointer offset −1..1 — the sky leans away from it, by depth
   function draw(ctx: CanvasRenderingContext2D, now: number, px: number, py: number) {
     const t = now / 1000;
+    // desktop: dissolve toward the photo on the right; phones: below its bottom edge
     const fadeA = sectionW * 0.47;
     const fadeB = sectionW * 0.62;
+    const sideFade = (x: number) => (sectionW ? 1 - smoothstep(fadeA, fadeB, x) : 1);
+    const topA = skyTop * 0.78;
+    const topB = skyTop + 8;
     ctx.globalCompositeOperation = "source-over";
     for (const st of stars) {
       const L = LAYERS[st.layer];
@@ -164,7 +172,8 @@ export function createScene() {
       if (x < -4 || x > W + 4) continue;
       let a = st.alpha;
       if (st.twT) a *= 0.65 + 0.35 * Math.sin((2 * Math.PI * t) / st.twT + st.twP);
-      a *= 1 - smoothstep(fadeA, fadeB, x);
+      a *= sideFade(x);
+      if (skyTop) a *= smoothstep(topA, topB, y);
       if (inCopy(x, y)) a *= 0.55;
       if (a < 0.02) continue;
       ctx.globalAlpha = a;
@@ -196,7 +205,7 @@ export function createScene() {
       const n = Math.hypot(m.vx, m.vy) || 1;
       const tx = m.x - (m.vx / n) * m.len;
       const ty = m.y - (m.vy / n) * m.len;
-      const edge = 1 - smoothstep(fadeA, fadeB, m.x);
+      const edge = sideFade(m.x) * (skyTop ? smoothstep(topA, topB, m.y) : 1);
       const a = fade * edge;
       if (a < 0.02) continue;
       const g = ctx.createLinearGradient(tx, ty, m.x, m.y);

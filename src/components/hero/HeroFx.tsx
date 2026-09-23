@@ -3,11 +3,11 @@
 import { useEffect, useRef } from "react";
 import { createScene } from "./scene";
 
-// A night sky over the dark side of the hero — desktop only (≥ lg, hover,
-// fine pointer). The sky leans a few px with the pointer, on a spring; the
-// photo and the text never move. Off under prefers-reduced-motion or data
-// saver; paused whenever the hero is off screen or the tab is hidden, so idle
-// cost is zero. The hero reads exactly the same without it.
+// A night sky over the dark part of the hero: the left side on desktop, the
+// band under the photo on phones. With a real pointer the sky leans a few px
+// on a spring; the photo and the text never move. Off under
+// prefers-reduced-motion or data saver; paused whenever the hero is off screen
+// or the tab is hidden, so idle cost is zero. The hero reads the same without it.
 
 const SPRING_K = 90;
 const SPRING_C = 16;
@@ -20,12 +20,14 @@ export function HeroFx() {
     const host = canvas?.parentElement;
     if (!canvas || !host) return;
     const reduced = window.matchMedia("(prefers-reduced-motion: reduce)");
-    const desktop = window.matchMedia("(min-width: 1024px) and (hover: hover) and (pointer: fine)");
+    const desktop = window.matchMedia("(min-width: 1024px)");
+    const pointerFine = window.matchMedia("(hover: hover) and (pointer: fine)");
     const saveData = (navigator as Navigator & { connection?: { saveData?: boolean } }).connection?.saveData === true;
     const ctx = canvas.getContext("2d", { alpha: true });
     if (!ctx || saveData) return;
 
     const copy = host.querySelector<HTMLElement>(".hero-copy");
+    const media = host.querySelector<HTMLElement>(".hero-media");
     const scene = createScene();
 
     // pointer target and the spring that follows it (−1..1 per axis)
@@ -44,13 +46,10 @@ export function HeroFx() {
     let live = false;
 
     const size = () => {
-      if (!desktop.matches) {
-        // hidden on phones — no backing store either
-        canvas.width = canvas.height = 0;
-        return;
-      }
       const r = host.getBoundingClientRect();
-      width = Math.round(r.width * 0.66);
+      const wide = desktop.matches;
+      // desktop: the dark left side; phones: the whole hero, stars only below the photo
+      width = Math.round(wide ? r.width * 0.66 : r.width);
       height = Math.round(r.height);
       const dpr = Math.min(2, window.devicePixelRatio || 1);
       canvas.width = Math.round(width * dpr);
@@ -58,7 +57,8 @@ export function HeroFx() {
       canvas.style.width = `${width}px`;
       canvas.style.height = `${height}px`;
       ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-      scene.resize(width, height, r.width);
+      const photoBottom = wide || !media ? 0 : media.getBoundingClientRect().bottom - r.top;
+      scene.resize(width, height, wide ? r.width : 0, photoBottom);
       measureCopy();
     };
     let copyTimer = 0;
@@ -111,7 +111,7 @@ export function HeroFx() {
     };
 
     const sync = () => {
-      const should = inView && visible && desktop.matches && !reduced.matches;
+      const should = inView && visible && !reduced.matches;
       if (should && !running) {
         running = true;
         last = 0;
@@ -125,7 +125,7 @@ export function HeroFx() {
         cancelAnimationFrame(raf);
       }
       if (process.env.NODE_ENV !== "production")
-        (window as unknown as { __heroFx?: unknown }).__heroFx = { running, inView, visible, desktop: desktop.matches };
+        (window as unknown as { __heroFx?: unknown }).__heroFx = { running, inView, visible, desktop: desktop.matches, pointer: pointerFine.matches };
     };
 
     const ro = new ResizeObserver(size);
@@ -143,7 +143,7 @@ export function HeroFx() {
       sync();
     };
     const onMove = (e: PointerEvent) => {
-      if (e.pointerType !== "mouse") return;
+      if (e.pointerType !== "mouse" || !pointerFine.matches) return;
       const r = host.getBoundingClientRect();
       target.x = Math.max(-1, Math.min(1, ((e.clientX - r.left) / r.width) * 2 - 1));
       target.y = Math.max(-1, Math.min(1, ((e.clientY - r.top) / r.height) * 2 - 1));
@@ -185,7 +185,7 @@ export function HeroFx() {
     <canvas
       ref={ref}
       aria-hidden
-      className="hero-sky pointer-events-none absolute inset-y-0 left-0 hidden w-[66%] lg:block"
+      className="hero-sky pointer-events-none absolute inset-y-0 left-0 w-full lg:w-[66%]"
     />
   );
 }
