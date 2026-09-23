@@ -3,6 +3,7 @@ import { getTranslations, setRequestLocale } from "next-intl/server";
 import { Link } from "@/i18n/navigation";
 import { prisma } from "@/lib/prisma";
 import {
+  CARS_ONLY,
   getBodyCounts,
   getBrandsWithCounts,
   getBudgetCounts,
@@ -71,8 +72,10 @@ export default async function HomePage({
   setRequestLocale(locale);
   const t = await getTranslations();
 
-  const [count, latest, featured, brands, bodies, budgets] = await Promise.all([
+  const [count, carCount, carBrands, latest, featured, brands, bodies, budgets] = await Promise.all([
     prisma.car.count({ where: { status: "PUBLISHED" } }),
+    prisma.car.count({ where: { status: "PUBLISHED", ...CARS_ONLY } }),
+    getBrandsWithCounts(CARS_ONLY),
     prisma.car.findMany({
       where: { status: "PUBLISHED" },
       orderBy: { createdAt: "desc" },
@@ -150,7 +153,7 @@ export default async function HomePage({
 
       {/* search bar overlapping the hero */}
       <div className={`${wrap} relative z-10 -mt-14 sm:-mt-16`}>
-        <QuickSearch brands={brands} count={count} />
+        <QuickSearch brands={carBrands} count={carCount} />
       </div>
 
       {/* numbers */}

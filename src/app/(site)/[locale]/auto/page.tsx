@@ -3,6 +3,7 @@ import { getTranslations, setRequestLocale } from "next-intl/server";
 import { getPathname, Link } from "@/i18n/navigation";
 import {
   BODIES,
+  CARS_ONLY,
   MINIBUS,
   MINIBUS_BODIES,
   getBrandsWithCounts,
@@ -66,7 +67,7 @@ export default async function CatalogPage({
       ? { body: { in: [...MINIBUS_BODIES] } }
       : categoryKey
         ? { body: categoryKey }
-        : undefined;
+        : CARS_ONLY;
   const [{ cars, total, pages }, brands, colorRows] = await Promise.all([
     getPublishedCars(filters),
     getBrandsWithCounts(categoryWhere),

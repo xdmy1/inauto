@@ -7,7 +7,7 @@ import { FUELS } from "@/lib/cars";
 import { ArrowRightIcon, SlidersIcon } from "./icons";
 import { Select } from "./ui/Select";
 
-const PRICE_STEPS = [5000, 7500, 10000, 15000, 20000, 30000, 50000];
+const PRICE_STEPS = [3000, 5000, 7500, 10000, 15000, 20000, 30000, 50000, 70000];
 const nf = new Intl.NumberFormat("ro-RO");
 
 // Hero search bar — one row on desktop (brand / model / price / fuel / CTA),
@@ -24,6 +24,7 @@ export function QuickSearch({
 
   const [brand, setBrand] = useState("");
   const [model, setModel] = useState("");
+  const [priceMin, setPriceMin] = useState("");
   const [priceMax, setPriceMax] = useState("");
   const [fuel, setFuel] = useState("");
   const [count, setCount] = useState(initialCount);
@@ -34,6 +35,7 @@ export function QuickSearch({
     const p = new URLSearchParams();
     if (brand) p.set("brand", brand);
     if (model) p.set("model", model);
+    if (priceMin) p.set("priceMin", priceMin);
     if (priceMax) p.set("priceMax", priceMax);
     if (fuel) p.set("fuel", fuel);
     return p;
@@ -56,7 +58,7 @@ export function QuickSearch({
     }, 250);
     return () => window.clearTimeout(debounce.current);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [brand, model, priceMax, fuel]);
+  }, [brand, model, priceMin, priceMax, fuel]);
 
   function submit(e: React.FormEvent) {
     e.preventDefault();
@@ -74,12 +76,16 @@ export function QuickSearch({
   ];
 
   const label = "mb-1.5 block text-[11px] font-semibold uppercase tracking-wide text-ink-faint";
+  const priceOption = (p: number) => ({ value: String(p), label: `${nf.format(p)} €` });
+  // the two ends of the range never cross
+  const minOptions = PRICE_STEPS.filter((p) => !priceMax || p < Number(priceMax)).map(priceOption);
+  const maxOptions = PRICE_STEPS.filter((p) => !priceMin || p > Number(priceMin)).map(priceOption);
 
   return (
     <div className="card rounded-2xl p-4 shadow-lift sm:p-5">
       <form
         onSubmit={submit}
-        className="grid grid-cols-2 gap-3 lg:grid-cols-[1.1fr_1fr_1fr_1fr_auto] lg:items-end"
+        className="grid grid-cols-2 gap-3 lg:grid-cols-[1.1fr_1fr_1.35fr_1fr_auto] lg:items-end"
       >
         <label className="block">
           <span className={label}>{t("home.searchBrand")}</span>
@@ -105,20 +111,25 @@ export function QuickSearch({
           />
         </label>
 
-        <label className="block">
-          <span className={label}>{t("home.searchPriceMax")}</span>
-          <Select
-            value={priceMax}
-            onChange={setPriceMax}
-            placeholder={t("home.searchAny")}
-            options={PRICE_STEPS.map((p) => ({
-              value: String(p),
-              label: `${nf.format(p)} €`,
-            }))}
-          />
-        </label>
+        <div className="col-span-2 lg:col-span-1">
+          <span className={label}>{t("home.searchPrice")}</span>
+          <div className="grid grid-cols-2 gap-2">
+            <Select
+              value={priceMin}
+              onChange={setPriceMin}
+              placeholder={t("home.priceFrom")}
+              options={minOptions}
+            />
+            <Select
+              value={priceMax}
+              onChange={setPriceMax}
+              placeholder={t("home.priceTo")}
+              options={maxOptions}
+            />
+          </div>
+        </div>
 
-        <label className="block">
+        <label className="col-span-2 block lg:col-span-1">
           <span className={label}>{t("home.searchFuel")}</span>
           <Select
             value={fuel}
@@ -137,14 +148,15 @@ export function QuickSearch({
         </button>
       </form>
 
-      <div className="mt-3.5 flex flex-wrap items-center gap-x-3 gap-y-2 border-t border-line pt-3.5">
-        <span className="text-xs font-semibold text-ink-faint">{t("home.quickFilters")}</span>
-        <div className="flex flex-1 flex-wrap gap-2">
+      {/* quick chips: one scrolling row on phones (edge to edge), wrapping from sm */}
+      <div className="mt-3.5 flex flex-wrap items-center gap-x-3 gap-y-2.5 border-t border-line pt-3.5">
+        <div className="scroll-row -mx-4 w-[calc(100%+2rem)] items-center px-4 sm:mx-0 sm:w-auto sm:flex-1 sm:flex-wrap sm:overflow-visible sm:px-0">
+          <span className="shrink-0 text-xs font-semibold text-ink-faint">{t("home.quickFilters")}</span>
           {quick.map((q) => (
             <Link
               key={q.href}
               href={q.href}
-              className="chip-3d rounded-full px-3 py-1.5 text-xs font-semibold text-ink-soft hover:text-ink"
+              className="chip-3d shrink-0 whitespace-nowrap rounded-full px-3 py-1.5 text-xs font-semibold text-ink-soft hover:text-ink"
             >
               {q.label}
             </Link>

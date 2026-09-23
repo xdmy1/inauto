@@ -31,6 +31,8 @@ export const DRIVETRAINS = ["fwd", "rwd", "awd"] as const;
 // passenger minibuses ("minivan") and cargo vans ("van").
 export const MINIBUS_BODIES = ["minivan", "van"] as const;
 export const MINIBUS = MINIBUS_BODIES.join(",");
+/** prisma scope for "cars only" (what /auto shows without a body filter) */
+export const CARS_ONLY: Prisma.CarWhereInput = { body: { notIn: [...MINIBUS_BODIES] } };
 
 export const STATUSES = [
   "DRAFT",
@@ -131,10 +133,12 @@ export function filtersToWhere(f: CarFilters): Prisma.CarWhereInput {
   }
   if (f.brand) where.brand = { equals: f.brand, mode: "insensitive" };
   if (f.model) where.model = { contains: f.model, mode: "insensitive" };
+  // no body chosen = the car catalogue; minibuses only show in their own category
   if (f.body)
     where.body = f.body.includes(",")
       ? { in: f.body.split(",").filter(Boolean) }
       : f.body;
+  else where.body = { notIn: [...MINIBUS_BODIES] };
   if (f.fuel) where.fuel = f.fuel;
   if (f.transmission) where.transmission = f.transmission;
   if (f.drivetrain) where.drivetrain = f.drivetrain;
