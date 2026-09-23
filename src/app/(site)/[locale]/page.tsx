@@ -12,6 +12,7 @@ import { site, telHref, waHref } from "@/lib/site";
 import { canonicalFor, localizedAlternates } from "@/lib/seo";
 import { CarCard } from "@/components/CarCard";
 import { QuickSearch } from "@/components/QuickSearch";
+import { HeroFx } from "@/components/hero/HeroFx";
 import { SectionHeader } from "@/components/home/SectionHeader";
 import { StatsStrip } from "@/components/home/StatsStrip";
 import { BodyTypes } from "@/components/home/BodyTypes";
@@ -107,7 +108,8 @@ export default async function HomePage({
   return (
     <>
       {/* ——— Hero: the real parking, the real count, the real slogan ——— */}
-      <section className="relative overflow-hidden bg-ink text-white">
+      <section className="hero relative overflow-hidden bg-ink text-white">
+        <HeroFx />
         <div className="hero-media">
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
@@ -119,7 +121,7 @@ export default async function HomePage({
             className="hero-photo h-full w-full object-cover object-top lg:object-center"
           />
         </div>
-        <div className={`${wrap} relative -mt-12 pb-24 sm:-mt-16 sm:pb-28 lg:mt-0 lg:pb-36 lg:pt-20`}>
+        <div className={`hero-copy ${wrap} relative -mt-12 pb-24 sm:-mt-16 sm:pb-28 lg:mt-0 lg:pb-36 lg:pt-20`}>
           <p className="text-[11.5px] font-semibold uppercase tracking-[0.12em] text-white/70 sm:text-[12px] sm:tracking-[0.18em]">
             {t("home.heroEyebrow")}
           </p>
