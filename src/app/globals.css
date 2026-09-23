@@ -5,7 +5,7 @@
   --color-paper: #f6f7f9;
   --color-ink: #10131f;
   --color-ink-soft: #5a5f70;
-  --color-ink-faint: #9498a8;
+  --color-ink-faint: #646a7c; /* ≥ 5:1 on white and paper */
   --color-line: #e6e8ee;
   --color-card: #ffffff;
   --color-accent: #e0192b;

@@ -135,7 +135,7 @@ export function Select({
   const valueCls =
     value === ""
       ? variant === "dark"
-        ? "text-white/40"
+        ? "text-white/60"
         : "text-ink-faint"
       : "";
 

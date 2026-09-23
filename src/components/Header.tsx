@@ -51,7 +51,7 @@ export async function Header() {
                     )}
                     <span>
                       {c.brand} {c.model}{" "}
-                      <span className="text-paper/45">{c.year}</span>
+                      <span className="text-paper/70">{c.year}</span>
                     </span>
                     <span className="font-semibold tabular-nums text-white group-hover/tick:text-accent">
                       {fmtPrice(c.price)}

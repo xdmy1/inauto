@@ -39,7 +39,7 @@ export function HoursList({
             <span>
               {r.label}
               {isToday && (
-                <span className="ml-2 text-xs font-normal text-white/45">
+                <span className="ml-2 text-xs font-normal text-white/60">
                   {todayLabel}
                 </span>
               )}

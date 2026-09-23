@@ -50,7 +50,7 @@ export async function Footer() {
   )}`;
 
   const colTitle =
-    "text-xs font-semibold uppercase tracking-[0.16em] text-white/40";
+    "text-xs font-semibold uppercase tracking-[0.16em] text-white/60";
   // side-by-side columns on phones: a title that wraps must not push its list down
   const colTitleRow = "max-lg:flex max-lg:h-8 max-lg:items-end";
   const link =
@@ -147,7 +147,7 @@ export async function Footer() {
               className={`mt-5 inline-flex items-center gap-2 ${link}`}
             >
               {t("footer.nnn")}
-              <ExternalIcon className="h-3.5 w-3.5 text-white/40" />
+              <ExternalIcon className="h-3.5 w-3.5 text-white/60" />
             </a>
           </div>
 
@@ -174,7 +174,7 @@ export async function Footer() {
                   <li key={b.brand} className="mb-3 break-inside-avoid">
                     <Link href={`/marca/${brandSlug(b.brand)}`} className={`footer-link ${link}`}>
                       {b.brand}
-                      <span className="ml-1.5 text-white/35 tabular-nums">{b.count}</span>
+                      <span className="ml-1.5 text-white/60 tabular-nums">{b.count}</span>
                     </Link>
                   </li>
                 ))}
@@ -236,7 +236,7 @@ export async function Footer() {
         </div>
 
         {/* bottom bar */}
-        <div className="flex flex-col items-center justify-between gap-3 border-t border-white/10 pb-24 pt-6 text-[13px] font-normal text-white/40 sm:flex-row lg:pb-6 lg:pr-20">
+        <div className="flex flex-col items-center justify-between gap-3 border-t border-white/10 pb-24 pt-6 text-[13px] font-normal text-white/60 sm:flex-row lg:pb-6 lg:pr-20">
           <span>{t("footer.rights", { year: new Date().getFullYear() })}</span>
           <span>
             {t("footer.madeBy")}{" "}
