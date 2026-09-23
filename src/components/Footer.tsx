@@ -54,7 +54,7 @@ export async function Footer() {
   // side-by-side columns on phones: a title that wraps must not push its list down
   const colTitleRow = "max-lg:flex max-lg:h-8 max-lg:items-end";
   const link =
-    "text-[15px] font-light text-white/75 transition-colors hover:text-white";
+    "text-[15px] font-normal text-white/75 transition-colors hover:text-white";
   const social =
     "flex h-10 w-10 items-center justify-center rounded-full border border-white/15 text-white/70 transition-colors hover:border-white/40 hover:text-white";
 
@@ -79,7 +79,7 @@ export async function Footer() {
             <h2 className="mt-1.5 font-display text-[26px] font-extrabold leading-tight tracking-tight sm:text-[32px]">
               {t("home.contactTitle")}
             </h2>
-            <p className="mt-2 text-[15px] font-light leading-relaxed text-white/65">
+            <p className="mt-2 text-[15px] font-normal leading-relaxed text-white/65">
               {t("home.contactText")}
             </p>
             <div className="mt-6 grid grid-cols-2 gap-3 sm:flex sm:flex-wrap sm:items-center">
@@ -117,7 +117,7 @@ export async function Footer() {
             <Link href="/" aria-label={site.name}>
               <Logo variant="dark" markClassName="h-14 w-auto" />
             </Link>
-            <p className="mt-5 max-w-sm text-[15px] font-light leading-relaxed text-white/60 lg:max-w-xs">
+            <p className="mt-5 max-w-sm text-[15px] font-normal leading-relaxed text-white/60 lg:max-w-xs">
               {t("footer.about")}
             </p>
             <div className="mt-6 flex items-center gap-3">
@@ -236,7 +236,7 @@ export async function Footer() {
         </div>
 
         {/* bottom bar */}
-        <div className="flex flex-col items-center justify-between gap-3 border-t border-white/10 pb-24 pt-6 text-[13px] font-light text-white/40 sm:flex-row lg:pb-6 lg:pr-20">
+        <div className="flex flex-col items-center justify-between gap-3 border-t border-white/10 pb-24 pt-6 text-[13px] font-normal text-white/40 sm:flex-row lg:pb-6 lg:pr-20">
           <span>{t("footer.rights", { year: new Date().getFullYear() })}</span>
           <span>
             {t("footer.madeBy")}{" "}

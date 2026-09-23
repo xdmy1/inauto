@@ -33,7 +33,7 @@ export function HoursList({
           <li
             key={r.label}
             className={`flex items-baseline justify-between gap-4 text-[15px] transition-colors ${
-              isToday ? "font-medium text-white" : "font-light text-white/55"
+              isToday ? "font-medium text-white" : "font-normal text-white/55"
             }`}
           >
             <span>

@@ -40,7 +40,7 @@ export function OpenNowBadge() {
   if (!state) return <span className="inline-block w-36" aria-hidden />;
 
   return (
-    <span className="whitespace-nowrap text-[13.5px] font-light text-white/75">
+    <span className="whitespace-nowrap text-[13.5px] font-normal text-white/75">
       {t(state.open ? "open" : "closed", { time: state.time })}
     </span>
   );

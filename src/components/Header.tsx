@@ -42,7 +42,7 @@ export async function Header() {
                     key={`${c.slug}-${half}`}
                     href={`/auto/${c.slug}`}
                     tabIndex={half === 1 ? -1 : 0}
-                    className="group/tick flex items-center gap-2.5 whitespace-nowrap px-6 text-[13.5px] font-light text-paper/80 transition-colors hover:text-white"
+                    className="group/tick flex items-center gap-2.5 whitespace-nowrap px-6 text-[13.5px] font-normal text-paper/80 transition-colors hover:text-white"
                   >
                     {i < 3 && (
                       <span className="rounded bg-accent px-1.5 py-0.5 text-[9.5px] font-bold tracking-wider text-white">
