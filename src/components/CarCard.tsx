@@ -1,7 +1,8 @@
-import { getTranslations } from "next-intl/server";
+import { getLocale, getTranslations } from "next-intl/server";
 import { Link } from "@/i18n/navigation";
 import { fmtEngine, fmtPrice, isNewListing } from "@/lib/cars";
 import { CardGallery } from "./CardGallery";
+import { CardShare } from "./CardShare";
 import { CarMark } from "./Logo";
 import { CameraIcon } from "./icons";
 
@@ -36,6 +37,8 @@ export async function CarCard({
   priority?: boolean;
 }) {
   const t = await getTranslations();
+  const locale = await getLocale();
+  const path = `${locale === "ro" ? "" : `/${locale}`}/auto/${car.slug}`;
   // the first three photos ride on the card
   const shots = car.images.slice(0, 3);
   const photos = car._count?.images ?? car.images.length;
@@ -82,6 +85,11 @@ export async function CarCard({
             <span className="photo-badge photo-badge-white">{t("common.new")}</span>
           )}
         </div>
+        <CardShare
+          path={path}
+          title={`${car.brand} ${car.model} ${car.year}`}
+          labels={{ share: t("car.shareShort"), copied: t("car.copied") }}
+        />
         {photos > 1 && (
           <span className="photo-badge photo-badge-ink pointer-events-none absolute bottom-2.5 left-2.5 normal-case tracking-normal">
             <CameraIcon className="h-3 w-3" />
