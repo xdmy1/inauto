@@ -221,6 +221,10 @@ body {
   /* small labels stamped on photos */
   .photo-badge {
     @apply inline-flex h-6 items-center gap-1 rounded-md px-2 text-[11px] font-bold uppercase tracking-wide;
+    /* a soft shadow so the stamps read on any photo, light or dark */
+    box-shadow:
+      0 1px 2px rgba(16, 19, 31, 0.18),
+      0 3px 10px rgba(16, 19, 31, 0.16);
   }
   .photo-badge-ink {
     @apply text-white;
