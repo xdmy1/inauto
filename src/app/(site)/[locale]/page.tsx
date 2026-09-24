@@ -60,7 +60,7 @@ const WHY_ILLOS = {
 } as const;
 
 const cardInclude = {
-  images: { orderBy: { order: "asc" as const }, take: 1 },
+  images: { orderBy: { order: "asc" as const }, take: 3 },
   _count: { select: { images: true } },
 };
 

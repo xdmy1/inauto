@@ -295,6 +295,15 @@ body {
   .scroll-row::-webkit-scrollbar {
     display: none;
   }
+  /* photo strip on the car cards: swipe, no scrollbar */
+  .card-strip {
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+    overscroll-behavior-x: contain;
+  }
+  .card-strip::-webkit-scrollbar {
+    display: none;
+  }
 }
 
 /* pages with their own sticky call bar hide the floating WhatsApp on phones */

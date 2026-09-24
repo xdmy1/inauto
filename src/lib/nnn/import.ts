@@ -350,6 +350,18 @@ export async function importFrom999(
     return report;
   }
 
+  // Never two imports at once: both would see the same adverts as new and
+  // create every car twice (it happened). A run older than 10 min that never
+  // finished is taken as crashed.
+  const running = await prisma.syncRun.findFirst({
+    where: { kind: "import", finishedAt: null, startedAt: { gt: new Date(Date.now() - 10 * 60_000) } },
+    select: { id: true },
+  });
+  if (running) {
+    report.error = "Un import rulează deja — încearcă din nou peste un minut";
+    return report;
+  }
+
   const run = await prisma.syncRun.create({ data: { kind: "import", trigger } });
   report.runId = run.id;
 
@@ -479,7 +491,9 @@ export async function importFrom999(
 
       if (!link) {
         const slug = await uniqueCarSlug(specs.brand, specs.model, specs.year);
-        await prisma.car.create({
+        // advertId is unique — if another run got here first, this create throws and the car is not doubled
+        try {
+          await prisma.car.create({
           data: {
             ...specs,
             slug,
@@ -499,8 +513,12 @@ export async function importFrom999(
               },
             },
           },
-        });
-        report.created++;
+          });
+          report.created++;
+        } catch (e) {
+          if ((e as { code?: string }).code === "P2002") report.skipped++;
+          else throw e;
+        }
         continue;
       }
 

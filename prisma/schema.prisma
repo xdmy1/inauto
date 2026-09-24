@@ -68,7 +68,7 @@ model Advert999 {
   id           String    @id @default(cuid())
   carId        String    @unique
   car          Car       @relation(fields: [carId], references: [id], onDelete: Cascade)
-  advertId     String? // id returned by partners-api.999.md
+  advertId     String?   @unique // id returned by partners-api.999.md — one car per advert, ever
   source       String    @default("site") // site | nnn
   state        String    @default("PENDING") // PENDING | SYNCED | DRY_RUN | ERROR | DISABLED
   nnnState     String? // public | hidden | expired | blocked | need_pay ... (as reported by 999.md)
@@ -78,7 +78,6 @@ model Advert999 {
   createdAt    DateTime  @default(now())
   updatedAt    DateTime  @updatedAt
 
-  @@index([advertId])
 }
 
 // One row per sync run (import from 999.md / export), for the admin panel

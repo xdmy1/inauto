@@ -76,7 +76,7 @@ export default async function CarPage({
   // one row of similar cars: same brand first, then closest price, topped
   // up with the newest listings so the row is always full
   const cardInclude = {
-    images: { orderBy: { order: "asc" as const }, take: 1 },
+    images: { orderBy: { order: "asc" as const }, take: 3 },
     _count: { select: { images: true } },
   };
   const similar = await prisma.car.findMany({

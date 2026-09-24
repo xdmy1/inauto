@@ -180,7 +180,7 @@ export async function getPublishedCars(f: CarFilters) {
       orderBy: filtersToOrderBy(f),
       skip: ((f.page ?? 1) - 1) * PER_PAGE,
       take: PER_PAGE,
-      include: { images: { orderBy: { order: "asc" }, take: 1 } },
+      include: { images: { orderBy: { order: "asc" }, take: 3 } },
     }),
   ]);
   return { total, cars, pages: Math.max(1, Math.ceil(total / PER_PAGE)) };

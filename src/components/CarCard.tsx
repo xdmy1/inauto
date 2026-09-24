@@ -1,7 +1,7 @@
 import { getTranslations } from "next-intl/server";
 import { Link } from "@/i18n/navigation";
 import { fmtEngine, fmtPrice, isNewListing } from "@/lib/cars";
-import { imageSrcSet, imageUrl } from "@/lib/images";
+import { CardGallery } from "./CardGallery";
 import { CarMark } from "./Logo";
 import { CameraIcon } from "./icons";
 
@@ -36,7 +36,8 @@ export async function CarCard({
   priority?: boolean;
 }) {
   const t = await getTranslations();
-  const img = car.images[0];
+  // the first three photos ride on the card
+  const shots = car.images.slice(0, 3);
   const photos = car._count?.images ?? car.images.length;
   const discounted = !!car.oldPrice && car.oldPrice > car.price;
   const fresh = car.createdAt ? isNewListing(car.createdAt) : false;
@@ -58,20 +59,13 @@ export async function CarCard({
       className="card group flex flex-col overflow-hidden transition-all hover:-translate-y-0.5 hover:shadow-lift"
     >
       <div className="relative aspect-[4/3] overflow-hidden bg-line/50">
-        {img ? (
-          // eslint-disable-next-line @next/next/no-img-element
-          <img
-            src={imageUrl(img.path, "md")}
-            srcSet={imageSrcSet(img.path)}
-            sizes="(min-width: 1024px) 320px, (min-width: 640px) 50vw, 100vw"
+        {shots.length ? (
+          <CardGallery
+            images={shots}
             alt={`${car.brand} ${car.model} ${car.year}`}
-            width={640}
-            height={480}
-            loading={priority ? "eager" : "lazy"}
-            fetchPriority={priority ? "high" : undefined}
-            className={`h-full w-full object-cover transition-transform duration-500 group-hover:scale-[1.04] ${
-              unavailable ? "grayscale-[35%]" : ""
-            }`}
+            priority={priority}
+            dim={unavailable}
+            labels={{ prev: t("car.galleryPrev"), next: t("car.galleryNext") }}
           />
         ) : (
           <div className="flex h-full w-full items-center justify-center text-line">
@@ -89,7 +83,7 @@ export async function CarCard({
           )}
         </div>
         {photos > 1 && (
-          <span className="photo-badge photo-badge-ink absolute bottom-2.5 right-2.5 normal-case tracking-normal">
+          <span className="photo-badge photo-badge-ink pointer-events-none absolute bottom-2.5 left-2.5 normal-case tracking-normal">
             <CameraIcon className="h-3 w-3" />
             {photos}
           </span>

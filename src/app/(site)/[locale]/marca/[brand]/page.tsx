@@ -49,7 +49,7 @@ export default async function BrandPage({
       where: { status: "PUBLISHED", brand: found.brand },
       orderBy: [{ featured: "desc" }, { createdAt: "desc" }],
       include: {
-        images: { orderBy: { order: "asc" }, take: 1 },
+        images: { orderBy: { order: "asc" }, take: 3 },
         _count: { select: { images: true } },
       },
     }),
