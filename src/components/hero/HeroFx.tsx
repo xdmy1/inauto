@@ -3,16 +3,31 @@
 import { useEffect, useRef } from "react";
 import { createScene } from "./scene";
 
-// A night sky over the dark part of the hero: the left side on desktop, the
-// band under the photo on phones. With a real pointer the sky leans a few px
-// on a spring; the photo and the text never move. Off under
-// prefers-reduced-motion or data saver; paused whenever the hero is off screen
-// or the tab is hidden, so idle cost is zero. The hero reads the same without it.
+// A night sky over the dark part of a dark section with a photo on the right
+// (the hero, the footer's visit band): the left side on desktop, the band
+// under the photo on phones. With a real pointer the sky leans a few px on a
+// spring; the photo and the text never move. Off under prefers-reduced-motion
+// or data saver; paused whenever the section is off screen or the tab is
+// hidden, so idle cost is zero. The section reads the same without it.
 
 const SPRING_K = 90;
 const SPRING_C = 16;
 
-export function HeroFx() {
+export function HeroFx({
+  copy: copySelector = ".hero-copy",
+  media: mediaSelector = ".hero-media",
+  darkWidth = 0.66,
+  fade = [0.47, 0.62],
+}: {
+  /** the text block (stars dim behind it) */
+  copy?: string;
+  /** the photo (on phones the sky starts under it) */
+  media?: string;
+  /** how much of the host, from the left, the sky covers on wide screens */
+  darkWidth?: number;
+  /** where the sky dissolves toward the photo, as fractions of the host width */
+  fade?: [number, number];
+}) {
   const ref = useRef<HTMLCanvasElement>(null);
 
   useEffect(() => {
@@ -26,9 +41,9 @@ export function HeroFx() {
     const ctx = canvas.getContext("2d", { alpha: true });
     if (!ctx || saveData) return;
 
-    const copy = host.querySelector<HTMLElement>(".hero-copy");
-    const media = host.querySelector<HTMLElement>(".hero-media");
-    const scene = createScene();
+    const copy = host.querySelector<HTMLElement>(copySelector);
+    const media = host.querySelector<HTMLElement>(mediaSelector);
+    const scene = createScene({ fade });
 
     // pointer target and the spring that follows it (−1..1 per axis)
     const target = { x: 0, y: 0 };
@@ -49,7 +64,7 @@ export function HeroFx() {
       const r = host.getBoundingClientRect();
       const wide = desktop.matches;
       // desktop: the dark left side; phones: the whole hero, stars only below the photo
-      width = Math.round(wide ? r.width * 0.66 : r.width);
+      width = Math.round(wide ? r.width * darkWidth : r.width);
       height = Math.round(r.height);
       const dpr = Math.min(2, window.devicePixelRatio || 1);
       canvas.width = Math.round(width * dpr);
@@ -179,13 +194,14 @@ export function HeroFx() {
       desktop.removeEventListener("change", onDesktopChange);
       reduced.removeEventListener("change", sync);
     };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   return (
     <canvas
       ref={ref}
       aria-hidden
-      className="hero-sky pointer-events-none absolute inset-y-0 left-0 w-full lg:w-[66%]"
+      className="hero-sky pointer-events-none absolute inset-y-0 left-0"
     />
   );
 }

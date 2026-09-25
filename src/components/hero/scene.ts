@@ -63,7 +63,12 @@ function makeGlow(rgb: string) {
   return c;
 }
 
-export function createScene() {
+export type SceneOptions = {
+  /** where the sky dissolves toward the photo on wide screens, as fractions of the host width */
+  fade?: [number, number];
+};
+
+export function createScene({ fade = [0.47, 0.62] }: SceneOptions = {}) {
   const rand = mulberry(20260923);
   let W = 0; // canvas width (the dark side)
   let H = 0;
@@ -159,8 +164,8 @@ export function createScene() {
   function draw(ctx: CanvasRenderingContext2D, now: number, px: number, py: number) {
     const t = now / 1000;
     // desktop: dissolve toward the photo on the right; phones: below its bottom edge
-    const fadeA = sectionW * 0.47;
-    const fadeB = sectionW * 0.62;
+    const fadeA = sectionW * fade[0];
+    const fadeB = sectionW * fade[1];
     const sideFade = (x: number) => (sectionW ? 1 - smoothstep(fadeA, fadeB, x) : 1);
     const topA = skyTop * 0.78;
     const topB = skyTop + 8;
