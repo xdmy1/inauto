@@ -1,6 +1,7 @@
 import { getTranslations } from "next-intl/server";
 import { Link } from "@/i18n/navigation";
 import { brandSlug, type BrandCount } from "@/lib/cars";
+import { brandLogo } from "@/lib/brandLogos";
 
 // Brand chips with counts → SEO brand pages (/marca/bmw)
 export async function BrandRow({
@@ -30,7 +31,9 @@ export async function BrandRow({
           {t("allBrands")}
         </Link>
       )}
-      {brands.map((b) => (
+      {brands.map((b) => {
+        const logo = brandLogo(b.brand);
+        return (
         <Link
           key={b.brand}
           href={
@@ -38,16 +41,24 @@ export async function BrandRow({
               ? `/auto?${scope}&brand=${encodeURIComponent(b.brand)}`
               : `/marca/${brandSlug(b.brand)}`
           }
-          className={`shrink-0 rounded-full px-3.5 py-2 text-[13px] font-semibold ${
+          className={`inline-flex shrink-0 items-center rounded-full py-2 pr-3.5 text-[13px] font-semibold ${logo ? "pl-2.5" : "pl-3.5"} ${
             active === b.brand ? "chip-dark" : "chip-3d text-ink hover:text-accent"
           }`}
         >
+          {logo && (
+            <span
+              aria-hidden
+              className="brand-mark mr-2"
+              style={{ "--mark": `url(${logo.url})`, width: logo.width } as React.CSSProperties}
+            />
+          )}
           {b.brand}
           <span className={`ml-1.5 tabular-nums ${active === b.brand ? "text-white/60" : "text-ink-faint"}`}>
             {b.count}
           </span>
         </Link>
-      ))}
+        );
+      })}
     </div>
   );
 }

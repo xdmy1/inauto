@@ -117,3 +117,11 @@ npm start                  # sau pm2 start "npm start" --name inauto
 
 `.env` în producție: `AUTH_SECRET` nou (lung, aleator), `NEXT_PUBLIC_SITE_URL`,
 `NNN_API_KEY`, `NNN_DRY_RUN=0`, `CRON_SECRET`, parolă admin nouă.
+
+## Logo-urile mărcilor
+
+Chip-urile „Mărci în parcare" arată emblema mărcii din `public/images/brands/<slug>.svg`,
+colorată prin CSS mask în culoarea textului. Maparea nume → fișier e în
+`src/lib/brandLogos.ts`; o marcă fără fișier apare doar ca text. Sursele: Simple Icons
+(CC0, `https://cdn.simpleicons.org/<slug>`) și, pentru Mercedes / Lexus / Land Rover,
+Wikimedia Commons. Pentru o marcă nouă: pune SVG-ul în folder și adaugă o linie în mapare.

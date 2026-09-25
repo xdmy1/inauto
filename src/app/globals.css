@@ -236,6 +236,16 @@ body {
     background: rgba(255, 255, 255, 0.92);
     backdrop-filter: blur(6px);
   }
+  /* brand mark inside a chip: the SVG is a mask, so it takes the text colour */
+  .brand-mark {
+    display: inline-block;
+    width: 18px;
+    height: 18px;
+    flex: none;
+    background-color: currentColor;
+    -webkit-mask: var(--mark) center / contain no-repeat;
+    mask: var(--mark) center / contain no-repeat;
+  }
   /* year chip next to a car title */
   .year-chip {
     @apply inline-flex shrink-0 items-center rounded-md border border-line bg-paper px-1.5 py-0.5 text-[11.5px] font-bold tabular-nums text-ink-soft;
