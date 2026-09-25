@@ -1,79 +1,20 @@
-// Brand marks for the brand chips — monochrome SVGs from Simple Icons (CC0),
-// kept in public/images/brands/<slug>.svg and painted in the chip's text
-// colour through a CSS mask. A brand without a file simply shows as text.
-// slug, or [slug, width in px] for marks that are wider than tall
-const LOGOS: Record<string, string | [string, number]> = {
-  audi: "audi",
-  bmw: "bmw",
-  chevrolet: "chevrolet",
-  citroen: "citroen",
-  dacia: "dacia",
-  fiat: "fiat",
-  ford: "ford",
-  honda: "honda",
-  hyundai: "hyundai",
-  jeep: "jeep",
-  kia: "kia",
-  "land rover": ["landrover", 34],
-  lexus: ["lexus", 24],
-  mazda: "mazda",
-  mercedes: "mercedes",
-  "mercedes-benz": "mercedes",
-  mitsubishi: "mitsubishi",
-  nissan: "nissan",
-  opel: "opel",
-  peugeot: "peugeot",
-  porsche: "porsche",
-  ram: "ram",
-  renault: "renault",
-  skoda: "skoda",
-  tesla: "tesla",
-  toyota: "toyota",
-  volkswagen: "volkswagen",
-  vw: "volkswagen",
-  volvo: "volvo",
-  seat: "seat",
-  cupra: "cupra",
-  "alfa romeo": "alfaromeo",
-  suzuki: "suzuki",
-  subaru: "subaru",
-  mini: "mini",
-  smart: "smart",
-  jaguar: "jaguar",
-  infiniti: "infiniti",
-  chrysler: "chrysler",
-  cadillac: "cadillac",
-  lincoln: "lincoln",
-  gmc: "gmc",
-  buick: "buick",
-  acura: "acura",
-  genesis: "genesis",
-  maserati: "maserati",
-  ferrari: "ferrari",
-  lamborghini: "lamborghini",
-  bentley: "bentley",
-  "rolls-royce": "rollsroyce",
-  "aston martin": "astonmartin",
-  mg: "mg",
-  byd: "byd",
-  geely: "geely",
-  chery: "chery",
-  "great wall": "greatwall",
-  haval: "haval",
-  lada: "lada",
-  uaz: "uaz",
-  gaz: "gaz",
-  isuzu: "isuzu",
-  iveco: "iveco",
-  man: "man",
-  scania: "scania",
-  daf: "daf",
-};
+import { BRAND_LOGO_SLUGS } from "./brandLogos.generated";
 
-/** the mark for a brand we have one for — url + box width — else null */
-export function brandLogo(brand: string): { url: string; width: number } | null {
-  const entry = LOGOS[brand.trim().toLowerCase()];
-  if (!entry) return null;
-  const [slug, width] = Array.isArray(entry) ? entry : [entry, 18];
-  return { url: `/images/brands/${slug}.svg`, width };
+// Brand logos (in colour) for the brand tiles — public/images/brands/<slug>.webp,
+// from the car-logos-dataset (MIT); the marks themselves are the makers' trademarks.
+// A brand without a file shows as text. To add one: drop <slug>.webp in the
+// folder and re-run the download script (README « Logo-urile mărcilor »).
+export function brandLogoSlug(brand: string) {
+  return brand
+    .normalize("NFD")
+    .replace(/[̀-ͯ]/g, "")
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-|-$/g, "");
+}
+
+/** "/images/brands/bmw.webp" when we have the logo, else null */
+export function brandLogo(brand: string): string | null {
+  const slug = brandLogoSlug(brand);
+  return BRAND_LOGO_SLUGS.has(slug) ? `/images/brands/${slug}.webp` : null;
 }

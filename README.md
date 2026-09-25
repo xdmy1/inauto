@@ -120,8 +120,10 @@ npm start                  # sau pm2 start "npm start" --name inauto
 
 ## Logo-urile mărcilor
 
-Chip-urile „Mărci în parcare" arată emblema mărcii din `public/images/brands/<slug>.svg`,
-colorată prin CSS mask în culoarea textului. Maparea nume → fișier e în
-`src/lib/brandLogos.ts`; o marcă fără fișier apare doar ca text. Sursele: Simple Icons
-(CC0, `https://cdn.simpleicons.org/<slug>`) și, pentru Mercedes / Lexus / Land Rover,
-Wikimedia Commons. Pentru o marcă nouă: pune SVG-ul în folder și adaugă o linie în mapare.
+„Mărci în parcare" arată logo-ul color al fiecărei mărci din
+`public/images/brands/<slug>.webp` (slug = numele mărcii fără diacritice, cu „-“).
+Lista fișierelor existente e generată în `src/lib/brandLogos.generated.ts`; o marcă
+fără fișier apare cu inițialele ei. Sursa: car-logos-dataset (github.com/filippofilip95,
+MIT), `logos/optimized/<slug>.png`, tăiat și salvat ca webp la 144 px înălțime.
+Pentru o marcă nouă: descarcă PNG-ul, convertește-l în webp în folder și adaugă
+slug-ul în lista generată (sau re-rulează scriptul de descărcare).

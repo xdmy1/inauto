@@ -17,7 +17,7 @@ import { SectionHeader } from "@/components/home/SectionHeader";
 import { StatsStrip } from "@/components/home/StatsStrip";
 import { BodyTypes } from "@/components/home/BodyTypes";
 import { Spotlight } from "@/components/home/Spotlight";
-import { BrandRow } from "@/components/home/BrandRow";
+import { BrandGrid } from "@/components/home/BrandGrid";
 import { BudgetRow } from "@/components/home/BudgetRow";
 import {
   ArrowRightIcon,
@@ -265,7 +265,7 @@ export default async function HomePage({
         <section className={`${wrap} mt-14`}>
           <SectionHeader title={t("home.brandsTitle")} />
           <div className="mt-5">
-            <BrandRow brands={brands} showAll={false} />
+            <BrandGrid brands={brands} />
           </div>
         </section>
       )}

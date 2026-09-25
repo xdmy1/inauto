@@ -236,15 +236,27 @@ body {
     background: rgba(255, 255, 255, 0.92);
     backdrop-filter: blur(6px);
   }
-  /* brand mark inside a chip: the SVG is a mask, so it takes the text colour */
-  .brand-mark {
-    display: inline-block;
-    width: 18px;
-    height: 18px;
-    flex: none;
-    background-color: currentColor;
-    -webkit-mask: var(--mark) center / contain no-repeat;
-    mask: var(--mark) center / contain no-repeat;
+  /* brand tiles: logo in colour on a white card, name, count.
+     A grid from sm up; on phones two rows that swipe sideways */
+  .brand-grid {
+    @apply grid auto-cols-[128px] grid-flow-col grid-rows-2 gap-2.5 overflow-x-auto pb-1 [-ms-overflow-style:none] [scrollbar-width:none];
+    @apply sm:auto-cols-auto sm:grid-flow-row sm:grid-rows-none sm:grid-cols-5 sm:gap-3 sm:overflow-visible sm:pb-0 lg:grid-cols-6 xl:grid-cols-10;
+  }
+  .brand-grid::-webkit-scrollbar {
+    display: none;
+  }
+  .brand-tile {
+    @apply flex flex-col items-center gap-0.5 rounded-xl border border-line bg-card px-2 pb-3 pt-3.5 text-center shadow-card transition-all hover:-translate-y-0.5 hover:border-ink-faint hover:shadow-lift;
+  }
+  .brand-tile-logo {
+    @apply mb-2 flex h-12 w-full items-center justify-center;
+  }
+  .brand-tile-logo img {
+    @apply h-full w-auto max-w-[84%] object-contain;
+    transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+  .brand-tile:hover .brand-tile-logo img {
+    transform: scale(1.06);
   }
   /* year chip next to a car title */
   .year-chip {
