@@ -2,100 +2,95 @@ import { getTranslations } from "next-intl/server";
 import { Link } from "@/i18n/navigation";
 import { prisma } from "@/lib/prisma";
 import { fmtPrice } from "@/lib/cars";
+import { imageUrl } from "@/lib/images";
 import { site, telHref } from "@/lib/site";
-import { OpenNowBadge } from "./OpenNowBadge";
+import { HeaderShell } from "./HeaderShell";
 import { Logo } from "./Logo";
-import { LocaleSwitcher } from "./LocaleSwitcher";
-import { MobileMenu } from "./MobileMenu";
 import { NavMenu } from "./NavMenu";
-import { PhoneIcon } from "./icons";
+import { LocaleSwitcher } from "./LocaleSwitcher";
+import { OpenNowBadge } from "./OpenNowBadge";
+import { MobileMenu } from "./MobileMenu";
+import { HandsetIcon } from "./HeaderIcons";
 
+// One bar: logo, the pages, RO/RU and the phone. Behaviour (transparent
+// over the home hero, shrink and hide on scroll) lives in HeaderShell +
+// src/app/header.css.
 export async function Header() {
   const t = await getTranslations();
 
-  // live inventory ticker — the actual cars, stock-market style
-  const tickerCars = await prisma.car.findMany({
+  // the newest cars: a slim ticker above the bar, the first three also in the "Automobile" panel
+  const newest = await prisma.car.findMany({
     where: { status: "PUBLISHED" },
     orderBy: { createdAt: "desc" },
     take: 10,
-    select: { slug: true, brand: true, model: true, year: true, price: true },
+    select: {
+      slug: true,
+      brand: true,
+      model: true,
+      year: true,
+      price: true,
+      images: { orderBy: { order: "asc" }, take: 1, select: { path: true } },
+    },
   });
+  const latest = newest.slice(0, 3).map((c) => ({
+    slug: c.slug,
+    title: `${c.brand} ${c.model}`,
+    year: c.year,
+    price: fmtPrice(c.price),
+    img: c.images[0] ? imageUrl(c.images[0].path, "sm") : null,
+  }));
+
+  const tel = telHref(site.phones[0]);
 
   return (
     <>
-      {/* inventory ticker */}
-      <div className="flex h-11 items-stretch bg-ink text-paper">
-        <div className="z-10 hidden shrink-0 items-center border-r border-white/10 bg-ink pl-4 pr-5 sm:flex lg:pl-[max(1rem,calc((100vw-1360px)/2+1.5rem))]">
-          <OpenNowBadge />
-        </div>
-        <div className="relative flex-1 overflow-hidden">
-          <div className="absolute inset-y-0 left-0 z-10 w-8 bg-gradient-to-r from-ink to-transparent" />
-          <div className="flex h-full w-max animate-marquee">
-            {[0, 1].map((half) => (
-              <div
-                key={half}
-                aria-hidden={half === 1}
-                className="flex h-full items-center"
+    {/* slim ticker of the newest cars — scrolls away with the page */}
+    <div className="ticker" aria-label={t("ticker.new")}>
+      <div className="ticker-track">
+        {[0, 1].map((half) => (
+          <div key={half} aria-hidden={half === 1} className="ticker-half">
+            {newest.map((c, i) => (
+              <Link
+                key={`${c.slug}-${half}`}
+                href={`/auto/${c.slug}`}
+                tabIndex={half === 1 ? -1 : 0}
+                className="ticker-item"
               >
-                {tickerCars.map((c, i) => (
-                  <Link
-                    key={`${c.slug}-${half}`}
-                    href={`/auto/${c.slug}`}
-                    tabIndex={half === 1 ? -1 : 0}
-                    className="group/tick flex items-center gap-2.5 whitespace-nowrap px-6 text-[13.5px] font-normal text-paper/80 transition-colors hover:text-white"
-                  >
-                    {i < 3 && (
-                      <span className="rounded bg-accent px-1.5 py-0.5 text-[9.5px] font-bold tracking-wider text-white">
-                        {t("ticker.new")}
-                      </span>
-                    )}
-                    <span>
-                      {c.brand} {c.model}{" "}
-                      <span className="text-paper/70">{c.year}</span>
-                    </span>
-                    <span className="font-semibold tabular-nums text-white group-hover/tick:text-accent">
-                      {fmtPrice(c.price)}
-                    </span>
-                    <span className="pl-4 text-accent/70" aria-hidden>
-                      ◆
-                    </span>
-                  </Link>
-                ))}
-              </div>
+                {i < 3 && <span className="ticker-new">{t("ticker.new")}</span>}
+                <span>
+                  {c.brand} {c.model} <span className="ticker-year">{c.year}</span>
+                </span>
+                <span className="ticker-price">{fmtPrice(c.price)}</span>
+              </Link>
             ))}
           </div>
+        ))}
+      </div>
+    </div>
+    <HeaderShell>
+      <div className="site-header-in">
+        <Link href="/" aria-label={site.name} className="site-logo">
+          {/* the real logo: white text over the home hero, ink on the white bar */}
+          <Logo variant="dark" markClassName="logo-img logo-on-dark" />
+          <Logo markClassName="logo-img logo-on-light" />
+        </Link>
+
+        <NavMenu latest={latest} />
+
+        <div className="site-actions">
+          <LocaleSwitcher />
+          <OpenNowBadge className="open-now" />
+          <a href={tel} className="hdr-call">
+            <HandsetIcon className="h-4 w-4" />
+            {site.phoneDisplay[0]}
+          </a>
+          <a href={tel} className="hdr-call-sm" aria-label={`${t("common.call")} ${site.phoneDisplay[0]}`}>
+            <HandsetIcon className="h-[18px] w-[18px]" />
+          </a>
+          <MobileMenu />
         </div>
       </div>
-
-      <header className="sticky top-0 z-40 border-b border-line bg-card/90 backdrop-blur-md">
-        <div className="mx-auto flex h-[72px] max-w-[1360px] items-center justify-between gap-4 px-4 sm:px-6">
-          <Link href="/" aria-label={site.name} className="shrink-0">
-            <Logo markClassName="h-12 w-auto" />
-          </Link>
-
-          <NavMenu />
-
-          <div className="flex items-center gap-2.5">
-            <div className="hidden lg:block">
-              <LocaleSwitcher />
-            </div>
-            <a
-              href={telHref(site.phones[0])}
-              className="chip-3d hidden h-10 items-center gap-2 rounded-xl px-3.5 text-sm font-semibold tabular-nums sm:flex lg:hidden xl:flex"
-            >
-              <PhoneIcon className="h-4 w-4 text-accent" />
-              {site.phoneDisplay[0]}
-            </a>
-            <Link
-              href="/auto"
-              className="btn-primary hidden h-10 px-4 lg:flex"
-            >
-              {t("nav.catalog")}
-            </Link>
-            <MobileMenu />
-          </div>
-        </div>
-      </header>
+    </HeaderShell>
     </>
   );
 }

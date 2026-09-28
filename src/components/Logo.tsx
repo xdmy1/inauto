@@ -3,6 +3,7 @@
 // vectorised from the only file the client has (a 195×75 PNG), so it stays
 // crisp on retina screens. logo.svg — ink text for light backgrounds;
 // logo-white.svg — white text for dark backgrounds.
+import { LOGO_CAR, LOGO_WORD } from "./logo-paths";
 
 export function Logo({
   className,
@@ -22,6 +23,32 @@ export function Logo({
       height={75}
       className={`${markClassName} ${className ?? ""}`}
     />
+  );
+}
+
+// Header lockup built from the same vectors: the red car mark beside the
+// wordmark, without the tagline (unreadable at nav size). The wordmark is
+// drawn in currentColor, so it follows the bar — white over the hero, ink
+// on white — with no image swap. Sized with --logo-h (see header.css).
+export function LogoLockup({ className = "" }: { className?: string }) {
+  return (
+    <span className={`logo-lockup ${className}`}>
+      <svg className="logo-car" viewBox="212 6 1473 345" aria-hidden="true">
+        <g transform="translate(0,750) scale(0.1,-0.1)">
+          {LOGO_CAR.map((d, i) => (
+            <path key={i} d={d} />
+          ))}
+        </g>
+      </svg>
+      <svg className="logo-word" viewBox="29 400 1905 181" role="img" aria-label="INAUTO.MD">
+        <title>INAUTO.MD</title>
+        <g transform="translate(0,750) scale(0.1,-0.1)">
+          {LOGO_WORD.map((d, i) => (
+            <path key={i} d={d} />
+          ))}
+        </g>
+      </svg>
+    </span>
   );
 }
 

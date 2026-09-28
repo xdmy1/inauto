@@ -1,6 +1,6 @@
 /* ——— scroll-linked motion on the home page ———
-   Odometer figures, the road with the rolling wheel, the living spot
-   illustrations. Everything here is transform/opacity only (compositor),
+   Odometer figures, the living spot illustrations and the orbit around
+   the car. Everything here is transform/opacity only (compositor),
    respects prefers-reduced-motion, and degrades to the plain content
    without JavaScript (html[data-anim] is set by the layout's inline
    script, the same flag the scroll-reveal uses). */
@@ -50,87 +50,6 @@ html[data-anim] .odo:not(.is-set) .odo-col {
 }
 html[data-anim] .odo.is-set .odo-col {
   transition: transform 1.8s cubic-bezier(0.16, 1, 0.3, 1) 0.15s;
-}
-
-/* ——— the road and the rolling wheel ——— */
-.road {
-  --wheel: 96px;
-  position: relative;
-  height: 124px;
-  margin-top: 3rem;
-  overflow: hidden;
-  cursor: default;
-}
-@media (min-width: 640px) {
-  .road {
-    --wheel: 150px;
-    height: 182px;
-    margin-top: 2.5rem;
-  }
-}
-.road-line {
-  position: absolute;
-  left: 0;
-  right: 0;
-  bottom: 14px;
-  height: 2px;
-  border-radius: 1px;
-  background: var(--color-line);
-}
-.road-mark {
-  position: absolute;
-  inset: 0;
-  border-radius: inherit;
-  background: var(--color-ink);
-  transform-origin: 0 50%;
-  transform: scaleX(0);
-}
-.road-wheel {
-  position: absolute;
-  left: 0;
-  /* the tyre's lowest point sits on the line */
-  bottom: calc(16px - var(--wheel) * 0.034);
-  width: var(--wheel);
-  height: var(--wheel);
-  will-change: transform;
-}
-.road-shadow {
-  position: absolute;
-  left: 14%;
-  right: 14%;
-  bottom: calc(var(--wheel) * 0.02);
-  height: calc(var(--wheel) * 0.09);
-  border-radius: 50%;
-  background: radial-gradient(
-    ellipse at center,
-    rgba(16, 19, 31, 0.3) 0%,
-    rgba(16, 19, 31, 0.1) 50%,
-    rgba(16, 19, 31, 0) 72%
-  );
-}
-.road-svg,
-.road-canvas {
-  position: absolute;
-  inset: 0;
-  width: 100%;
-  height: 100%;
-  display: block;
-}
-.road-svg-roll {
-  transform-box: view-box;
-  transform-origin: 50px 53px;
-  rotate: var(--turn, 0deg);
-}
-.road-canvas {
-  opacity: 0;
-  transition: opacity 0.7s ease;
-}
-.road.has-3d .road-canvas {
-  opacity: 1;
-}
-.road.has-3d .road-svg {
-  opacity: 0;
-  transition: opacity 0.7s ease;
 }
 
 /* ——— the spot illustrations come alive as their card arrives ——— */
@@ -186,14 +105,460 @@ html[data-anim] [data-reveal].is-revealed .illo-seal {
     transform: translateY(calc(var(--n, 0) * -1em));
     transition: none;
   }
-  .road-canvas {
-    display: none;
-  }
   .illo-steer {
     transform: none;
   }
   .illo-needle,
   .illo-seal {
     animation: none !important;
+  }
+}
+
+/* ——— the orbit: scroll turns the car ———
+   Base layout (no JS, data saver, reduced motion): a dark full-bleed
+   section, the copy on the left, the car as a framed still on the right.
+   `.is-live` (set by OrbitStage once it can scrub) makes it a pinned,
+   full-viewport stage: the frames fill it edge to edge and the captions
+   fade in at their points along the turn. */
+.orbit {
+  /* how far the page scrolls while the stage is pinned: about one swipe
+     on a phone, a longer walk around the car on desktops */
+  --orbit-run: 100svh;
+  position: relative;
+  margin-top: 3.5rem;
+  background: var(--color-ink);
+  color: #fff;
+}
+@media (min-width: 768px) {
+  .orbit {
+    --orbit-run: 220vh;
+  }
+}
+.orbit-stage {
+  position: relative;
+  max-width: 1360px;
+  margin: 0 auto;
+  padding: 3.5rem 1rem;
+  display: grid;
+  gap: 1.75rem;
+}
+@media (min-width: 640px) {
+  .orbit-stage {
+    padding: 4rem 1.5rem;
+  }
+}
+@media (min-width: 1024px) {
+  .orbit-stage {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1.25fr);
+    align-items: center;
+    gap: 3rem;
+    padding: 5rem 1.5rem;
+  }
+}
+.orbit-media {
+  position: relative;
+  overflow: hidden;
+  border-radius: 1rem;
+  box-shadow:
+    inset 0 0 0 1px rgba(255, 255, 255, 0.12),
+    0 30px 60px -30px rgba(0, 0, 0, 0.8);
+  aspect-ratio: 16 / 9;
+  background: #000;
+}
+@media (min-width: 1024px) {
+  .orbit-media {
+    order: 2;
+  }
+}
+.orbit-media img,
+.orbit-canvas {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: 50% 40%;
+  display: block;
+}
+.orbit-canvas {
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+.orbit-scrim {
+  display: none;
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+.orbit-canvas.is-on {
+  opacity: 1;
+}
+.orbit-ui {
+  display: grid;
+  gap: 1.75rem;
+}
+.orbit-title {
+  font-family: var(--font-display);
+  font-size: 30px;
+  font-weight: 800;
+  line-height: 1.05;
+  letter-spacing: -0.03em;
+}
+@media (min-width: 640px) {
+  .orbit-title {
+    font-size: 40px;
+  }
+}
+@media (min-width: 1024px) {
+  .orbit-title {
+    font-size: 48px;
+  }
+}
+.orbit-hint {
+  display: none;
+}
+.orbit-beats {
+  display: grid;
+  gap: 1.25rem;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+.orbit-beat h3 {
+  font-family: var(--font-display);
+  font-size: 19px;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  line-height: 1.15;
+}
+.orbit-beat p {
+  margin-top: 0.3rem;
+  font-size: 14px;
+  line-height: 1.5;
+  color: rgba(255, 255, 255, 0.72);
+}
+.orbit-end-line {
+  font-family: var(--font-display);
+  font-size: 17px;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+}
+.orbit-end .btn-primary {
+  margin-top: 1rem;
+}
+.orbit-dial,
+.orbit-bar {
+  display: none;
+}
+
+/* ——— live: pinned stage, frames edge to edge, captions along the turn ——— */
+.orbit.is-live {
+  margin-top: 3.5rem;
+  height: calc(100vh + var(--orbit-run));
+  height: calc(100svh + var(--orbit-run));
+}
+.orbit.is-live .orbit-stage {
+  position: sticky;
+  top: 0;
+  height: 100vh;
+  height: 100svh;
+  max-width: none;
+  margin: 0;
+  padding: 0;
+  display: block;
+  overflow: hidden;
+}
+.orbit.is-live .orbit-media {
+  position: absolute;
+  inset: 0;
+  border-radius: 0;
+  box-shadow: none;
+  aspect-ratio: auto;
+}
+.orbit.is-live .orbit-ui {
+  position: absolute;
+  inset: 0;
+  display: block;
+  pointer-events: none;
+  /* the copy sits on footage: a soft shadow keeps it legible when the
+     white car slides behind it */
+  text-shadow:
+    0 1px 2px rgba(0, 0, 0, 0.4),
+    0 8px 32px rgba(16, 19, 31, 0.5);
+}
+.orbit.is-live .orbit-ui a {
+  pointer-events: auto;
+}
+/* every caption sits in the same spot; only one is on at a time */
+.orbit.is-live .orbit-cap {
+  position: absolute;
+  left: 1rem;
+  right: 1rem;
+  opacity: 0;
+  transform: translateY(14px);
+  transition:
+    opacity 0.45s cubic-bezier(0.16, 1, 0.3, 1),
+    transform 0.45s cubic-bezier(0.16, 1, 0.3, 1);
+  will-change: opacity, transform;
+}
+.orbit.is-live .orbit-cap.is-on {
+  opacity: 1;
+  transform: none;
+  transition-delay: 0.08s;
+}
+.orbit.is-live .orbit-beats {
+  display: contents;
+}
+.orbit.is-live .orbit-hint {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  margin-top: 1.1rem;
+  font-size: 13.5px;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.78);
+}
+/* a small mouse with a wheel that drifts down */
+.orbit-hint-mouse {
+  position: relative;
+  width: 16px;
+  height: 25px;
+  border-radius: 9px;
+  border: 1.5px solid rgba(255, 255, 255, 0.7);
+  flex: none;
+}
+.orbit-hint-mouse span {
+  position: absolute;
+  left: 50%;
+  top: 5px;
+  width: 2px;
+  height: 5px;
+  margin-left: -1px;
+  border-radius: 1px;
+  background: #fff;
+  animation: orbit-wheel 1.6s ease-in-out infinite;
+}
+@keyframes orbit-wheel {
+  0% {
+    transform: translateY(0);
+    opacity: 1;
+  }
+  70% {
+    transform: translateY(7px);
+    opacity: 0;
+  }
+  100% {
+    transform: translateY(0);
+    opacity: 0;
+  }
+}
+@media (hover: none) and (pointer: coarse) {
+  .orbit-hint-mouse {
+    display: none;
+  }
+}
+.orbit.is-live .orbit-beat h3 {
+  font-size: 30px;
+  line-height: 1.05;
+  letter-spacing: -0.03em;
+}
+.orbit.is-live .orbit-beat p {
+  margin-top: 0.6rem;
+  font-size: 15.5px;
+  color: rgba(255, 255, 255, 0.82);
+}
+.orbit.is-live .orbit-end-line {
+  font-size: 22px;
+  line-height: 1.15;
+  letter-spacing: -0.02em;
+}
+.orbit.is-live .orbit-end .btn-primary {
+  margin-top: 1.1rem;
+}
+.orbit.is-live .orbit-dial {
+  display: block;
+  position: absolute;
+  right: 1rem;
+  bottom: 1rem;
+  width: 56px;
+  height: 56px;
+  color: #fff;
+}
+.orbit-dial svg {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+.orbit-dial-arm {
+  position: absolute;
+  inset: 0;
+  will-change: transform;
+}
+.orbit-dial-dot {
+  position: absolute;
+  left: 50%;
+  bottom: -1px;
+  width: 8px;
+  height: 8px;
+  margin-left: -4px;
+  border-radius: 50%;
+  background: var(--color-accent);
+  box-shadow: 0 0 0 2px var(--color-ink), 0 0 10px rgba(224, 25, 43, 0.8);
+}
+
+/* phones: the footage sits centred in the stage at its own ratio (capped on
+   short screens so the copy keeps its room), feathered into the ink above
+   and below; the copy is set centred over the reflective floor at its foot
+   and a slim line under it shows how far the turn has gone.
+   Desktops: footage edge to edge, copy on the left */
+@media (max-width: 767px) {
+  .orbit.is-live {
+    /* the frames are 4:5; drawn a touch taller (a few percent off each
+       side) so the stage is not mostly ink above and below the car */
+    --orbit-m-h: min(calc(100vw / 0.7), calc(100svh - 13rem));
+    --orbit-m-top: calc((100svh - var(--orbit-m-h)) * 0.5);
+    /* ink left under the footage */
+    --orbit-m-foot: calc(100svh - var(--orbit-m-top) - var(--orbit-m-h));
+  }
+  .orbit.is-live .orbit-media {
+    top: var(--orbit-m-top);
+    bottom: auto;
+    height: var(--orbit-m-h);
+  }
+  .orbit.is-live .orbit-scrim {
+    display: block;
+    background: linear-gradient(
+      180deg,
+      rgba(16, 19, 31, 0.9) 0%,
+      rgba(16, 19, 31, 0) 12%,
+      rgba(16, 19, 31, 0) 46%,
+      rgba(16, 19, 31, 0.55) 72%,
+      rgba(16, 19, 31, 0.97) 100%
+    );
+  }
+  .orbit.is-live .orbit-cap {
+    left: 1.25rem;
+    right: 1.25rem;
+    top: auto;
+    bottom: calc(var(--orbit-m-foot) - 0.5rem);
+    text-align: center;
+    transition-duration: 0.32s;
+  }
+  .orbit.is-live .orbit-title {
+    font-size: 30px;
+  }
+  .orbit.is-live .orbit-hint {
+    justify-content: center;
+    margin-top: 0.9rem;
+    font-size: 11.5px;
+    font-weight: 700;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: rgba(255, 255, 255, 0.62);
+  }
+  .orbit.is-live .orbit-beat h3 {
+    font-size: 24px;
+    letter-spacing: -0.025em;
+  }
+  .orbit.is-live .orbit-beat p {
+    max-width: 30ch;
+    margin-left: auto;
+    margin-right: auto;
+    margin-top: 0.5rem;
+    font-size: 14px;
+    color: rgba(255, 255, 255, 0.78);
+  }
+  .orbit.is-live .orbit-end-line {
+    font-size: 19px;
+  }
+  .orbit.is-live .orbit-end .btn-primary {
+    margin-top: 1rem;
+  }
+  .orbit.is-live .orbit-dial {
+    display: none;
+  }
+  .orbit.is-live .orbit-bar {
+    display: block;
+    position: absolute;
+    left: 50%;
+    bottom: calc(var(--orbit-m-foot) - 2.75rem);
+    width: 72px;
+    height: 2px;
+    margin-left: -36px;
+    border-radius: 1px;
+    background: rgba(255, 255, 255, 0.22);
+    overflow: hidden;
+  }
+  .orbit-bar-fill {
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    background: #fff;
+    transform-origin: 0 50%;
+    transform: scaleX(0);
+    will-change: transform;
+  }
+}
+@media (min-width: 768px) {
+  .orbit.is-live .orbit-cap {
+    left: 1.5rem;
+    right: auto;
+    top: 50%;
+    width: min(440px, 44vw);
+    transform: translate(0, calc(-50% + 14px));
+  }
+  .orbit.is-live .orbit-cap.is-on {
+    transform: translate(0, -50%);
+  }
+  .orbit.is-live .orbit-head {
+    top: auto;
+    bottom: 7vh;
+    width: min(560px, 50vw);
+    transform: translate(0, 14px);
+  }
+  .orbit.is-live .orbit-head.is-on {
+    transform: none;
+  }
+  /* under the header, clear of the contact bubble at the bottom */
+  .orbit.is-live .orbit-dial {
+    right: 1.5rem;
+    top: 6.5rem;
+    bottom: auto;
+    width: 64px;
+    height: 64px;
+  }
+}
+@media (min-width: 768px) {
+  /* white type over a white car: the hero's veil, heavy only where the copy sits */
+  .orbit.is-live .orbit-scrim {
+    display: block;
+    background: linear-gradient(
+      90deg,
+      rgba(16, 19, 31, 0.72) 0%,
+      rgba(16, 19, 31, 0.5) 26%,
+      rgba(16, 19, 31, 0.08) 48%,
+      rgba(16, 19, 31, 0) 60%
+    );
+  }
+}
+@media (min-width: 1024px) {
+  .orbit.is-live {
+    --orbit-run: 260vh;
+  }
+  .orbit.is-live .orbit-cap {
+    left: max(1.5rem, calc((100vw - 1360px) / 2 + 1.5rem));
+  }
+  .orbit.is-live .orbit-head {
+    bottom: 9vh;
+  }
+  .orbit.is-live .orbit-dial {
+    right: max(1.5rem, calc((100vw - 1360px) / 2 + 1.5rem));
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .orbit-hint-mouse span {
+    animation: none;
   }
 }

@@ -130,7 +130,11 @@
     "hotText": "Prețuri reduse și mașinile pe care le recomandăm acum.",
     "whyTitle": "De ce INAUTO",
     "contactHours": "Luni – Vineri 09:00–19:00 · Sâmbătă 09:00–16:00 · Duminică 10:00–14:00",
-    "mapCta": "Deschide harta"
+    "mapCta": "Deschide harta",
+    "orbit": {
+      "title": "Mașina ta, din orice unghi",
+      "hint": "Derulează ca să o rotești"
+    }
   },
   "catalog": {
     "title": "Automobile",

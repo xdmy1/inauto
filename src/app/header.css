@@ -1,0 +1,698 @@
+/* ——— Site header ———
+   One bar, no ticker. On the home page it is transparent over the hero
+   video and turns solid white once the page scrolls; everywhere else it is
+   white from the start. It shrinks a little on scroll, slips away while you
+   scroll down and comes back the moment you scroll up. */
+
+:root {
+  --header-h: 64px;
+  --header-h-sm: 60px;
+}
+@media (min-width: 1024px) {
+  :root {
+    --header-h: 80px;
+    --header-h-sm: 68px;
+  }
+}
+
+.site-header {
+  position: sticky;
+  top: 0;
+  z-index: 40;
+  height: var(--header-h);
+  /* the outer box keeps its height so the page never jumps when the bar
+     shrinks; only the bar itself takes clicks */
+  pointer-events: none;
+}
+.site-header-bar {
+  position: relative;
+  pointer-events: auto;
+  height: var(--header-h);
+  color: var(--color-ink);
+  background-color: rgba(255, 255, 255, 0.94);
+  -webkit-backdrop-filter: blur(16px);
+  backdrop-filter: blur(16px);
+  box-shadow: 0 1px 0 var(--color-line);
+}
+/* transitions only once the client has read the scroll position, so a
+   reload mid-page does not animate from transparent to white */
+.site-header[data-ready] .site-header-bar {
+  transition:
+    height 0.4s cubic-bezier(0.16, 1, 0.3, 1),
+    background-color 0.35s ease,
+    color 0.35s ease,
+    box-shadow 0.35s ease,
+    transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.site-header[data-scrolled] .site-header-bar {
+  height: var(--header-h-sm);
+  box-shadow:
+    0 1px 0 var(--color-line),
+    0 12px 32px -20px rgb(16 19 31 / 0.28);
+}
+.site-header[data-hidden] .site-header-bar {
+  transform: translateY(-100%);
+}
+/* a soft veil that only shows over the hero, so white type reads on the
+   bright ceiling lights; it fades a little past the bar's edge */
+.site-header-bar::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 0;
+  height: calc(100% + 48px);
+  pointer-events: none;
+  background: linear-gradient(180deg, rgb(16 19 31 / 0.6) 0%, rgb(16 19 31 / 0.25) 60%, rgb(16 19 31 / 0) 100%);
+  opacity: 0;
+  transition: opacity 0.35s ease;
+}
+
+/* ——— home: the bar sits on the hero ——— */
+body:has(main > .hero:first-child) .site-header {
+  margin-bottom: calc(-1 * var(--header-h));
+}
+body:has(main > .hero:first-child) .site-header:not([data-scrolled]) .site-header-bar {
+  color: #fff;
+  background-color: transparent;
+  -webkit-backdrop-filter: none;
+  backdrop-filter: none;
+  box-shadow: none;
+}
+body:has(main > .hero:first-child) .site-header:not([data-scrolled]) .site-header-bar::before {
+  opacity: 1;
+}
+/* the hero grows by the bar's height so its copy stays centred in the part
+   you can see; on phones the still starts under the bar, so the wall sign
+   in the footage is never covered */
+main > .hero:first-child {
+  padding-top: var(--header-h);
+}
+/* the footage starts under the bar everywhere: the wall sign sits near the
+   top of the frame and must never slide under the logo or the call button */
+main > .hero:first-child .hero-bg {
+  top: var(--header-h);
+}
+@media (min-width: 1024px) {
+  main > .hero:first-child {
+    min-height: calc(540px + var(--header-h));
+    max-height: calc(680px + var(--header-h));
+    height: calc(100svh - 180px);
+  }
+}
+
+/* ——— layout ——— */
+.site-header-in {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  align-items: center;
+  gap: 16px;
+  height: 100%;
+  max-width: 1360px;
+  margin: 0 auto;
+  padding: 0 16px;
+}
+@media (min-width: 640px) {
+  .site-header-in {
+    padding: 0 24px;
+  }
+}
+@media (min-width: 1024px) {
+  .site-header-in {
+    grid-template-columns: 1fr auto 1fr;
+    gap: 24px;
+  }
+}
+
+/* ——— logo lockup: red car mark + wordmark in the current text colour ——— */
+.logo-lockup {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  color: inherit;
+  --logo-h: 18px;
+}
+.logo-lockup svg {
+  display: block;
+  width: auto;
+  flex: none;
+  transition: height 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.logo-lockup .logo-car {
+  display: none;
+  height: calc(var(--logo-h) * 1.22);
+  fill: var(--color-accent);
+}
+.logo-lockup .logo-word {
+  height: var(--logo-h);
+  fill: currentColor;
+}
+@media (min-width: 1280px) {
+  .logo-lockup .logo-car {
+    display: block;
+  }
+}
+.site-logo {
+  grid-column: 1;
+  display: inline-flex;
+  align-items: center;
+  justify-self: start;
+  padding: 6px 0;
+}
+/* the real logo (car + INAUTO.MD + tagline): white over the home hero,
+   the ink version on the white bar */
+.site-logo .logo-img {
+  display: block;
+  width: auto;
+  height: 40px;
+  transition: height 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.site-logo .logo-on-dark {
+  display: none;
+}
+body:has(main > .hero:first-child) .site-header:not([data-scrolled]) .site-logo .logo-on-dark {
+  display: block;
+}
+body:has(main > .hero:first-child) .site-header:not([data-scrolled]) .site-logo .logo-on-light {
+  display: none;
+}
+@media (min-width: 1024px) {
+  .site-logo .logo-img {
+    height: 50px;
+  }
+  .site-header[data-scrolled] .site-logo .logo-img {
+    height: 42px;
+  }
+}
+
+/* ——— slim ticker of the newest cars, above the bar ——— */
+.ticker {
+  --ticker-h: 30px;
+  position: relative;
+  height: var(--ticker-h);
+  overflow: hidden;
+  background: var(--color-ink);
+  color: rgba(246, 247, 249, 0.72);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+}
+.ticker-track {
+  display: flex;
+  width: max-content;
+  height: 100%;
+  animation: marquee 60s linear infinite;
+}
+.ticker:hover .ticker-track {
+  animation-play-state: paused;
+}
+.ticker-half {
+  display: flex;
+  height: 100%;
+  align-items: center;
+}
+.ticker-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 0 18px;
+  white-space: nowrap;
+  font-size: 12.5px;
+  transition: color 0.15s ease;
+}
+.ticker-item + .ticker-item {
+  border-left: 1px solid rgba(255, 255, 255, 0.1);
+}
+.ticker-item:hover {
+  color: #fff;
+}
+.ticker-new {
+  font-size: 9.5px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  color: var(--color-accent);
+}
+.ticker-year {
+  color: rgba(246, 247, 249, 0.5);
+}
+.ticker-price {
+  font-weight: 600;
+  color: #fff;
+  font-variant-numeric: tabular-nums;
+}
+@media (prefers-reduced-motion: reduce) {
+  .ticker-track {
+    animation: none;
+  }
+}
+
+/* ——— desktop nav ——— */
+.site-nav {
+  display: none;
+}
+@media (min-width: 1024px) {
+  .site-nav {
+    grid-column: 2;
+    display: flex;
+    align-items: center;
+    gap: 2px;
+  }
+}
+.nav-link {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  height: 40px;
+  padding: 0 11px;
+  font-size: 14.5px;
+  font-weight: 600;
+  letter-spacing: -0.005em;
+  white-space: nowrap;
+  color: inherit;
+  opacity: 0.76;
+  cursor: pointer;
+  transition: opacity 0.2s ease;
+}
+.nav-link:hover,
+.nav-link[data-active],
+.nav-link[aria-expanded="true"] {
+  opacity: 1;
+}
+/* the indicator draws in from the left and leaves to the right */
+.nav-link::after {
+  content: "";
+  position: absolute;
+  left: 11px;
+  right: 11px;
+  bottom: 5px;
+  height: 2px;
+  border-radius: 2px;
+  background: var(--color-accent);
+  transform: scaleX(0);
+  transform-origin: right center;
+  transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.nav-link:hover::after,
+.nav-link[data-active]::after,
+.nav-link[aria-expanded="true"]::after {
+  transform: scaleX(1);
+  transform-origin: left center;
+}
+.nav-chevron {
+  width: 10px;
+  height: 10px;
+  opacity: 0.6;
+  transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.nav-link[aria-expanded="true"] .nav-chevron {
+  transform: rotate(180deg);
+}
+
+/* ——— mega panel under "Automobile" ——— */
+.mega {
+  position: absolute;
+  left: 50%;
+  top: calc(100% + 4px);
+  z-index: 50;
+  width: 860px;
+  transform: translateX(-50%);
+  overflow: hidden;
+  border-radius: 20px;
+  background: var(--color-card);
+  color: var(--color-ink);
+  box-shadow:
+    0 0 0 1px rgb(16 19 31 / 0.06),
+    0 2px 6px rgb(16 19 31 / 0.06),
+    0 28px 64px -24px rgb(16 19 31 / 0.38);
+}
+.mega-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1.5fr;
+  gap: 12px;
+  padding: 22px 22px 16px;
+}
+.mega-head {
+  padding: 0 10px 8px;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  white-space: nowrap;
+  color: var(--color-ink-faint);
+}
+.mega-link {
+  display: block;
+  padding: 7px 10px;
+  border-radius: 9px;
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--color-ink);
+  transition: background-color 0.15s ease, color 0.15s ease;
+}
+.mega-link:hover {
+  background: var(--color-paper);
+}
+.mega-latest {
+  border-left: 1px solid var(--color-line);
+  padding-left: 14px;
+}
+.mega-car {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 6px 8px;
+  border-radius: 12px;
+  transition: background-color 0.15s ease;
+}
+.mega-car:hover {
+  background: var(--color-paper);
+}
+.mega-car-img {
+  flex: none;
+  width: 68px;
+  height: 50px;
+  overflow: hidden;
+  border-radius: 8px;
+  background: var(--color-paper);
+}
+.mega-car-img img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.mega-car-title {
+  font-size: 13.5px;
+  font-weight: 600;
+  line-height: 1.25;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.mega-car-meta {
+  margin-top: 2px;
+  font-size: 12px;
+  color: var(--color-ink-faint);
+}
+.mega-car-price {
+  margin-left: auto;
+  flex: none;
+  font-family: var(--font-display);
+  font-size: 13.5px;
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+  color: var(--color-accent);
+}
+.mega-foot {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 13px 22px;
+  border-top: 1px solid var(--color-line);
+  background: rgb(246 247 249 / 0.7);
+  font-size: 13.5px;
+}
+.mega-foot-all {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-weight: 700;
+  color: var(--color-accent);
+  transition: color 0.15s ease;
+}
+.mega-foot-all:hover {
+  color: var(--color-accent-deep);
+}
+.mega-foot-right {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  color: var(--color-ink-soft);
+}
+.mega-foot-right a {
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  color: var(--color-ink);
+}
+.mega-foot-right a:hover {
+  color: var(--color-accent);
+}
+
+/* ——— right cluster ——— */
+.site-actions {
+  grid-column: 3;
+  display: flex;
+  align-items: center;
+  justify-self: end;
+  gap: 8px;
+}
+@media (min-width: 1024px) {
+  .site-actions {
+    gap: 16px;
+  }
+}
+@media (min-width: 1280px) {
+  .site-actions {
+    gap: 18px;
+  }
+}
+/* RO | RU */
+.lang {
+  display: none;
+  align-items: center;
+  gap: 1px;
+  font-size: 12.5px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+}
+@media (min-width: 1024px) {
+  .lang {
+    display: inline-flex;
+  }
+}
+.lang button {
+  padding: 6px 7px;
+  border-radius: 6px;
+  color: inherit;
+  opacity: 0.5;
+  cursor: pointer;
+  transition: opacity 0.2s ease;
+}
+.lang button:hover {
+  opacity: 0.85;
+}
+.lang button[aria-pressed="true"] {
+  opacity: 1;
+  cursor: default;
+}
+.lang-sep {
+  width: 1px;
+  height: 12px;
+  background: currentColor;
+  opacity: 0.3;
+}
+/* "Deschis până la 19:00" — only where there is room for it */
+.open-now {
+  display: none;
+  font-size: 12.5px;
+  font-weight: 500;
+  white-space: nowrap;
+  opacity: 0.72;
+}
+@media (min-width: 1400px) {
+  .open-now {
+    display: block;
+  }
+}
+
+/* the one call to action: call us (3D red, same recipe as .btn-primary) */
+.hdr-call,
+.hdr-call-sm {
+  display: none;
+  align-items: center;
+  justify-content: center;
+  color: #fff;
+  background: linear-gradient(180deg, #f04a58 0%, #c9101f 100%);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.32),
+    0 3px 8px rgba(224, 25, 43, 0.24);
+  transition:
+    background 150ms ease,
+    box-shadow 150ms ease,
+    transform 150ms ease;
+}
+.hdr-call:hover,
+.hdr-call-sm:hover {
+  background: linear-gradient(180deg, #e33344 0%, #ad0d1c 100%);
+}
+.hdr-call:active,
+.hdr-call-sm:active {
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.2),
+    0 1px 4px rgba(224, 25, 43, 0.3);
+  transform: translateY(1px);
+}
+.hdr-call {
+  gap: 9px;
+  height: 44px;
+  padding: 0 18px 0 15px;
+  border-radius: 12px;
+  font-family: var(--font-display);
+  font-size: 14px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+.hdr-call-sm {
+  display: inline-flex;
+  width: 40px;
+  height: 40px;
+  border-radius: 999px;
+}
+/* the number spelled out only once there is room beside the Russian nav */
+@media (min-width: 1280px) {
+  .hdr-call {
+    display: inline-flex;
+  }
+  .hdr-call-sm {
+    display: none;
+  }
+}
+
+/* hamburger: two bars, no chip */
+.burger {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  margin-right: -8px;
+  border-radius: 12px;
+  color: inherit;
+  cursor: pointer;
+}
+.burger svg {
+  width: 22px;
+  height: 22px;
+}
+@media (min-width: 1024px) {
+  .burger {
+    display: none;
+  }
+}
+
+/* ——— phone drawer (ink) ——— */
+.drawer {
+  background: #10131f;
+  color: #fff;
+  box-shadow: -24px 0 64px -24px rgb(0 0 0 / 0.6);
+}
+.drawer-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: var(--header-h);
+  padding: 0 16px 0 20px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+.drawer-top .logo-lockup {
+  --logo-h: 18px;
+}
+.drawer-close {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.08);
+  color: #fff;
+  transition: background-color 0.15s ease;
+}
+.drawer-close:hover {
+  background: rgba(255, 255, 255, 0.14);
+}
+.drawer-close svg {
+  width: 16px;
+  height: 16px;
+}
+.drawer-nav a {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 15px 0;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  font-family: var(--font-display);
+  font-size: 22px;
+  font-weight: 800;
+  letter-spacing: -0.015em;
+  color: rgba(255, 255, 255, 0.72);
+  transition: color 0.15s ease;
+}
+.drawer-nav a[data-active],
+.drawer-nav a:hover {
+  color: #fff;
+}
+.drawer-nav a svg {
+  width: 16px;
+  height: 16px;
+  opacity: 0.35;
+}
+.drawer-nav a[data-active] svg {
+  color: var(--color-accent);
+  opacity: 1;
+}
+.drawer-head {
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.45);
+}
+.drawer-chip {
+  display: inline-flex;
+  align-items: center;
+  padding: 9px 14px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.06);
+  font-size: 13px;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.88);
+  transition: background-color 0.15s ease, border-color 0.15s ease;
+}
+.drawer-chip:hover {
+  background: rgba(255, 255, 255, 0.12);
+  border-color: rgba(255, 255, 255, 0.2);
+}
+.drawer-lang {
+  display: inline-flex;
+  padding: 3px;
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.08);
+}
+.drawer-lang button {
+  padding: 6px 14px;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  color: rgba(255, 255, 255, 0.65);
+  transition: background-color 0.15s ease, color 0.15s ease;
+}
+.drawer-lang button[aria-pressed="true"] {
+  background: #fff;
+  color: var(--color-ink);
+}
+.drawer-foot {
+  padding: 18px 20px max(20px, env(safe-area-inset-bottom));
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+}
+.drawer-open-now {
+  display: block;
+  margin-top: 10px;
+  text-align: center;
+  font-size: 12.5px;
+  color: rgba(255, 255, 255, 0.55);
+}

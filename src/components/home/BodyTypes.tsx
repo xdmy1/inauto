@@ -2,7 +2,8 @@ import { getTranslations } from "next-intl/server";
 import { Link } from "@/i18n/navigation";
 import { MINIBUS, MINIBUS_BODIES } from "@/lib/cars";
 
-// One real car from the lot for every body type, cut out and set on a card.
+// One real car from the lot for every body type, cut out and photographed
+// on a light studio floor inside its card; the last tile is the whole lot.
 const ORDER = ["suv", "sedan", "wagon", "hatchback", "minibus", "coupe", "pickup"] as const;
 
 export async function BodyTypes({
@@ -25,9 +26,14 @@ export async function BodyTypes({
   tiles.push({ key: "all", href: "/auto", label: t("home.allCars"), count: total });
 
   return (
-    <div className="grid grid-cols-2 gap-x-3 gap-y-8 pt-5 sm:grid-cols-4 sm:gap-x-4 sm:gap-y-9">
+    <div className="grid grid-cols-2 gap-3 sm:grid-cols-4 sm:gap-4">
       {tiles.map((tile, i) => (
-        <Link key={tile.key} href={tile.href} data-reveal className="body-card">
+        <Link
+          key={tile.key}
+          href={tile.href}
+          data-reveal
+          className={tile.key === "all" ? "body-card body-card-all" : "body-card"}
+        >
           <span className="body-card-media">
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
@@ -39,9 +45,9 @@ export async function BodyTypes({
               decoding="async"
             />
           </span>
-          <span className="text-[14px] font-bold text-ink sm:text-[15px]">{tile.label}</span>
-          <span className="-mt-1 text-[12px] text-ink-faint">
-            {t("common.cars", { count: tile.count })}
+          <span className="body-card-text">
+            <span className="body-card-name">{tile.label}</span>
+            <span className="body-card-count">{t("common.cars", { count: tile.count })}</span>
           </span>
         </Link>
       ))}

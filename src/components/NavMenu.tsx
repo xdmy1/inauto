@@ -1,17 +1,33 @@
 "use client";
 
-// Main nav: active-page indicator, "Automobile" dropdown and the
-// separate "Microbuze" category (minivan + van)
+// Main nav (desktop): plain links with a red indicator under the current
+// page, and a mega panel under "Automobile" — body types, popular filters
+// and the three cars that came in last. "Microbuze" (minivan + van) is its
+// own category.
 import { useEffect, useRef, useState } from "react";
 import { useTranslations } from "next-intl";
 import { useSearchParams } from "next/navigation";
-import { Link, usePathname } from "@/i18n/navigation";
+import { Link, usePathname, useRouter } from "@/i18n/navigation";
 import { MINIBUS } from "@/lib/cars";
-import { ArrowRightIcon } from "./icons";
+import { site, telHref } from "@/lib/site";
+import { OpenNowBadge } from "./OpenNowBadge";
+import { ArrowIcon, ChevronIcon } from "./HeaderIcons";
 
-export function NavMenu() {
+export type NavCar = {
+  slug: string;
+  title: string;
+  year: number;
+  price: string;
+  img: string | null;
+};
+
+const CLOSE_MS = 150;
+const LEAVE_MS = 160;
+
+export function NavMenu({ latest }: { latest: NavCar[] }) {
   const t = useTranslations();
   const pathname = usePathname();
+  const router = useRouter();
   const searchParams = useSearchParams();
   const [open, setOpen] = useState(false);
   const [closing, setClosing] = useState(false);
@@ -23,18 +39,38 @@ export function NavMenu() {
     setClosing(false);
   }
   const rootRef = useRef<HTMLDivElement>(null);
-  const timer = useRef<number | undefined>(undefined);
+  // mirror of the state for the timers (they outlive the render they started in)
+  const state = useRef({ open, closing });
+  useEffect(() => {
+    state.current = { open, closing };
+  }, [open, closing]);
+  const closeTimer = useRef<number | undefined>(undefined);
+  const leaveTimer = useRef<number | undefined>(undefined);
 
+  function show() {
+    window.clearTimeout(leaveTimer.current);
+    window.clearTimeout(closeTimer.current);
+    setClosing(false);
+    setOpen(true);
+  }
   function close() {
-    if (!open || closing) return;
+    window.clearTimeout(leaveTimer.current);
+    if (!state.current.open || state.current.closing) return;
     setClosing(true);
-    timer.current = window.setTimeout(() => {
+    closeTimer.current = window.setTimeout(() => {
       setOpen(false);
       setClosing(false);
-    }, 150);
+    }, CLOSE_MS);
   }
+  const hoverable = () => window.matchMedia("(hover: hover)").matches;
 
-  useEffect(() => () => window.clearTimeout(timer.current), []);
+  useEffect(
+    () => () => {
+      window.clearTimeout(closeTimer.current);
+      window.clearTimeout(leaveTimer.current);
+    },
+    []
+  );
 
   useEffect(() => {
     if (!open) return;
@@ -52,8 +88,7 @@ export function NavMenu() {
       document.removeEventListener("touchstart", onDown);
       document.removeEventListener("keydown", onKey);
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [open, closing]);
+  }, [open]);
 
   const bodies = [
     { href: "/auto?body=suv", label: t("options.body.suv") },
@@ -73,116 +108,114 @@ export function NavMenu() {
     { href: "/auto?priceMax=10000", label: t("footer.under10k") },
   ];
 
-  // v1b — segmented pill, squared to match the header buttons (rounded-xl)
-  const itemCls = (active: boolean) =>
-    `flex h-10 items-center rounded-lg px-4 text-sm font-semibold transition-colors ${
-      active ? "bg-card text-ink shadow-card" : "text-ink-soft hover:text-ink"
-    }`;
-
-  const underline = null;
-  const divider = null;
-
   const isMinibus =
     pathname.startsWith("/auto") && searchParams.get("body") === MINIBUS;
   const isCatalog = pathname.startsWith("/auto") && !isMinibus;
+  const active = (on: boolean) => (on ? "" : undefined);
 
   return (
-    <nav
-      className="chip-3d hidden items-center gap-0.5 rounded-xl p-1 lg:flex"
-      aria-label="Main"
-    >
-      <Link href="/" className={itemCls(pathname === "/")}>
+    <nav className="site-nav" aria-label="Main">
+      <Link href="/" className="nav-link" data-active={active(pathname === "/")}>
         {t("nav.home")}
-        {pathname === "/" && underline}
       </Link>
-      {divider}
-      <div ref={rootRef} className="relative">
+
+      <div
+        ref={rootRef}
+        className="relative"
+        onMouseEnter={() => hoverable() && show()}
+        onMouseLeave={() => {
+          if (!hoverable()) return;
+          leaveTimer.current = window.setTimeout(close, LEAVE_MS);
+        }}
+      >
         <button
           type="button"
-          aria-expanded={open}
-          onClick={() => (open ? close() : setOpen(true))}
-          className={`${itemCls(isCatalog)} gap-1.5`}
+          aria-expanded={open && !closing}
+          aria-haspopup="true"
+          onClick={() => {
+            // with a mouse the panel already opened on hover, so a click is
+            // the destination itself; on touch, a tap opens and closes it
+            if (hoverable()) {
+              close();
+              router.push("/auto");
+              return;
+            }
+            if (open && !closing) close();
+            else show();
+          }}
+          onKeyDown={(e) => {
+            if (e.key === "ArrowDown" || e.key === " ") {
+              e.preventDefault();
+              show();
+            }
+          }}
+          className="nav-link"
+          data-active={active(isCatalog)}
         >
           {t("nav.catalog")}
-          <svg
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="2.5"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            className={`h-3 w-3 text-ink-faint transition-transform duration-200 ${
-              open && !closing ? "rotate-180" : ""
-            }`}
-            aria-hidden
-          >
-            <path d="m6 9 6 6 6-6" />
-          </svg>
-          {isCatalog && underline}
+          <ChevronIcon className="nav-chevron" />
         </button>
 
         {open && (
-          <div
-            className={`dropdown-pop absolute left-1/2 top-full z-50 w-[440px] -translate-x-1/2 overflow-hidden rounded-2xl border border-line bg-card shadow-lift ${
-              closing ? "closing" : ""
-            }`}
-          >
-            <div className="grid grid-cols-2 gap-x-2 p-4">
+          <div className={`mega dropdown-pop ${closing ? "closing" : ""}`}>
+            <div className="mega-grid">
               <div>
-                <div className="px-3 pb-2 text-[11px] font-semibold uppercase tracking-[0.14em] text-ink-faint">
-                  {t("common.body")}
-                </div>
+                <div className="mega-head">{t("common.body")}</div>
                 {bodies.map((l) => (
-                  <Link
-                    key={l.href}
-                    href={l.href}
-                    onClick={close}
-                    className="block rounded-lg px-3 py-2 text-sm font-medium text-ink transition-colors hover:bg-paper"
-                  >
+                  <Link key={l.href} href={l.href} onClick={close} className="mega-link">
                     {l.label}
                   </Link>
                 ))}
               </div>
               <div>
-                <div className="px-3 pb-2 text-[11px] font-semibold uppercase tracking-[0.14em] text-ink-faint">
-                  {t("footer.categories")}
-                </div>
+                <div className="mega-head">{t("footer.categories")}</div>
                 {quick.map((l) => (
-                  <Link
-                    key={l.href}
-                    href={l.href}
-                    onClick={close}
-                    className="block rounded-lg px-3 py-2 text-sm font-medium text-ink transition-colors hover:bg-paper"
-                  >
+                  <Link key={l.href} href={l.href} onClick={close} className="mega-link">
                     {l.label}
+                  </Link>
+                ))}
+              </div>
+              <div className="mega-latest">
+                <div className="mega-head">{t("home.latestTitle")}</div>
+                {latest.map((c) => (
+                  <Link key={c.slug} href={`/auto/${c.slug}`} onClick={close} className="mega-car">
+                    <span className="mega-car-img">
+                      {c.img && (
+                        // eslint-disable-next-line @next/next/no-img-element
+                        <img src={c.img} alt="" width={68} height={50} loading="lazy" />
+                      )}
+                    </span>
+                    <span className="min-w-0">
+                      <span className="mega-car-title block">{c.title}</span>
+                      <span className="mega-car-meta block">{c.year}</span>
+                    </span>
+                    <span className="mega-car-price">{c.price}</span>
                   </Link>
                 ))}
               </div>
             </div>
-            <Link
-              href="/auto"
-              onClick={close}
-              className="flex items-center justify-between border-t border-line bg-paper/60 px-6 py-3.5 text-sm font-bold text-accent transition-colors hover:text-accent-deep"
-            >
-              {t("home.allCars")}
-              <ArrowRightIcon className="h-4 w-4" />
-            </Link>
+            <div className="mega-foot">
+              <Link href="/auto" onClick={close} className="mega-foot-all">
+                {t("home.allCars")}
+                <ArrowIcon className="h-3.5 w-3.5" />
+              </Link>
+              <div className="mega-foot-right">
+                <OpenNowBadge className="whitespace-nowrap" />
+                <a href={telHref(site.phones[0])}>{site.phoneDisplay[0]}</a>
+              </div>
+            </div>
           </div>
         )}
       </div>
-      {divider}
-      <Link href={`/auto?body=${MINIBUS}`} className={itemCls(isMinibus)}>
+
+      <Link href={`/auto?body=${MINIBUS}`} className="nav-link" data-active={active(isMinibus)}>
         {t("nav.minibus")}
       </Link>
-      {divider}
-      <Link href="/despre" className={itemCls(pathname === "/despre")}>
+      <Link href="/despre" className="nav-link" data-active={active(pathname === "/despre")}>
         {t("nav.about")}
-        {pathname === "/despre" && underline}
       </Link>
-      {divider}
-      <Link href="/contacte" className={itemCls(pathname === "/contacte")}>
+      <Link href="/contacte" className="nav-link" data-active={active(pathname === "/contacte")}>
         {t("nav.contact")}
-        {pathname === "/contacte" && underline}
       </Link>
     </nav>
   );

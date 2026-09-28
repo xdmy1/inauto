@@ -13,6 +13,7 @@ import { FloatingContact } from "@/components/FloatingContact";
 import { ScrollReveal } from "@/components/ScrollReveal";
 import "../../globals.css";
 import "../../motion.css";
+import "../../header.css";
 
 const inter = Inter({
   subsets: ["latin", "latin-ext", "cyrillic"],

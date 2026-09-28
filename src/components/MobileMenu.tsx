@@ -1,6 +1,7 @@
 "use client";
 
-// Mobile navigation — right-side drawer with nav, categories and contact CTAs
+// Phone navigation — an ink drawer from the right: the pages, popular
+// filters, RO/RU, and the call button at the bottom.
 import { useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { useLocale, useTranslations } from "next-intl";
@@ -10,7 +11,8 @@ import { routing } from "@/i18n/routing";
 import { MINIBUS } from "@/lib/cars";
 import { site, telHref, waHref } from "@/lib/site";
 import { Logo } from "./Logo";
-import { ArrowRightIcon, PhoneIcon } from "./icons";
+import { OpenNowBadge } from "./OpenNowBadge";
+import { ArrowIcon, CrossIcon, HandsetIcon, MenuIcon } from "./HeaderIcons";
 
 export function MobileMenu() {
   const t = useTranslations();
@@ -56,6 +58,15 @@ export function MobileMenu() {
     };
   }, [open]);
 
+  useEffect(() => {
+    if (!open) return;
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") close();
+    };
+    document.addEventListener("keydown", onKey);
+    return () => document.removeEventListener("keydown", onKey);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [open, closing]);
 
   const isMinibus =
     pathname.startsWith("/auto") && searchParams.get("body") === MINIBUS;
@@ -84,146 +95,115 @@ export function MobileMenu() {
     { href: "/auto?body=sedan", label: t("options.body.sedan") },
     { href: "/auto?fuel=diesel", label: t("options.fuel.diesel") },
     { href: "/auto?fuel=hybrid", label: t("options.fuel.hybrid") },
+    { href: "/auto?transmission=automatic", label: t("options.transmission.automatic") },
     { href: "/auto?priceMax=10000", label: t("footer.under10k") },
   ];
 
   return (
-    <div className="lg:hidden">
+    <>
       <button
         type="button"
         aria-label="Meniu"
         aria-expanded={open}
         onClick={() => (open ? close() : setOpen(true))}
-        className="chip-3d flex h-10 w-10 items-center justify-center rounded-xl"
+        className="burger"
       >
-        <svg viewBox="0 0 16 16" className="h-4 w-4" aria-hidden="true">
-          <path
-            d="M2 4.5h12M2 8h12M2 11.5h12"
-            stroke="currentColor"
-            strokeWidth="1.6"
-            strokeLinecap="round"
-          />
-        </svg>
+        <MenuIcon />
       </button>
 
       {open &&
         createPortal(
-        <div className="fixed inset-0 z-50">
-          <div
-            className={`select-backdrop absolute inset-0 bg-ink/60 ${closing ? "closing" : ""}`}
-            onClick={close}
-            aria-hidden
-          />
-          <aside
-            className={`drawer-panel absolute right-0 top-0 flex h-dvh w-[86%] max-w-[360px] flex-col bg-card shadow-lift ${
-              closing ? "closing" : ""
-            }`}
-          >
-            <div className="flex items-center justify-between border-b border-line px-5 py-4">
-              <Link href="/" onClick={close} aria-label={site.name}>
-                <Logo markClassName="h-10 w-auto" />
-              </Link>
-              <button
-                type="button"
-                aria-label="Închide"
-                onClick={close}
-                className="chip-3d flex h-10 w-10 items-center justify-center rounded-xl"
-              >
-                <svg viewBox="0 0 16 16" className="h-4 w-4" aria-hidden="true">
-                  <path
-                    d="M3 3l10 10M13 3L3 13"
-                    stroke="currentColor"
-                    strokeWidth="1.6"
-                    strokeLinecap="round"
-                  />
-                </svg>
-              </button>
-            </div>
+          <div className="fixed inset-0 z-50">
+            <div
+              className={`select-backdrop absolute inset-0 bg-ink/60 ${closing ? "closing" : ""}`}
+              onClick={close}
+              aria-hidden
+            />
+            <aside
+              className={`drawer drawer-panel absolute right-0 top-0 flex h-dvh w-[88%] max-w-[380px] flex-col ${
+                closing ? "closing" : ""
+              }`}
+              aria-label="Meniu"
+            >
+              <div className="drawer-top">
+                <Link href="/" onClick={close} aria-label={site.name}>
+                  <Logo variant="dark" markClassName="h-9 w-auto" />
+                </Link>
+                <button
+                  type="button"
+                  aria-label={t("common.close")}
+                  onClick={close}
+                  className="drawer-close"
+                >
+                  <CrossIcon />
+                </button>
+              </div>
 
-            <div className="flex-1 overflow-y-auto px-5 py-4">
-              <nav aria-label="Mobile">
-                {nav.map((item) => {
-                  const active = item.active;
-                  return (
+              <div className="flex-1 overflow-y-auto px-5 pb-6 pt-2">
+                <nav className="drawer-nav" aria-label="Mobile">
+                  {nav.map((item) => (
                     <Link
                       key={item.href}
                       href={item.href}
                       onClick={close}
-                      className={`flex items-center justify-between border-b border-line py-3.5 font-display text-lg font-bold ${
-                        active ? "text-accent" : "text-ink"
-                      }`}
+                      data-active={item.active ? "" : undefined}
                     >
                       {item.label}
-                      <ArrowRightIcon
-                        className={`h-4 w-4 ${active ? "text-accent" : "text-ink-faint"}`}
-                      />
+                      <ArrowIcon />
                     </Link>
-                  );
-                })}
-              </nav>
-
-              {/* language, RO / RU */}
-              <div className="mt-5 flex items-center justify-between">
-                <span className="text-[11px] font-semibold uppercase tracking-[0.14em] text-ink-faint">
-                  {t("common.language")}
-                </span>
-                <div className="chip-3d flex rounded-xl p-1" role="group" aria-label={t("common.language")}>
-                  {routing.locales.map((l) => (
-                    <button
-                      key={l}
-                      type="button"
-                      onClick={() => switchLocale(l)}
-                      aria-pressed={l === locale}
-                      className={`rounded-lg px-3.5 py-1.5 text-[13px] font-bold uppercase transition-colors ${
-                        l === locale ? "bg-ink text-white" : "text-ink-soft"
-                      }`}
-                    >
-                      {l}
-                    </button>
                   ))}
+                </nav>
+
+                <div className="mt-7">
+                  <div className="drawer-head">{t("footer.categories")}</div>
+                  <div className="mt-3 flex flex-wrap gap-2">
+                    {categories.map((c) => (
+                      <Link key={c.href} href={c.href} onClick={close} className="drawer-chip">
+                        {c.label}
+                      </Link>
+                    ))}
+                  </div>
+                </div>
+
+                {/* language, RO / RU */}
+                <div className="mt-7 flex items-center justify-between">
+                  <span className="drawer-head">{t("common.language")}</span>
+                  <div className="drawer-lang" role="group" aria-label={t("common.language")}>
+                    {routing.locales.map((l) => (
+                      <button
+                        key={l}
+                        type="button"
+                        lang={l}
+                        onClick={() => switchLocale(l)}
+                        aria-pressed={l === locale}
+                      >
+                        {l.toUpperCase()}
+                      </button>
+                    ))}
+                  </div>
                 </div>
               </div>
 
-              <div className="mt-6">
-                <div className="text-[11px] font-semibold uppercase tracking-[0.14em] text-ink-faint">
-                  {t("footer.categories")}
-                </div>
-                <div className="mt-3 flex flex-wrap gap-2">
-                  {categories.map((c) => (
-                    <Link
-                      key={c.href}
-                      href={c.href}
-                      onClick={close}
-                      className="chip-3d rounded-full px-3.5 py-2 text-[13px] font-semibold text-ink-soft"
-                    >
-                      {c.label}
-                    </Link>
-                  ))}
-                </div>
+              <div className="drawer-foot">
+                <a href={telHref(site.phones[0])} className="btn-primary w-full tabular-nums">
+                  <HandsetIcon className="h-4 w-4" />
+                  {t("common.call")} · {site.phoneDisplay[0]}
+                </a>
+                <OpenNowBadge className="drawer-open-now" />
+                <a
+                  href={waHref(site.whatsapp)}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="mt-3 block text-center text-sm font-medium text-white/80 underline-offset-4 hover:underline"
+                >
+                  {t("common.waQuiet")}
+                </a>
+                <p className="mt-3 text-center text-xs text-white/45">{site.address.full}</p>
               </div>
-            </div>
-
-            <div className="border-t border-line px-5 py-5 pb-[max(1.25rem,env(safe-area-inset-bottom))]">
-              <a href={telHref(site.phones[0])} className="btn-primary w-full">
-                <PhoneIcon className="h-4 w-4" />
-                {t("common.call")} · {site.phoneDisplay[0]}
-              </a>
-              <a
-                href={waHref(site.whatsapp)}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="mt-3 block text-center text-sm font-medium text-ink-soft underline-offset-4 hover:underline"
-              >
-                {t("common.waQuiet")}
-              </a>
-              <p className="mt-3 text-center text-xs text-ink-faint">
-                {site.address.full}
-              </p>
-            </div>
-          </aside>
-        </div>,
-        document.body
-      )}
-    </div>
+            </aside>
+          </div>,
+          document.body
+        )}
+    </>
   );
 }

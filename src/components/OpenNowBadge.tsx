@@ -1,6 +1,6 @@
 "use client";
 
-// Live "open now / closed" badge on the ticker bar, on Chișinău time.
+// Live "open now / closed" line, on Chișinău time.
 // Mo–Fr 9–19, Sa 9–16, Su 10–14 (site.hours).
 import { useEffect, useState } from "react";
 import { useTranslations } from "next-intl";
@@ -14,7 +14,12 @@ function chisinauNow() {
   );
 }
 
-export function OpenNowBadge() {
+export function OpenNowBadge({
+  className,
+}: {
+  /** styling of the line; the default is the footer's white-on-dark look */
+  className?: string;
+}) {
   const t = useTranslations("ticker");
   const [state, setState] = useState<{ open: boolean; time: string } | null>(
     null
@@ -37,10 +42,18 @@ export function OpenNowBadge() {
     return () => window.clearInterval(id);
   }, []);
 
-  if (!state) return <span className="inline-block w-36" aria-hidden />;
+  const cls =
+    className ?? "whitespace-nowrap text-[13.5px] font-normal text-white/75";
+
+  if (!state) {
+    // keeps the footer line from shifting once the time is known
+    return (
+      <span className={className ? cls : "inline-block w-36"} aria-hidden />
+    );
+  }
 
   return (
-    <span className="whitespace-nowrap text-[13.5px] font-normal text-white/75">
+    <span className={cls} data-open={state.open ? "" : undefined}>
       {t(state.open ? "open" : "closed", { time: state.time })}
     </span>
   );

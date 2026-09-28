@@ -19,8 +19,9 @@ import { BodyTypes } from "@/components/home/BodyTypes";
 import { Spotlight } from "@/components/home/Spotlight";
 import { BrandGrid } from "@/components/home/BrandGrid";
 import { BudgetRow } from "@/components/home/BudgetRow";
-import { RoadWheel } from "@/components/motion/RoadWheel";
 import { ScrollVar } from "@/components/motion/ScrollVar";
+import { OrbitStage } from "@/components/motion/OrbitStage";
+import { ORBIT_DESKTOP, ORBIT_MOBILE, ORBIT_SWEEP } from "@/components/motion/orbit.config";
 import {
   ArrowRightIcon,
   CheckIcon,
@@ -186,7 +187,27 @@ export default async function HomePage({
             <CarCard key={car.id} car={car} priority={i < 4} />
           ))}
         </div>
+        <div className="mt-7 flex justify-center">
+          <Link href="/auto" className="btn-dark h-12 px-7">
+            {t("common.viewAll")}
+            <ArrowRightIcon className="h-4 w-4" />
+          </Link>
+        </div>
       </section>
+
+      {/* the orbit: scrolling walks the camera around the car from the hero;
+          the three promises from the hero and the catalogue CTA arrive along the turn */}
+      <OrbitStage
+        desktop={ORBIT_DESKTOP}
+        mobile={ORBIT_MOBILE}
+        sweep={ORBIT_SWEEP}
+        title={t("home.orbit.title")}
+        hint={t("home.orbit.hint")}
+        beats={trust.map((k) => ({ title: t(`home.why.${k}`), text: t(`home.why.${k}Text`) }))}
+        endLine={t("home.heroLine", { count })}
+        cta={t("home.heroCta")}
+        ctaHref="/auto"
+      />
 
       {/* spotlight */}
       {spotlight && (
@@ -194,11 +215,6 @@ export default async function HomePage({
           <Spotlight car={spotlight} />
         </section>
       )}
-
-      {/* the road: a wheel rolls along it exactly as far as you scroll */}
-      <div className={wrap}>
-        <RoadWheel />
-      </div>
 
       {/* body types + budgets */}
       <section className={`${wrap} mt-14`}>
