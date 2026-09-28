@@ -133,7 +133,8 @@
     "mapCta": "Deschide harta",
     "orbit": {
       "title": "Mașina ta, din orice unghi",
-      "hint": "Derulează ca să o rotești"
+      "hint": "Derulează ca să o rotești",
+      "angle": "Unghi"
     }
   },
   "catalog": {

@@ -8,15 +8,21 @@
 // frames load only once the section comes within a viewport, coarse first
 // (every 8th, then every 4th, 2nd, the rest), so the scrub works within a
 // second and sharpens as the rest arrive. The scrub carries a beat of
-// inertia, like turning something heavy. Three real promises and the
-// catalogue CTA arrive at set points along the turn; on desktops a small
-// dial in the corner shows where the camera stands, on phones a slim bar
-// under the copy shows how far the turn has gone.
+// inertia, like turning something heavy, and the two frames either side of
+// the scrub position are crossfaded, so a slow wheel or trackpad scroll
+// glides instead of stepping from frame to frame.
 //
-// Phones get a short run (about one swipe) so the turn feels quick, the
-// footage centred in the stage and the copy set over the reflective floor
-// at its foot; desktops walk the camera over a longer scroll with the copy
-// on the left.
+// The copy is not a slideshow: the three promises are on the stage from the
+// start, dim, and each lights up at its point along the turn and stays lit,
+// so the story is whole even after a fast flick through the section. The
+// catalogue CTA arrives at the end and stays too. A live read-out of the
+// camera's angle ticks with the turn; on desktops it sits beside a small
+// dial at the top right, on phones it heads the stage under the title.
+//
+// Phones get the footage full-screen: the frame fits the width and its own
+// top and bottom rows run on to the edges of the stage (the ribbed wall up,
+// the glossy floor down), fading into the ink where the copy sits. The
+// desktop frames are 16:9 and simply cover the stage.
 //
 // No JS, data saver or reduced motion: the same section as a still photo
 // with the copy laid out plainly (the markup below is that layout; the
@@ -36,30 +42,21 @@ export type OrbitFrames = {
 
 export type OrbitBeat = { title: string; text: string };
 
-// where along the scroll each caption is on (progress 0..1)
-type Timing = { titleUntil: number; beats: [number, number][]; endFrom: number };
-const TIMING_WIDE: Timing = {
-  titleUntil: 0.08,
-  beats: [
-    [0.12, 0.34],
-    [0.37, 0.59],
-    [0.62, 0.84],
-  ],
-  endFrom: 0.87,
-};
-// phones: the whole run is about a swipe, so the title leaves as soon as
-// the turn starts and the three beats share the middle evenly
-const TIMING_PHONE: Timing = {
-  titleUntil: 0.1,
-  beats: [
-    [0.12, 0.34],
-    [0.36, 0.58],
-    [0.6, 0.82],
-  ],
-  endFrom: 0.84,
-};
+// where along the scroll (progress 0..1) each promise lights up and the CTA
+// arrives; once lit they stay
+type Timing = { beats: number[]; end: number };
+const TIMING_WIDE: Timing = { beats: [0.14, 0.42, 0.7], end: 0.9 };
+const TIMING_PHONE: Timing = { beats: [0.14, 0.42, 0.7], end: 0.88 };
+// the scroll hint leaves once the turn has begun
+const MOVING_FROM = 0.03;
 // lerp stiffness of the scrub (larger settles faster)
-const K = 11;
+const K = 8;
+// redraw once the scrub has moved this much of a frame
+const REDRAW_STEP = 0.015;
+// rows of the frame smeared up and down to fill a phone's stage
+const EDGE_ROWS = 4;
+// share of the spare height that goes above the frame on phones
+const PHONE_TOP_SHARE = 0.56;
 
 const clamp01 = (v: number) => (v < 0 ? 0 : v > 1 ? 1 : v);
 
@@ -84,6 +81,7 @@ export function OrbitStage({
   mobile,
   title,
   hint,
+  angleLabel,
   beats,
   endLine,
   cta,
@@ -94,11 +92,12 @@ export function OrbitStage({
   mobile: OrbitFrames;
   title: string;
   hint: string;
+  angleLabel: string;
   beats: OrbitBeat[];
   endLine: string;
   cta: string;
   ctaHref?: string;
-  /** degrees the camera dial turns over the whole scrub */
+  /** degrees the camera turns over the whole scrub */
   sweep?: number;
 }) {
   const sectionRef = useRef<HTMLElement>(null);
@@ -106,7 +105,8 @@ export function OrbitStage({
   const mediaRef = useRef<HTMLDivElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const dotRef = useRef<HTMLSpanElement>(null);
-  const barRef = useRef<HTMLSpanElement>(null);
+  const degRef = useRef<HTMLSpanElement>(null);
+  const endRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const section = sectionRef.current;
@@ -114,8 +114,9 @@ export function OrbitStage({
     const media = mediaRef.current;
     const canvas = canvasRef.current;
     const dot = dotRef.current;
-    const bar = barRef.current;
-    if (!section || !stage || !media || !canvas || !dot || !bar) return;
+    const deg = degRef.current;
+    const end = endRef.current;
+    if (!section || !stage || !media || !canvas || !dot || !deg || !end) return;
     if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
     const saveData =
       (navigator as Navigator & { connection?: { saveData?: boolean } }).connection?.saveData === true;
@@ -124,7 +125,7 @@ export function OrbitStage({
     if (!ctx) return;
 
     section.classList.add("is-live");
-    const caps = Array.from(stage.querySelectorAll<HTMLElement>(".orbit-cap"));
+    const beatEls = Array.from(stage.querySelectorAll<HTMLElement>(".orbit-beat"));
     const narrow = window.matchMedia("(max-width: 767px)");
 
     let set = narrow.matches ? mobile : desktop;
@@ -135,46 +136,85 @@ export function OrbitStage({
     let p = 0;
     let target = 0;
     let run = 1;
-    let drawn = -1;
-    let capOn = "";
+    // what the canvas shows: the fractional frame and the two frames mixed
+    let drawnF = -1;
+    let drawnA = -1;
+    let drawnB = -1;
+    let nowOn = -2;
+    let endOn = false;
+    let movingOn = false;
+    let degOn = -1;
     let raf = 0;
     let last = 0;
     let near = false;
 
     const src = (i: number) => `${set.dir}/${String(i).padStart(3, "0")}.webp`;
 
-    const nearest = (i: number) => {
-      const n = frames.length;
-      if (frames[i]) return i;
-      for (let d = 1; d < n; d++) {
-        if (i - d >= 0 && frames[i - d]) return i - d;
-        if (i + d < n && frames[i + d]) return i + d;
-      }
+    // the nearest loaded frame at or below / at or above an index
+    const below = (i: number) => {
+      for (let k = Math.min(i, frames.length - 1); k >= 0; k--) if (frames[k]) return k;
       return -1;
+    };
+    const above = (i: number) => {
+      for (let k = Math.max(0, i); k < frames.length; k++) if (frames[k]) return k;
+      return -1;
+    };
+
+    // one frame onto the canvas, at the given opacity
+    const paint = (img: HTMLImageElement, alpha: number) => {
+      const cw = canvas.width;
+      const ch = canvas.height;
+      ctx.globalAlpha = alpha;
+      const fitH = Math.round((set.height * cw) / set.width);
+      if (narrow.matches && fitH < ch) {
+        // phones: the frame fits the width; above and below it the frame's
+        // own edge rows are stretched to the stage's edges, so the wall's
+        // ribs run on upward and the floor's reflections streak downward
+        const top = Math.round((ch - fitH) * PHONE_TOP_SHARE);
+        const bottom = ch - top - fitH;
+        if (top > 0) ctx.drawImage(img, 0, 0, set.width, EDGE_ROWS, 0, 0, cw, top + 1);
+        if (bottom > 0) {
+          ctx.drawImage(img, 0, set.height - EDGE_ROWS, set.width, EDGE_ROWS, 0, top + fitH - 1, cw, bottom + 1);
+        }
+        ctx.drawImage(img, 0, top, cw, fitH);
+      } else {
+        // cover: crop from the floor and the sides evenly, never the sign
+        const s = Math.max(cw / set.width, ch / set.height);
+        const dw = set.width * s;
+        const dh = set.height * s;
+        ctx.drawImage(img, (cw - dw) / 2, (ch - dh) * 0.4, dw, dh);
+      }
+      ctx.globalAlpha = 1;
     };
 
     const draw = (force: boolean) => {
       const n = frames.length;
       if (!n) return;
-      const want = Math.round(p * (n - 1));
-      const idx = nearest(want);
-      if (idx < 0) return;
-      if (!force && idx === drawn) return;
-      drawn = idx;
-      const img = frames[idx]!;
-      const cw = canvas.width;
-      const ch = canvas.height;
-      const s = Math.max(cw / set.width, ch / set.height);
-      const dw = set.width * s;
-      const dh = set.height * s;
-      // cover: crop from the floor and the sides evenly, never the sign
-      ctx.drawImage(img, (cw - dw) / 2, (ch - dh) * 0.4, dw, dh);
+      const f = p * (n - 1);
+      const i0 = Math.min(n - 1, Math.floor(f));
+      let a = below(i0);
+      let b = f - i0 > 0.001 ? above(i0 + 1) : a;
+      if (a < 0 && b < 0) return;
+      if (a < 0) a = b;
+      else if (b < 0) b = a;
+      if (!force && a === drawnA && b === drawnB && Math.abs(f - drawnF) < REDRAW_STEP) return;
+      drawnF = f;
+      drawnA = a;
+      drawnB = b;
+      // the two loaded frames either side of the scrub, mixed by where it
+      // lies between them (while the sequence is still coarse the mix spans
+      // the gap, so the turn is smooth even before every frame is in)
+      const t = b > a ? (f - a) / (b - a) : 0;
+      paint(frames[a]!, 1);
+      if (t > 0.004) paint(frames[b]!, t);
       if (!canvas.classList.contains("is-on")) canvas.classList.add("is-on");
     };
 
     const size = () => {
       const r = media.getBoundingClientRect();
-      const dpr = Math.min(2, window.devicePixelRatio || 1);
+      // phones draw twice per paint and their frames are 640 wide: a 1.5×
+      // backing keeps every paint cheap without a visible loss
+      const dpr = Math.min(narrow.matches ? 1.5 : 2, window.devicePixelRatio || 1);
       const w = Math.max(1, Math.round(r.width * dpr));
       const h = Math.max(1, Math.round(r.height * dpr));
       if (canvas.width !== w || canvas.height !== h) {
@@ -185,17 +225,32 @@ export function OrbitStage({
       run = Math.max(1, section.offsetHeight - stage.offsetHeight);
     };
 
-    const captions = () => {
-      let key = "";
-      if (p < timing.titleUntil) key = "title";
-      else if (p >= timing.endFrom) key = "end";
-      else {
-        const i = timing.beats.findIndex(([a, b]) => p >= a && p < b);
-        if (i >= 0) key = String(i);
+    // the copy: promises light up as the turn reaches them and stay lit
+    const copy = () => {
+      const moving = p >= MOVING_FROM;
+      if (moving !== movingOn) {
+        movingOn = moving;
+        section.classList.toggle("is-moving", moving);
       }
-      if (key === capOn) return;
-      capOn = key;
-      for (const c of caps) c.classList.toggle("is-on", c.dataset.cap === key);
+      let now = -1;
+      for (let i = 0; i < beatEls.length; i++) if (p >= (timing.beats[i] ?? 2)) now = i;
+      if (now !== nowOn) {
+        nowOn = now;
+        beatEls.forEach((el, i) => {
+          el.classList.toggle("is-on", i <= now);
+          el.classList.toggle("is-now", i === now);
+        });
+      }
+      const atEnd = p >= timing.end;
+      if (atEnd !== endOn) {
+        endOn = atEnd;
+        end.classList.toggle("is-on", atEnd);
+      }
+      const d = Math.round(p * sweep);
+      if (d !== degOn) {
+        degOn = d;
+        deg.textContent = String(d);
+      }
     };
 
     const tick = (now: number) => {
@@ -205,13 +260,12 @@ export function OrbitStage({
       target = clamp01(-section.getBoundingClientRect().top / run);
       // ease
       const d = target - p;
-      if (Math.abs(d) < 0.0005) p = target;
+      if (Math.abs(d) < 0.0003) p = target;
       else p += d * (1 - Math.exp(-K * dt));
       // write
       draw(false);
-      captions();
+      copy();
       dot.style.transform = `rotate(${(-sweep / 2 + p * sweep).toFixed(1)}deg)`;
-      bar.style.transform = `scaleX(${p.toFixed(4)})`;
       if (p !== target) raf = requestAnimationFrame(tick);
       else {
         raf = 0;
@@ -244,9 +298,10 @@ export function OrbitStage({
           }
           if (gen !== generation) return;
           frames[i] = img;
-          // the frame the scrub wants (or a closer one) just landed
-          const want = Math.round(p * (n - 1));
-          if (drawn < 0 || Math.abs(i - want) < Math.abs(drawn - want)) draw(true);
+          // redraw when the frame that landed is nearer the scrub than what
+          // is showing, or falls inside the pair being mixed
+          const f = p * (n - 1);
+          if (drawnF < 0 || Math.abs(i - f) < 1 || (i > drawnA && i < drawnB)) draw(true);
         }
       };
       await Promise.all(Array.from({ length: 6 }, worker));
@@ -274,15 +329,19 @@ export function OrbitStage({
     // phones and desktops get different crops and timings; swap them if the class changes
     const onNarrow = () => {
       timing = narrow.matches ? TIMING_PHONE : TIMING_WIDE;
-      capOn = "";
+      nowOn = -2;
+      endOn = false;
       const next = narrow.matches ? mobile : desktop;
       if (next === set) return;
       set = next;
       loading = false;
-      drawn = -1;
+      drawnF = -1;
+      drawnA = -1;
+      drawnB = -1;
       generation++;
       frames = [];
       canvas.classList.remove("is-on");
+      size();
       if (near) load();
     };
     narrow.addEventListener("change", onNarrow);
@@ -298,7 +357,7 @@ export function OrbitStage({
       ro.disconnect();
       narrow.removeEventListener("change", onNarrow);
       window.removeEventListener("scroll", schedule);
-      section.classList.remove("is-live");
+      section.classList.remove("is-live", "is-moving");
     };
   }, [desktop, mobile, sweep]);
 
@@ -323,39 +382,46 @@ export function OrbitStage({
         </div>
 
         <div className="orbit-ui">
-          <div className="orbit-cap orbit-head" data-cap="title">
-            <h2 id="orbit-title" className="orbit-title">
-              {title}
-            </h2>
-            <p className="orbit-hint">
-              <span className="orbit-hint-mouse" aria-hidden="true">
-                <span />
-              </span>
-              {hint}
-            </p>
+          <div className="orbit-copy">
+            <div className="orbit-head">
+              <h2 id="orbit-title" className="orbit-title">
+                {title}
+              </h2>
+              <p className="orbit-hint">
+                <span className="orbit-hint-mouse" aria-hidden="true">
+                  <span />
+                </span>
+                {hint}
+              </p>
+              {/* the camera's angle, live */}
+              <div className="orbit-angle" aria-hidden="true">
+                <span className="orbit-angle-num">
+                  <span ref={degRef}>0</span>°
+                </span>
+                <span className="orbit-angle-label">{angleLabel}</span>
+              </div>
+            </div>
+
+            <ol className="orbit-beats">
+              {beats.map((b, i) => (
+                <li key={i} className="orbit-beat">
+                  <span className="orbit-beat-i" aria-hidden="true">
+                    0{i + 1}
+                  </span>
+                  <h3>{b.title}</h3>
+                  <p>{b.text}</p>
+                </li>
+              ))}
+            </ol>
+
+            <div ref={endRef} className="orbit-end">
+              <p className="orbit-end-line">{endLine}</p>
+              <Link href={ctaHref} className="btn-primary">
+                {cta}
+                <ArrowRightIcon className="h-4 w-4" />
+              </Link>
+            </div>
           </div>
-
-          <ol className="orbit-beats">
-            {beats.map((b, i) => (
-              <li key={i} className="orbit-cap orbit-beat" data-cap={String(i)}>
-                <h3>{b.title}</h3>
-                <p>{b.text}</p>
-              </li>
-            ))}
-          </ol>
-
-          <div className="orbit-cap orbit-end" data-cap="end">
-            <p className="orbit-end-line">{endLine}</p>
-            <Link href={ctaHref} className="btn-primary">
-              {cta}
-              <ArrowRightIcon className="h-4 w-4" />
-            </Link>
-          </div>
-
-          {/* phones: how far the turn has gone, as a slim line under the copy */}
-          <span className="orbit-bar" aria-hidden="true">
-            <span ref={barRef} className="orbit-bar-fill" />
-          </span>
 
           {/* desktops: the camera's place around the car, from above */}
           <div className="orbit-dial" aria-hidden="true">

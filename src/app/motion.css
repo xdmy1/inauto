@@ -118,8 +118,9 @@ html[data-anim] [data-reveal].is-revealed .illo-seal {
    Base layout (no JS, data saver, reduced motion): a dark full-bleed
    section, the copy on the left, the car as a framed still on the right.
    `.is-live` (set by OrbitStage once it can scrub) makes it a pinned,
-   full-viewport stage: the frames fill it edge to edge and the captions
-   fade in at their points along the turn. */
+   full-viewport stage: the frames fill it edge to edge, the three promises
+   light up one by one as the turn reaches them and stay lit, the CTA
+   arrives at the end, and a read-out of the camera's angle ticks along. */
 .orbit {
   /* how far the page scrolls while the stage is pinned: about one swipe
      on a phone, a longer walk around the car on desktops */
@@ -132,6 +133,11 @@ html[data-anim] [data-reveal].is-revealed .illo-seal {
 @media (min-width: 768px) {
   .orbit {
     --orbit-run: 220vh;
+  }
+}
+@media (min-width: 1024px) {
+  .orbit {
+    --orbit-run: 260vh;
   }
 }
 .orbit-stage {
@@ -184,16 +190,16 @@ html[data-anim] [data-reveal].is-revealed .illo-seal {
   opacity: 0;
   transition: opacity 0.3s ease;
 }
+.orbit-canvas.is-on {
+  opacity: 1;
+}
 .orbit-scrim {
   display: none;
   position: absolute;
   inset: 0;
   pointer-events: none;
 }
-.orbit-canvas.is-on {
-  opacity: 1;
-}
-.orbit-ui {
+.orbit-copy {
   display: grid;
   gap: 1.75rem;
 }
@@ -214,7 +220,10 @@ html[data-anim] [data-reveal].is-revealed .illo-seal {
     font-size: 48px;
   }
 }
-.orbit-hint {
+.orbit-hint,
+.orbit-angle,
+.orbit-beat-i,
+.orbit-dial {
   display: none;
 }
 .orbit-beats {
@@ -246,12 +255,8 @@ html[data-anim] [data-reveal].is-revealed .illo-seal {
 .orbit-end .btn-primary {
   margin-top: 1rem;
 }
-.orbit-dial,
-.orbit-bar {
-  display: none;
-}
 
-/* ——— live: pinned stage, frames edge to edge, captions along the turn ——— */
+/* ——— live: pinned stage, frames edge to edge, copy along the turn ——— */
 .orbit.is-live {
   margin-top: 3.5rem;
   height: calc(100vh + var(--orbit-run));
@@ -278,7 +283,7 @@ html[data-anim] [data-reveal].is-revealed .illo-seal {
 .orbit.is-live .orbit-ui {
   position: absolute;
   inset: 0;
-  display: block;
+  display: flex;
   pointer-events: none;
   /* the copy sits on footage: a soft shadow keeps it legible when the
      white car slides behind it */
@@ -289,25 +294,8 @@ html[data-anim] [data-reveal].is-revealed .illo-seal {
 .orbit.is-live .orbit-ui a {
   pointer-events: auto;
 }
-/* every caption sits in the same spot; only one is on at a time */
-.orbit.is-live .orbit-cap {
-  position: absolute;
-  left: 1rem;
-  right: 1rem;
-  opacity: 0;
-  transform: translateY(14px);
-  transition:
-    opacity 0.45s cubic-bezier(0.16, 1, 0.3, 1),
-    transform 0.45s cubic-bezier(0.16, 1, 0.3, 1);
-  will-change: opacity, transform;
-}
-.orbit.is-live .orbit-cap.is-on {
-  opacity: 1;
-  transform: none;
-  transition-delay: 0.08s;
-}
-.orbit.is-live .orbit-beats {
-  display: contents;
+.orbit.is-live .orbit-copy {
+  display: block;
 }
 .orbit.is-live .orbit-hint {
   display: flex;
@@ -317,6 +305,10 @@ html[data-anim] [data-reveal].is-revealed .illo-seal {
   font-size: 13.5px;
   font-weight: 600;
   color: rgba(255, 255, 255, 0.78);
+  transition: opacity 0.4s ease;
+}
+.orbit.is-moving .orbit-hint {
+  opacity: 0;
 }
 /* a small mouse with a wheel that drifts down */
 .orbit-hint-mouse {
@@ -357,15 +349,96 @@ html[data-anim] [data-reveal].is-revealed .illo-seal {
     display: none;
   }
 }
+/* the read-out: big tabular numerals so the degree sign never shifts */
+.orbit.is-live .orbit-angle {
+  display: flex;
+  flex-direction: column;
+  line-height: 1;
+}
+.orbit-angle-num {
+  font-family: var(--font-display);
+  font-size: 64px;
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.045em;
+  line-height: 1;
+}
+.orbit-angle-num > span {
+  display: inline-block;
+  min-width: 2ch;
+  text-align: right;
+}
+.orbit-angle-label {
+  margin-top: 0.55rem;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.62);
+}
+/* the promises: all three on the stage from the start, dim until the turn
+   reaches them, then lit for good */
+.orbit.is-live .orbit-beats {
+  position: relative;
+  gap: 1.1rem;
+}
+.orbit.is-live .orbit-beat {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  column-gap: 0.8rem;
+  opacity: 0.36;
+  transition: opacity 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.orbit.is-live .orbit-beat.is-on {
+  opacity: 1;
+}
+.orbit.is-live .orbit-beat-i {
+  display: block;
+  padding-top: 0.45em;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  font-variant-numeric: tabular-nums;
+  color: rgba(255, 255, 255, 0.6);
+  transition: color 0.3s ease;
+}
+.orbit.is-live .orbit-beat.is-now .orbit-beat-i {
+  color: var(--color-accent);
+}
 .orbit.is-live .orbit-beat h3 {
-  font-size: 30px;
-  line-height: 1.05;
-  letter-spacing: -0.03em;
+  grid-column: 2;
+  font-size: 26px;
+  line-height: 1.1;
+  letter-spacing: -0.025em;
 }
 .orbit.is-live .orbit-beat p {
-  margin-top: 0.6rem;
-  font-size: 15.5px;
+  grid-column: 2;
+  margin-top: 0.4rem;
+  font-size: 15px;
   color: rgba(255, 255, 255, 0.82);
+  opacity: 0;
+  transition: opacity 0.5s ease;
+}
+.orbit.is-live .orbit-beat.is-on p {
+  opacity: 1;
+}
+/* the CTA keeps its room from the start so nothing jumps when it arrives */
+.orbit.is-live .orbit-end {
+  opacity: 0;
+  transform: translateY(10px);
+  transition:
+    opacity 0.5s cubic-bezier(0.16, 1, 0.3, 1),
+    transform 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.orbit.is-live .orbit-end.is-on {
+  opacity: 1;
+  transform: none;
+}
+.orbit.is-live .orbit-end a {
+  pointer-events: none;
+}
+.orbit.is-live .orbit-end.is-on a {
+  pointer-events: auto;
 }
 .orbit.is-live .orbit-end-line {
   font-size: 22px;
@@ -375,13 +448,15 @@ html[data-anim] [data-reveal].is-revealed .illo-seal {
 .orbit.is-live .orbit-end .btn-primary {
   margin-top: 1.1rem;
 }
+/* the instrument cluster sits under the sign's bottom edge and above the
+   car's roofline in the opening frames */
 .orbit.is-live .orbit-dial {
   display: block;
   position: absolute;
-  right: 1rem;
-  bottom: 1rem;
-  width: 56px;
-  height: 56px;
+  right: 1.5rem;
+  top: 13rem;
+  width: 64px;
+  height: 64px;
   color: #fff;
 }
 .orbit-dial svg {
@@ -407,129 +482,154 @@ html[data-anim] [data-reveal].is-revealed .illo-seal {
   box-shadow: 0 0 0 2px var(--color-ink), 0 0 10px rgba(224, 25, 43, 0.8);
 }
 
-/* phones: the footage sits centred in the stage at its own ratio (capped on
-   short screens so the copy keeps its room), feathered into the ink above
-   and below; the copy is set centred over the reflective floor at its foot
-   and a slim line under it shows how far the turn has gone.
-   Desktops: footage edge to edge, copy on the left */
+/* phones: the footage fills the whole stage (the frame fits the width, its
+   wall runs on upward and its floor downward into the ink); the title and
+   the angle head the stage over the wall, the promises and the CTA sit
+   over the floor at its foot */
 @media (max-width: 767px) {
-  .orbit.is-live {
-    /* the frames are 4:5; drawn a touch taller (a few percent off each
-       side) so the stage is not mostly ink above and below the car */
-    --orbit-m-h: min(calc(100vw / 0.7), calc(100svh - 13rem));
-    --orbit-m-top: calc((100svh - var(--orbit-m-h)) * 0.5);
-    /* ink left under the footage */
-    --orbit-m-foot: calc(100svh - var(--orbit-m-top) - var(--orbit-m-h));
-  }
-  .orbit.is-live .orbit-media {
-    top: var(--orbit-m-top);
-    bottom: auto;
-    height: var(--orbit-m-h);
-  }
   .orbit.is-live .orbit-scrim {
     display: block;
     background: linear-gradient(
       180deg,
-      rgba(16, 19, 31, 0.9) 0%,
-      rgba(16, 19, 31, 0) 12%,
-      rgba(16, 19, 31, 0) 46%,
-      rgba(16, 19, 31, 0.55) 72%,
+      rgba(16, 19, 31, 0.97) 0%,
+      rgba(16, 19, 31, 0.8) 11%,
+      rgba(16, 19, 31, 0.3) 22%,
+      rgba(16, 19, 31, 0) 30%,
+      rgba(16, 19, 31, 0) 56%,
+      rgba(16, 19, 31, 0.62) 78%,
       rgba(16, 19, 31, 0.97) 100%
     );
   }
-  .orbit.is-live .orbit-cap {
-    left: 1.25rem;
-    right: 1.25rem;
-    top: auto;
-    bottom: calc(var(--orbit-m-foot) - 0.5rem);
+  .orbit.is-live .orbit-ui {
+    padding: 4.25rem 1.25rem 1.5rem;
     text-align: center;
-    transition-duration: 0.32s;
+  }
+  .orbit.is-live .orbit-copy {
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+    min-width: 0;
+  }
+  .orbit.is-live .orbit-head {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
   }
   .orbit.is-live .orbit-title {
-    font-size: 30px;
+    font-size: 20px;
+    letter-spacing: -0.02em;
   }
   .orbit.is-live .orbit-hint {
-    justify-content: center;
-    margin-top: 0.9rem;
-    font-size: 11.5px;
-    font-weight: 700;
-    letter-spacing: 0.14em;
-    text-transform: uppercase;
-    color: rgba(255, 255, 255, 0.62);
+    display: none;
+  }
+  .orbit.is-live .orbit-angle {
+    align-items: center;
+    margin-top: 0.75rem;
+  }
+  .orbit-angle-num {
+    font-size: 60px;
+  }
+  /* the list sits at the foot; the current promise's line shows in one
+     slot under it, so the rows never move */
+  .orbit.is-live .orbit-beats {
+    margin-top: auto;
+    gap: 0.4rem;
+    padding-bottom: 2.9rem;
+  }
+  .orbit.is-live .orbit-beat {
+    display: block;
+    opacity: 0.4;
+  }
+  .orbit.is-live .orbit-beat.is-on {
+    opacity: 0.68;
+  }
+  .orbit.is-live .orbit-beat.is-now {
+    opacity: 1;
+  }
+  .orbit.is-live .orbit-beat-i {
+    display: none;
   }
   .orbit.is-live .orbit-beat h3 {
-    font-size: 24px;
-    letter-spacing: -0.025em;
+    font-size: 19px;
+    line-height: 1.25;
   }
   .orbit.is-live .orbit-beat p {
-    max-width: 30ch;
-    margin-left: auto;
-    margin-right: auto;
-    margin-top: 0.5rem;
-    font-size: 14px;
-    color: rgba(255, 255, 255, 0.78);
+    position: absolute;
+    /* the list is a grid: without this the slot would be placed in the
+       grid's (empty) second column */
+    grid-area: auto;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    margin: 0 auto;
+    max-width: 32ch;
+    font-size: 13.5px;
+    line-height: 1.45;
+    color: rgba(255, 255, 255, 0.8);
+  }
+  .orbit.is-live .orbit-beat.is-on p {
+    opacity: 0;
+  }
+  .orbit.is-live .orbit-beat.is-now p {
+    opacity: 1;
+  }
+  .orbit.is-live .orbit-end {
+    margin-top: 0.9rem;
   }
   .orbit.is-live .orbit-end-line {
-    font-size: 19px;
+    font-size: 15px;
   }
   .orbit.is-live .orbit-end .btn-primary {
-    margin-top: 1rem;
+    margin-top: 0.7rem;
   }
   .orbit.is-live .orbit-dial {
     display: none;
   }
-  .orbit.is-live .orbit-bar {
-    display: block;
-    position: absolute;
-    left: 50%;
-    bottom: calc(var(--orbit-m-foot) - 2.75rem);
-    width: 72px;
-    height: 2px;
-    margin-left: -36px;
-    border-radius: 1px;
-    background: rgba(255, 255, 255, 0.22);
-    overflow: hidden;
+}
+/* short phones: a tighter head and no line over the button */
+@media (max-width: 767px) and (max-height: 700px) {
+  .orbit.is-live .orbit-ui {
+    padding-top: 3.25rem;
   }
-  .orbit-bar-fill {
-    position: absolute;
-    inset: 0;
-    border-radius: inherit;
-    background: #fff;
-    transform-origin: 0 50%;
-    transform: scaleX(0);
-    will-change: transform;
+  .orbit-angle-num {
+    font-size: 48px;
+  }
+  .orbit.is-live .orbit-beat h3 {
+    font-size: 17px;
+  }
+  .orbit.is-live .orbit-beats {
+    padding-bottom: 2.6rem;
+  }
+  .orbit.is-live .orbit-end-line {
+    display: none;
   }
 }
+
+/* desktops: footage edge to edge; the copy is a column at the lower left,
+   the read-out and the dial an instrument cluster at the top right */
 @media (min-width: 768px) {
-  .orbit.is-live .orbit-cap {
-    left: 1.5rem;
-    right: auto;
-    top: 50%;
+  .orbit.is-live .orbit-ui {
+    align-items: flex-end;
+    padding: 0 1.5rem 8vh;
+  }
+  .orbit.is-live .orbit-copy {
     width: min(440px, 44vw);
-    transform: translate(0, calc(-50% + 14px));
   }
-  .orbit.is-live .orbit-cap.is-on {
-    transform: translate(0, -50%);
+  .orbit.is-live .orbit-title {
+    font-size: 40px;
   }
-  .orbit.is-live .orbit-head {
-    top: auto;
-    bottom: 7vh;
-    width: min(560px, 50vw);
-    transform: translate(0, 14px);
+  .orbit.is-live .orbit-beats {
+    margin-top: 2rem;
   }
-  .orbit.is-live .orbit-head.is-on {
-    transform: none;
+  .orbit.is-live .orbit-end {
+    margin-top: 2rem;
   }
-  /* under the header, clear of the contact bubble at the bottom */
-  .orbit.is-live .orbit-dial {
-    right: 1.5rem;
-    top: 6.5rem;
-    bottom: auto;
-    width: 64px;
-    height: 64px;
+  .orbit.is-live .orbit-angle {
+    position: absolute;
+    right: calc(1.5rem + 64px + 1.25rem);
+    top: 13rem;
+    align-items: flex-end;
   }
-}
-@media (min-width: 768px) {
   /* white type over a white car: the hero's veil, heavy only where the copy sits */
   .orbit.is-live .orbit-scrim {
     display: block;
@@ -543,17 +643,18 @@ html[data-anim] [data-reveal].is-revealed .illo-seal {
   }
 }
 @media (min-width: 1024px) {
-  .orbit.is-live {
-    --orbit-run: 260vh;
+  .orbit.is-live .orbit-ui {
+    padding-left: max(1.5rem, calc((100vw - 1360px) / 2 + 1.5rem));
+    padding-bottom: 9vh;
   }
-  .orbit.is-live .orbit-cap {
-    left: max(1.5rem, calc((100vw - 1360px) / 2 + 1.5rem));
-  }
-  .orbit.is-live .orbit-head {
-    bottom: 9vh;
+  .orbit.is-live .orbit-title {
+    font-size: 44px;
   }
   .orbit.is-live .orbit-dial {
     right: max(1.5rem, calc((100vw - 1360px) / 2 + 1.5rem));
+  }
+  .orbit.is-live .orbit-angle {
+    right: calc(max(1.5rem, (100vw - 1360px) / 2 + 1.5rem) + 64px + 1.25rem);
   }
 }
 

@@ -203,6 +203,7 @@ export default async function HomePage({
         sweep={ORBIT_SWEEP}
         title={t("home.orbit.title")}
         hint={t("home.orbit.hint")}
+        angleLabel={t("home.orbit.angle")}
         beats={trust.map((k) => ({ title: t(`home.why.${k}`), text: t(`home.why.${k}Text`) }))}
         endLine={t("home.heroLine", { count })}
         cta={t("home.heroCta")}
