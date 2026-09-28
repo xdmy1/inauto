@@ -68,6 +68,8 @@ export function NnnPanel({
     lastError: string | null;
     lastSyncAt: string | null;
     url: string | null;
+    /** extra rows already formatted on the server (views, dates, origin…) */
+    facts: { label: string; value: string }[];
   } | null;
 }) {
   const [syncState, syncAction, syncPending] = useActionState<
@@ -134,6 +136,12 @@ export function NnnPanel({
             </dd>
           </div>
         )}
+        {advert?.facts.map((f) => (
+          <div key={f.label} className="flex justify-between gap-3">
+            <dt className="text-ink-soft">{f.label}</dt>
+            <dd className="text-right font-semibold tabular-nums">{f.value}</dd>
+          </div>
+        ))}
         {advert?.lastSyncAt && (
           <div className="flex justify-between gap-3">
             <dt className="text-ink-soft">Ultima sincronizare</dt>

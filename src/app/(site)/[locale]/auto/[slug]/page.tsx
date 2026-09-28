@@ -134,6 +134,10 @@ export default async function CarPage({
     car.drivetrain === "awd" ? "4x4" : null,
   ].filter(Boolean);
 
+  // 999.md option keys → label; an unknown value is shown as 999.md wrote it
+  const opt = (group: string, key: string | null) =>
+    !key ? null : t.has(`options.${group}.${key}`) ? t(`options.${group}.${key}`) : key;
+
   const specs: { label: string; value: string | null }[] = [
     { label: t("common.year"), value: String(car.year) },
     { label: t("common.mileage"), value: fmtKm(car.mileage) },
@@ -145,6 +149,14 @@ export default async function CarPage({
     { label: t("common.body"), value: t(`options.body.${car.body}`) },
     { label: t("common.color"), value: car.color },
     { label: t("common.seats"), value: car.seats ? String(car.seats) : null },
+    { label: t("common.doors"), value: car.doors ? String(car.doors) : null },
+    { label: t("common.range"), value: car.rangeKm ? `${car.rangeKm} km` : null },
+    { label: t("common.origin"), value: opt("origin", car.origin) },
+    { label: t("common.registration"), value: opt("registration", car.registration) },
+    { label: t("common.condition"), value: opt("condition", car.condition) },
+    { label: t("common.availability"), value: opt("availability", car.availability) },
+    // left-hand drive is the norm here — only a right-hand drive is worth saying
+    { label: t("common.steering"), value: car.steering === "right" ? opt("steering", car.steering) : null },
     { label: "VIN", value: car.vin },
   ];
 

@@ -140,3 +140,54 @@ export function looksRussian(text: string) {
   const lat = (text.match(/[a-zăâîșț]/gi) ?? []).length;
   return cyr > lat;
 }
+
+// Advert details beyond the core specs, read by feature id (the ids are fixed
+// on 999.md; RU option titles → our canonical keys, translated on display)
+export const EXTRA_FEATURES = {
+  registration: {
+    id: "775",
+    dict: {
+      md: ["республика молдова"],
+      cleared: ["растаможен"],
+      not_cleared: ["не растаможен"],
+      transnistria: ["приднестровье"],
+      other: ["другое"],
+    },
+  },
+  condition: {
+    id: "593",
+    dict: { new: ["новый"], used: ["с пробегом"], needs_repair: ["требует ремонта"] },
+  },
+  availability: {
+    id: "1761",
+    dict: { in_stock: ["на месте"], in_transit: ["в пути"], on_order: ["под заказ"] },
+  },
+  origin: {
+    id: "1763",
+    dict: {
+      eu: ["еврозона"],
+      usa: ["сша"],
+      korea: ["корея"],
+      japan: ["япония"],
+      china: ["китай"],
+      other: ["другое"],
+    },
+  },
+  steering: { id: "1196", dict: { left: ["левый"], right: ["правый"] } },
+} as const satisfies Record<string, { id: string; dict: Record<string, string[]> }>;
+
+export type ExtraKey = keyof typeof EXTRA_FEATURES;
+export const EXTRA_KEYS = Object.keys(EXTRA_FEATURES) as ExtraKey[];
+
+export const DOORS_FEATURE_ID = "851";
+export const RANGE_FEATURE_ID = "2513";
+export const OLD_PRICE_FEATURE_ID = "1640";
+
+/** exact RU option title → key (these lists are closed, no fuzzy matching) */
+export function extraKeyFromRu(key: ExtraKey, title: string | undefined | null) {
+  if (!title) return undefined;
+  const t = norm(title);
+  for (const [k, syns] of Object.entries(EXTRA_FEATURES[key].dict))
+    if ((syns as readonly string[]).includes(t)) return k;
+  return undefined;
+}

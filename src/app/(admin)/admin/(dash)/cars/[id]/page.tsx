@@ -4,6 +4,12 @@ import { prisma } from "@/lib/prisma";
 import { CarForm } from "@/components/admin/CarForm";
 import { NnnPanel } from "@/components/admin/NnnPanel";
 import { nnnAdvertUrl } from "@/lib/nnn/client";
+import { daysLeft, fmtDateTime } from "@/lib/adminDates";
+import ro from "@/messages/ro.json";
+
+// 999.md option keys → the site's RO labels (unknown values as 999.md wrote them)
+const optRo = (group: keyof typeof ro.options, key: string | null) =>
+  key ? ((ro.options[group] as Record<string, string>)[key] ?? key) : null;
 
 export default async function EditCarPage({
   params,
@@ -19,6 +25,21 @@ export default async function EditCarPage({
     },
   });
   if (!car) notFound();
+
+  const a = car.advert;
+  const facts = [
+    { label: "Vizualizări pe 999", value: a?.views != null ? a.views.toLocaleString("ro-RO") : null },
+    { label: "Postat pe 999", value: a?.postedAt ? fmtDateTime(a.postedAt) : null },
+    { label: "Adus pe site", value: a?.source === "nnn" ? fmtDateTime(a.createdAt) : null },
+    { label: "Expiră pe 999", value: a?.expiresAt && a.nnnState === "public" ? daysLeft(a.expiresAt) : null },
+    { label: "Țara de origine", value: optRo("origin", car.origin) },
+    { label: "Înmatriculare", value: optRo("registration", car.registration) },
+    { label: "Stare", value: optRo("condition", car.condition) },
+    { label: "Disponibilitate", value: optRo("availability", car.availability) },
+    { label: "Volan", value: optRo("steering", car.steering) },
+    { label: "Uși", value: car.doors ? String(car.doors) : null },
+    { label: "Autonomie", value: car.rangeKm ? `${car.rangeKm} km` : null },
+  ].filter((f): f is { label: string; value: string } => !!f.value);
 
   return (
     <div>
@@ -58,6 +79,7 @@ export default async function EditCarPage({
                       car.advert.advertId && car.advert.advertId !== "DRY-RUN"
                         ? nnnAdvertUrl(car.advert.advertId)
                         : null,
+                    facts,
                   }
                 : null
             }

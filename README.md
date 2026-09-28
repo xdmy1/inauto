@@ -12,9 +12,8 @@ npm run db:seed           # admin + mașini demo cu poze placeholder
 npm run dev               # http://localhost:3000
 ```
 
-**Admin:** `http://localhost:3000/admin` — email `office@inauto.md`, parola
-`schimba-parola` (setate din `.env` → `ADMIN_EMAIL` / `ADMIN_PASSWORD`; rulează
-seed-ul din nou după schimbare, sau schimbă direct în DB).
+**Admin:** `/admin` — contul e `admin@inauto.md`; parola nu stă în repo (e în
+`.env` → `ADMIN_PASSWORD`, folosită doar de seed; în producție contează hash-ul din DB).
 
 ## Structură
 

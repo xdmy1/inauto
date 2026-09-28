@@ -58,7 +58,14 @@
     "city": "Chișinău",
     "contactHint": "Apasă aici ca să ne contactezi!",
     "contactUs": "Contactează-ne",
-    "close": "Închide"
+    "close": "Închide",
+    "origin": "Țara de origine",
+    "registration": "Înmatriculare",
+    "condition": "Stare",
+    "availability": "Disponibilitate",
+    "steering": "Volan",
+    "doors": "Uși",
+    "range": "Autonomie"
   },
   "nav": {
     "home": "Acasă",
@@ -214,7 +221,9 @@
     "hoursMoFr": "Luni – Vineri",
     "hoursSa": "Sâmbătă",
     "hoursSu": "Duminică",
-    "mapCta": "Deschide în Google Maps"
+    "mapCta": "Deschide în Google Maps",
+    "mapAlt": "Harta din aer a parcării INAUTO.MD de pe str. Socoleni, Chișinău — lângă Poliția, Policlinica nr. 10 și Linella",
+    "mapCaption": "Parcarea e pe str. Socoleni 19, lângă intersecția cu str. Doina."
   },
   "footer": {
     "rights": "© {year} INAUTO.MD — Toate drepturile rezervate.",
@@ -261,6 +270,35 @@
       "fwd": "Față",
       "rwd": "Spate",
       "awd": "4x4"
+    },
+    "origin": {
+      "eu": "Zona Euro",
+      "usa": "SUA",
+      "korea": "Coreea",
+      "japan": "Japonia",
+      "china": "China",
+      "other": "Altă"
+    },
+    "registration": {
+      "md": "Republica Moldova",
+      "cleared": "Vămuit",
+      "not_cleared": "Nevămuit",
+      "transnistria": "Transnistria",
+      "other": "Altă"
+    },
+    "condition": {
+      "new": "Nou",
+      "used": "Cu rulaj",
+      "needs_repair": "Necesită reparații"
+    },
+    "availability": {
+      "in_stock": "Pe loc, în parcare",
+      "in_transit": "În drum",
+      "on_order": "La comandă"
+    },
+    "steering": {
+      "left": "Stânga",
+      "right": "Dreapta"
     }
   },
   "notFound": {

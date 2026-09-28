@@ -1,7 +1,6 @@
 import Link from "next/link";
 import { Logo } from "@/components/Logo";
 import { logoutAction } from "../actions";
-import { nnnMode } from "@/lib/nnn/client";
 
 export default function AdminDashLayout({
   children,
@@ -10,53 +9,37 @@ export default function AdminDashLayout({
 }) {
   return (
     <div className="min-h-dvh">
-      <header className="sticky top-0 z-40 border-b border-line bg-paper/90 backdrop-blur">
-        <div className="mx-auto flex h-14 max-w-[1360px] items-center justify-between px-4 sm:px-6">
-          <div className="flex items-center gap-6">
-            <Link href="/admin">
-              <Logo markClassName="h-10 w-auto" />
+      <header className="sticky top-0 z-40 border-b border-line bg-card/90 backdrop-blur">
+        <div className="mx-auto flex h-14 max-w-[1360px] items-center justify-between gap-3 px-4 sm:px-6">
+          <div className="flex min-w-0 items-center gap-3 sm:gap-5">
+            <Link href="/admin" className="shrink-0">
+              <Logo markClassName="h-9 w-auto" />
             </Link>
-            <nav className="flex items-center gap-4 text-sm font-medium">
-              <Link href="/admin" className="text-ink-soft hover:text-ink">
+            <span className="hidden h-5 w-px bg-line sm:block" />
+            <nav className="flex items-center gap-1 text-sm font-semibold">
+              <Link href="/admin" className="rounded-lg px-2.5 py-1.5 text-ink-soft hover:bg-paper hover:text-ink">
                 Mașini
               </Link>
               <Link
                 href="/admin/cars/new"
-                className="tag-red rounded-full px-3.5 py-1.5 text-xs font-bold"
+                className="hidden rounded-lg px-2.5 py-1.5 text-ink-soft hover:bg-paper hover:text-ink sm:block"
               >
-                + Adaugă mașină
+                Adaugă mașină
               </Link>
             </nav>
           </div>
-          <div className="flex items-center gap-3">
-            <span
-              className={`hidden rounded-full px-2.5 py-1 text-[11px] font-bold sm:block ${
-                nnnMode() === "live"
-                  ? "bg-green-100 text-green-800"
-                  : nnnMode() === "read-only"
-                    ? "bg-amber-100 text-amber-800"
-                    : "bg-gray-100 text-gray-600"
-              }`}
-              title="Starea integrării 999.md"
-            >
-              999.md:{" "}
-              {nnnMode() === "live"
-                ? "activ"
-                : nnnMode() === "read-only"
-                  ? "doar import"
-                  : "simulare"}
-            </span>
+          <div className="flex shrink-0 items-center gap-1 text-sm font-semibold">
             <a
               href="/"
               target="_blank"
-              className="text-sm text-ink-soft hover:text-ink"
+              className="rounded-lg px-2.5 py-1.5 text-ink-soft hover:bg-paper hover:text-ink"
             >
-              Vezi site-ul ↗
+              Site-ul ↗
             </a>
             <form action={logoutAction}>
               <button
                 type="submit"
-                className="text-sm text-ink-soft hover:text-accent"
+                className="rounded-lg px-2.5 py-1.5 text-ink-soft hover:bg-paper hover:text-accent"
               >
                 Ieși
               </button>
@@ -64,7 +47,7 @@ export default function AdminDashLayout({
           </div>
         </div>
       </header>
-      <main className="mx-auto max-w-[1360px] px-4 py-8 sm:px-6">{children}</main>
+      <main className="mx-auto max-w-[1360px] px-4 py-6 sm:px-6 sm:py-8">{children}</main>
     </div>
   );
 }

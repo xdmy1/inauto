@@ -30,6 +30,12 @@ import {
   FEATURE_KEYS,
   FUEL_RU,
   OFFER_TYPE,
+  DOORS_FEATURE_ID,
+  EXTRA_KEYS,
+  EXTRA_FEATURES,
+  OLD_PRICE_FEATURE_ID,
+  RANGE_FEATURE_ID,
+  extraKeyFromRu,
   TRANSMISSION_RU,
   colorFromRu,
   engineToCc,
@@ -84,6 +90,15 @@ export type MappedCar = {
   descriptionRu: string;
   equipmentRo: string;
   equipmentRu: string;
+  origin?: string;
+  registration?: string;
+  condition?: string;
+  availability?: string;
+  steering?: string;
+  doors?: number;
+  rangeKm?: number;
+  /** "Старая цена" on 999.md — only when set and above the price */
+  oldPrice?: number;
   imageIds: string[];
 };
 
@@ -249,6 +264,21 @@ export function mapAdvert(
   const power = raw.power ? toNumber(raw.power.value) : undefined;
   const seats = raw.seats ? toNumber(optionTitle(raw.seats)) : undefined;
 
+  // details the core mapping doesn't cover, by their fixed feature ids
+  const byId = (id: string) => features.find((f) => String(f.id) === id);
+  const extras: Partial<Record<(typeof EXTRA_KEYS)[number], string>> = {};
+  for (const key of EXTRA_KEYS) {
+    const f = byId(EXTRA_FEATURES[key].id);
+    const t = f ? optionTitle(f) : undefined;
+    if (t) extras[key] = extraKeyFromRu(key, t) ?? t;
+  }
+  const doorsF = byId(DOORS_FEATURE_ID);
+  const doors = doorsF ? toNumber(optionTitle(doorsF)) : undefined;
+  const rangeF = byId(RANGE_FEATURE_ID);
+  const rangeKm = rangeF ? toNumber(rangeF.value) : undefined;
+  const oldPriceF = byId(OLD_PRICE_FEATURE_ID);
+  const oldPrice = oldPriceF ? toNumber(oldPriceF.value) : undefined;
+
   const descRaw = raw.description?.value;
   const desc =
     descRaw && typeof descRaw === "object"
@@ -279,6 +309,10 @@ export function mapAdvert(
       descriptionRu,
       equipmentRo: equipmentRo.join("\n"),
       equipmentRu: equipmentRu.join("\n"),
+      ...extras,
+      doors: doors != null && doors > 0 && doors <= 6 ? Math.round(doors) : undefined,
+      rangeKm: rangeKm != null && rangeKm > 0 ? Math.round(rangeKm) : undefined,
+      oldPrice: oldPrice != null && oldPrice > price! ? Math.round(oldPrice) : undefined,
       imageIds: imageIds.slice(0, MAX_IMAGES),
     },
   };
@@ -320,15 +354,29 @@ async function loadRoTitles(): Promise<Map<string, string>> {
   return map;
 }
 
-type Diffable = Omit<MappedCar, "imageIds">;
+type Diffable = Omit<MappedCar, "imageIds" | "oldPrice">;
 const specKeys: (keyof Diffable)[] = [
   "brand", "model", "year", "price", "mileage", "body", "fuel", "transmission",
   "drivetrain", "engineCc", "powerHp", "color", "seats", "vin",
   "descriptionRo", "descriptionRu", "equipmentRo", "equipmentRu",
+  "origin", "registration", "condition", "availability", "steering", "doors", "rangeKm",
 ];
 
+// the old price is also an admin field: 999.md only overrides it when it has one
 function specsChanged(mapped: MappedCar, car: Record<string, unknown>) {
-  return specKeys.some((k) => (mapped[k] ?? null) !== (car[k] ?? null));
+  return (
+    specKeys.some((k) => (mapped[k] ?? null) !== (car[k] ?? null)) ||
+    (mapped.oldPrice != null && mapped.oldPrice !== car.oldPrice)
+  );
+}
+
+/** 999.md's own numbers for an advert (views, dates) — kept on the link row */
+function advertStats(item: NnnAdvertListItem) {
+  return {
+    views: item.views_counter ?? null,
+    postedAt: item.posted ? new Date(item.posted) : null,
+    expiresAt: item.expire ? new Date(item.expire) : null,
+  };
 }
 
 const subcategoryOf = (a: NnnAdvertListItem) => a.categories?.subcategory?.id ?? "";
@@ -510,6 +558,7 @@ export async function importFrom999(
                 nnnState: item.state,
                 nnnUpdatedAt,
                 lastSyncAt: new Date(),
+                ...advertStats(item),
               },
             },
           },
@@ -564,6 +613,21 @@ export async function importFrom999(
         data: { nnnState: "deleted", lastError: "Anunțul a dispărut de pe 999.md — arhivat automat" },
       });
     }
+
+    // views / expiry change every day — refresh them for every linked advert
+    // (one cheap batch; nothing else is re-read for this)
+    const statUpdates = adverts.flatMap((item) => {
+      const link = linkByAdvert.get(item.id);
+      if (!link) return [];
+      const next = advertStats(item);
+      const same =
+        link.views === next.views &&
+        link.postedAt?.getTime() === next.postedAt?.getTime() &&
+        link.expiresAt?.getTime() === next.expiresAt?.getTime();
+      return same ? [] : [prisma.advert999.update({ where: { id: link.id }, data: next })];
+    });
+    for (let i = 0; i < statUpdates.length; i += 50)
+      await prisma.$transaction(statUpdates.slice(i, i + 50));
 
     report.ok = true;
   } catch (e) {

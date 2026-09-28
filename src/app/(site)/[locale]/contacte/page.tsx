@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Image from "next/image";
 import { getTranslations, setRequestLocale } from "next-intl/server";
 import { site, telHref, waHref } from "@/lib/site";
 import { canonicalFor, localizedAlternates } from "@/lib/seo";
@@ -47,6 +48,29 @@ export default async function ContactPage({
       <h1 className=" font-display text-4xl font-extrabold tracking-tight sm:text-5xl">
         {t("contact.title")}
       </h1>
+
+      {/* Aerial map of the lot and its landmarks */}
+      <figure data-reveal className="mt-10">
+        <a
+          href={mapsUrl}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="block overflow-hidden rounded-2xl border border-line"
+        >
+          <Image
+            src="/images/harta-socoleni.webp"
+            alt={t("contact.mapAlt")}
+            width={2000}
+            height={1131}
+            sizes="(max-width: 1400px) 100vw, 1360px"
+            priority
+            className="h-auto w-full"
+          />
+        </a>
+        <figcaption className="mt-3 text-sm text-ink-soft">
+          {t("contact.mapCaption")}
+        </figcaption>
+      </figure>
 
       <div className="mt-10 grid grid-cols-1 gap-8 lg:grid-cols-[420px_1fr]">
         <div className="space-y-5">

@@ -31,6 +31,14 @@ model Car {
   seats        Int?
   vin          String?
   location     String? // parking address
+  // extra details read from the 999.md advert (canonical keys, translated on display)
+  origin       String? // eu | usa | korea | japan | ... or the raw RU title
+  registration String? // md | abroad | ...
+  condition    String? // used | new | order
+  availability String? // in_stock | in_transit | on_order
+  steering     String? // left | right
+  doors        Int?
+  rangeKm      Int? // electric range
   descriptionRo String @default("")
   descriptionRu String @default("")
   // equipment / options, one per line ("Climatronic", "Scaune încălzite"...)
@@ -75,7 +83,11 @@ model Advert999 {
   nnnUpdatedAt DateTime? // "republished"/"posted" timestamp of the advert on 999.md
   lastError    String?
   lastSyncAt   DateTime?
-  createdAt    DateTime  @default(now())
+  // advert stats as reported by 999.md, refreshed on every import
+  views        Int?
+  postedAt     DateTime? // first posted on 999.md
+  expiresAt    DateTime? // when the advert expires on 999.md
+  createdAt    DateTime  @default(now()) // for imported cars: when the import brought it in
   updatedAt    DateTime  @updatedAt
 
 }
