@@ -23,6 +23,7 @@ export function Select({
   placeholder = "—",
   searchable = false,
   variant = "light",
+  label,
   className,
 }: {
   options: SelectOption[];
@@ -31,7 +32,11 @@ export function Select({
   name?: string;
   placeholder?: string;
   searchable?: boolean;
-  variant?: "light" | "dark";
+  /** field: a borderless cell with its label inside, above the value (hero search);
+      inline: just the value and a chevron, for two selects sharing one cell */
+  variant?: "light" | "dark" | "field" | "inline";
+  /** shown inside the trigger by the "field" variant */
+  label?: string;
   className?: string;
 }) {
   const [open, setOpen] = useState(false);
@@ -130,13 +135,20 @@ export function Select({
   const trigger =
     variant === "dark"
       ? "h-11 w-full rounded-lg border border-white/15 bg-white/[0.07] px-3 text-sm text-white transition-colors hover:border-white/30 data-[open=true]:border-white/50"
-      : "h-11 w-full rounded-xl border border-line bg-card px-3.5 text-sm text-ink transition-colors hover:border-ink-faint data-[open=true]:border-ink data-[open=true]:ring-2 data-[open=true]:ring-ink/10";
+      : variant === "field"
+        ? `qs-cell h-[60px] w-full px-4 text-left`
+        : variant === "inline"
+          ? "h-[22px] w-full text-left text-[15px] font-semibold text-ink"
+          : "h-11 w-full rounded-xl border border-line bg-card px-3.5 text-sm text-ink transition-colors hover:border-ink-faint data-[open=true]:border-ink data-[open=true]:ring-2 data-[open=true]:ring-ink/10";
 
+  const bare = variant === "field" || variant === "inline";
   const valueCls =
     value === ""
       ? variant === "dark"
         ? "text-white/60"
-        : "text-ink-faint"
+        : bare
+          ? "font-medium text-ink-soft"
+          : "text-ink-faint"
       : "";
 
   return (
@@ -152,9 +164,18 @@ export function Select({
         onKeyDown={onKeyDown}
         className={`flex cursor-pointer items-center justify-between gap-2 outline-none ${trigger}`}
       >
-        <span className={`truncate ${valueCls}`}>
-          {selected?.label ?? placeholder}
-        </span>
+        {variant === "field" ? (
+          <span className="flex min-w-0 flex-col">
+            <span className="qs-label">{label}</span>
+            <span className={`truncate text-[15px] font-semibold text-ink ${valueCls}`}>
+              {selected?.label ?? placeholder}
+            </span>
+          </span>
+        ) : (
+          <span className={`truncate ${valueCls}`}>
+            {selected?.label ?? placeholder}
+          </span>
+        )}
         <svg
           viewBox="0 0 24 24"
           fill="none"

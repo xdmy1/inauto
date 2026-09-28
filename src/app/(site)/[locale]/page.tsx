@@ -19,6 +19,8 @@ import { BodyTypes } from "@/components/home/BodyTypes";
 import { Spotlight } from "@/components/home/Spotlight";
 import { BrandGrid } from "@/components/home/BrandGrid";
 import { BudgetRow } from "@/components/home/BudgetRow";
+import { RoadWheel } from "@/components/motion/RoadWheel";
+import { ScrollVar } from "@/components/motion/ScrollVar";
 import {
   ArrowRightIcon,
   CheckIcon,
@@ -193,6 +195,11 @@ export default async function HomePage({
         </section>
       )}
 
+      {/* the road: a wheel rolls along it exactly as far as you scroll */}
+      <div className={wrap}>
+        <RoadWheel />
+      </div>
+
       {/* body types + budgets */}
       <section className={`${wrap} mt-14`}>
         <SectionHeader title={t("home.bodyTitle")} />
@@ -254,7 +261,14 @@ export default async function HomePage({
             return (
               <div key={key} data-reveal className="flex items-center gap-4 bg-card p-5">
                 <IconSpot>
-                  <Illo />
+                  {/* the steering wheel turns with the scroll */}
+                  {key === "testdrive" ? (
+                    <ScrollVar>
+                      <Illo />
+                    </ScrollVar>
+                  ) : (
+                    <Illo />
+                  )}
                 </IconSpot>
                 <div>
                   <h3 className="text-sm font-bold">{t(`home.why.${key}`)}</h3>

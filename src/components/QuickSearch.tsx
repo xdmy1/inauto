@@ -75,21 +75,24 @@ export function QuickSearch({
     { href: "/auto?priceMax=10000", label: t("footer.under10k") },
   ];
 
-  const label = "mb-1.5 block text-[11px] font-semibold uppercase tracking-wide text-ink-faint";
   const priceOption = (p: number) => ({ value: String(p), label: `${nf.format(p)} €` });
   // the two ends of the range never cross
   const minOptions = PRICE_STEPS.filter((p) => !priceMax || p < Number(priceMax)).map(priceOption);
   const maxOptions = PRICE_STEPS.filter((p) => !priceMin || p > Number(priceMin)).map(priceOption);
 
+  // a hairline between cells on desktop
+  const sep = <span aria-hidden className="qs-sep" />;
+
   return (
-    <div className="card rounded-2xl p-4 shadow-lift sm:p-5">
+    <div className="qs">
       <form
         onSubmit={submit}
-        className="grid grid-cols-2 gap-3 lg:grid-cols-[1.1fr_1fr_1.35fr_1fr_auto] lg:items-end"
+        className="grid grid-cols-2 gap-2 p-2 lg:flex lg:items-center lg:gap-0"
       >
-        <label className="block">
-          <span className={label}>{t("home.searchBrand")}</span>
+        <div className="min-w-0 lg:flex-[1.15]">
           <Select
+            variant="field"
+            label={t("home.searchBrand")}
             searchable
             value={brand}
             onChange={setBrand}
@@ -99,28 +102,33 @@ export function QuickSearch({
               label: `${b.brand} (${b.count})`,
             }))}
           />
-        </label>
-
-        <label className="block">
-          <span className={label}>{t("home.searchModel")}</span>
+        </div>
+        {sep}
+        <label className="qs-cell flex h-[60px] min-w-0 cursor-text flex-col justify-center px-4 lg:flex-1">
+          <span className="qs-label">{t("home.searchModel")}</span>
           <input
             value={model}
             onChange={(e) => setModel(e.target.value)}
             placeholder={t("home.searchAny")}
-            className="input"
+            className="w-full min-w-0 bg-transparent text-[15px] font-semibold text-ink outline-none placeholder:font-medium placeholder:text-ink-soft"
           />
         </label>
-
-        <div className="col-span-2 lg:col-span-1">
-          <span className={label}>{t("home.searchPrice")}</span>
-          <div className="grid grid-cols-2 gap-2">
+        {sep}
+        <div className="qs-cell col-span-2 flex h-[60px] min-w-0 flex-col justify-center px-4 lg:flex-[1.45]">
+          <span className="qs-label">{t("home.searchPrice")}</span>
+          <div className="flex items-center gap-2">
             <Select
+              variant="inline"
+              className="min-w-0 flex-1"
               value={priceMin}
               onChange={setPriceMin}
               placeholder={t("home.priceFrom")}
               options={minOptions}
             />
+            <span aria-hidden className="text-ink-faint">–</span>
             <Select
+              variant="inline"
+              className="min-w-0 flex-1"
               value={priceMax}
               onChange={setPriceMax}
               placeholder={t("home.priceTo")}
@@ -128,35 +136,36 @@ export function QuickSearch({
             />
           </div>
         </div>
-
-        <label className="col-span-2 block lg:col-span-1">
-          <span className={label}>{t("home.searchFuel")}</span>
+        {sep}
+        <div className="col-span-2 min-w-0 lg:flex-1">
           <Select
+            variant="field"
+            label={t("home.searchFuel")}
             value={fuel}
             onChange={setFuel}
             placeholder={t("home.searchAny")}
             options={FUELS.map((f) => ({ value: f, label: t(`options.fuel.${f}`) }))}
           />
-        </label>
+        </div>
 
         <button
           type="submit"
-          className="btn-primary col-span-2 h-11 whitespace-nowrap px-5 lg:col-span-1"
+          className="btn-primary col-span-2 h-[60px] whitespace-nowrap rounded-2xl px-6 text-[15px] lg:ml-2"
         >
           {t("home.showCars", { count })}
           <ArrowRightIcon className="h-4 w-4" />
         </button>
       </form>
 
-      {/* quick chips: one scrolling row on phones (edge to edge), wrapping from sm */}
-      <div className="mt-3.5 flex flex-wrap items-center gap-x-3 gap-y-2.5 border-t border-line pt-3.5">
+      {/* popular searches on their own quiet strip: one scrolling row on phones, wrapping from sm */}
+      <div className="flex flex-wrap items-center gap-x-3 gap-y-2.5 rounded-b-[22px] border-t border-line bg-paper/70 px-4 py-3 sm:px-5">
         <div className="scroll-row -mx-4 w-[calc(100%+2rem)] items-center px-4 sm:mx-0 sm:w-auto sm:flex-1 sm:flex-wrap sm:overflow-visible sm:px-0">
           <span className="shrink-0 text-xs font-semibold text-ink-faint">{t("home.quickFilters")}</span>
           {quick.map((q) => (
             <Link
               key={q.href}
               href={q.href}
-              className="chip-3d shrink-0 whitespace-nowrap rounded-full px-3 py-1.5 text-xs font-semibold text-ink-soft hover:text-ink"
+              className="shrink-0 whitespace-nowrap rounded-full border border-line bg-card px-3 py-1.5 text-xs font-semibold text-ink-soft transition-colors hover:border-ink-faint hover:text-ink"
             >
               {q.label}
             </Link>

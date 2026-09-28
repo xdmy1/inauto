@@ -360,11 +360,32 @@ body {
 }
 @media (min-width: 1024px) {
   .hero {
-    --focus: 50% 60%;
-    /* the fold: the search card peeks in under the hero (ticker 44 + header 73) */
-    min-height: 600px;
-    max-height: 780px;
-    height: calc(100svh - 117px);
+    /* crop from the floor, never from the sign on the wall */
+    --focus: 50% 14%;
+    /* short enough that the whole search card sits above the fold
+       (ticker 44 + header 73 + the card's ~150) */
+    min-height: 540px;
+    max-height: 680px;
+    height: calc(100svh - 117px - 150px);
+  }
+  .hero .hero-copy {
+    padding-top: 48px;
+    padding-bottom: 96px;
+  }
+}
+/* phones: the loop is shown whole at the top (sign + car, a wide crop),
+   the copy starts on its dark polished floor */
+@media (max-width: 767px) {
+  .hero {
+    --focus: 50% 50%;
+    min-height: 0;
+  }
+  .hero .hero-bg {
+    bottom: auto;
+    aspect-ratio: 860 / 748;
+  }
+  .hero .hero-copy {
+    padding-top: calc(87vw - 72px);
   }
 }
 .hero-bg,
@@ -404,8 +425,21 @@ body {
   position: absolute;
   inset: 0;
   background:
-    linear-gradient(180deg, rgba(16, 19, 31, 0.3) 0%, rgba(16, 19, 31, 0.22) 35%, rgba(16, 19, 31, 0.62) 100%),
+    linear-gradient(180deg, rgba(16, 19, 31, 0.3) 0%, rgba(16, 19, 31, 0.22) 35%, rgba(16, 19, 31, 0.5) 100%),
     rgba(16, 19, 31, 0.34);
+}
+@media (max-width: 767px) {
+  /* the floor at the bottom of the frame is near-black already; it runs
+     into the ink under the copy */
+  .hero-scrim {
+    background: linear-gradient(
+      180deg,
+      rgba(16, 19, 31, 0.12) 0%,
+      rgba(16, 19, 31, 0.1) 45%,
+      rgba(16, 19, 31, 0.7) 78%,
+      #10131f 100%
+    );
+  }
 }
 /* the copy sits on moving footage: a soft shadow keeps it legible in the
    moments the white car slides behind it */
@@ -419,8 +453,9 @@ body {
   .hero-scrim {
     background:
       linear-gradient(90deg, rgba(16, 19, 31, 0.6) 0%, rgba(16, 19, 31, 0.44) 34%, rgba(16, 19, 31, 0.08) 62%, rgba(16, 19, 31, 0.1) 100%),
-      linear-gradient(180deg, rgba(16, 19, 31, 0.18) 0%, rgba(16, 19, 31, 0) 32%, rgba(16, 19, 31, 0) 64%, rgba(16, 19, 31, 0.5) 100%),
-      rgba(16, 19, 31, 0.24);
+      /* the bottom stays light so the polished floor's reflections read */
+      linear-gradient(180deg, rgba(16, 19, 31, 0.18) 0%, rgba(16, 19, 31, 0) 32%, rgba(16, 19, 31, 0) 74%, rgba(16, 19, 31, 0.28) 100%),
+      rgba(16, 19, 31, 0.22);
   }
 }
 
@@ -459,6 +494,55 @@ body {
       linear-gradient(90deg, rgba(23, 27, 43, 0.6) 0%, rgba(23, 27, 43, 0.42) 40%, rgba(23, 27, 43, 0.08) 66%, rgba(23, 27, 43, 0.12) 100%),
       linear-gradient(180deg, rgba(23, 27, 43, 0.12) 0%, rgba(23, 27, 43, 0) 40%, rgba(23, 27, 43, 0.32) 100%),
       rgba(23, 27, 43, 0.22);
+  }
+}
+/* hero search: one segmented bar — borderless cells with the label inside,
+   hairlines between them on desktop, filled cells on phones */
+.qs {
+  border-radius: 22px;
+  background: var(--color-card);
+  box-shadow:
+    0 0 0 1px rgb(16 19 31 / 0.06),
+    0 2px 6px rgb(16 19 31 / 0.06),
+    0 24px 48px -20px rgb(16 19 31 / 0.35);
+}
+.qs-cell {
+  border-radius: 16px;
+  background: var(--color-paper);
+  transition: background-color 150ms ease;
+}
+.qs-cell:hover,
+.qs-cell[data-open="true"],
+.qs-cell:focus-within {
+  background: #eceef2;
+}
+.qs-label {
+  display: block;
+  margin-bottom: 2px;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--color-ink-faint);
+}
+.qs-sep {
+  display: none;
+}
+@media (min-width: 1024px) {
+  .qs-cell {
+    background: transparent;
+  }
+  .qs-cell:hover,
+  .qs-cell[data-open="true"],
+  .qs-cell:focus-within {
+    background: var(--color-paper);
+  }
+  .qs-sep {
+    display: block;
+    flex: none;
+    width: 1px;
+    height: 34px;
+    background: var(--color-line);
   }
 }
 /* footer links: a hairline that draws itself under the word on hover */

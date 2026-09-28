@@ -12,6 +12,7 @@ import { Footer } from "@/components/Footer";
 import { FloatingContact } from "@/components/FloatingContact";
 import { ScrollReveal } from "@/components/ScrollReveal";
 import "../../globals.css";
+import "../../motion.css";
 
 const inter = Inter({
   subsets: ["latin", "latin-ext", "cyrillic"],

@@ -38,7 +38,9 @@ export function OdometerIllo({ className }: P) {
         <path d="M24 19.5v2.8" />
         <path d="M34.5 27.5l-2.6 1" />
       </g>
+      {/* the needle sweeps up to the figure when the card arrives (motion.css) */}
       <path
+        className="illo-needle"
         d="M24 31 32.2 22.6"
         stroke={RED}
         strokeWidth="2.4"
@@ -88,22 +90,21 @@ export function CoinsIllo({ className }: P) {
 export function SteeringIllo({ className }: P) {
   return (
     <svg viewBox="0 0 48 48" className={className ?? base} aria-hidden="true">
-      <circle cx="24" cy="24" r="15" fill={GREY} stroke={INK} strokeWidth="1.3" />
-      <path
-        d="M35.5 33a15 15 0 0 1-21.6 1.6A15 15 0 0 0 37 28.4Z"
-        fill={GREY_DEEP}
-        opacity="0.55"
-      />
-      <circle cx="24" cy="24" r="9" fill="#fff" stroke={INK} strokeWidth="1.2" />
-      <path
-        d="M9.4 22.2c4.6-1.8 24.6-1.8 29.2 0M24 33v6.2"
-        stroke={INK}
-        strokeWidth="1.2"
-        fill="none"
-      />
-      <path d="M15.3 24.3h17.4L30 28h-12Z" fill={GREY_LIGHT} stroke={INK} strokeWidth="1.1" strokeLinejoin="round" />
-      <circle cx="24" cy="26" r="3.6" fill={RED_LIGHT} stroke={INK} strokeWidth="1.2" />
-      <path d="M22.4 24.9a2.2 2.2 0 0 1 3.2 0" stroke="#fff" strokeWidth="1.1" strokeLinecap="round" fill="none" />
+      {/* the column stays; the wheel turns with the scroll (motion.css) */}
+      <path d="M24 33v6.2" stroke={INK} strokeWidth="1.2" fill="none" />
+      <g className="illo-steer">
+        <circle cx="24" cy="24" r="15" fill={GREY} stroke={INK} strokeWidth="1.3" />
+        <path
+          d="M35.5 33a15 15 0 0 1-21.6 1.6A15 15 0 0 0 37 28.4Z"
+          fill={GREY_DEEP}
+          opacity="0.55"
+        />
+        <circle cx="24" cy="24" r="9" fill="#fff" stroke={INK} strokeWidth="1.2" />
+        <path d="M9.4 22.2c4.6-1.8 24.6-1.8 29.2 0" stroke={INK} strokeWidth="1.2" fill="none" />
+        <path d="M15.3 24.3h17.4L30 28h-12Z" fill={GREY_LIGHT} stroke={INK} strokeWidth="1.1" strokeLinejoin="round" />
+        <circle cx="24" cy="26" r="3.6" fill={RED_LIGHT} stroke={INK} strokeWidth="1.2" />
+        <path d="M22.4 24.9a2.2 2.2 0 0 1 3.2 0" stroke="#fff" strokeWidth="1.1" strokeLinecap="round" fill="none" />
+      </g>
     </svg>
   );
 }
@@ -131,16 +132,19 @@ export function ContractIllo({ className }: P) {
         <path d="M14.5 23.5h12" />
         <path d="M14.5 28h8" />
       </g>
-      <circle cx="30" cy="34" r="6" fill={RED_LIGHT} stroke={INK} strokeWidth="1.3" />
-      <circle cx="30" cy="34" r="4.1" fill={RED} />
-      <path
-        d="m27.9 34.1 1.5 1.5 2.8-3"
-        stroke="#fff"
-        strokeWidth="1.6"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        fill="none"
-      />
+      {/* the seal is stamped down when the card arrives (motion.css) */}
+      <g className="illo-seal">
+        <circle cx="30" cy="34" r="6" fill={RED_LIGHT} stroke={INK} strokeWidth="1.3" />
+        <circle cx="30" cy="34" r="4.1" fill={RED} />
+        <path
+          d="m27.9 34.1 1.5 1.5 2.8-3"
+          stroke="#fff"
+          strokeWidth="1.6"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          fill="none"
+        />
+      </g>
     </svg>
   );
 }
