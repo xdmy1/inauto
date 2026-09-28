@@ -12,7 +12,7 @@ import { site, telHref, waHref } from "@/lib/site";
 import { canonicalFor, localizedAlternates } from "@/lib/seo";
 import { CarCard } from "@/components/CarCard";
 import { QuickSearch } from "@/components/QuickSearch";
-import { HeroFx } from "@/components/hero/HeroFx";
+import { LoopVideo } from "@/components/hero/LoopVideo";
 import { SectionHeader } from "@/components/home/SectionHeader";
 import { StatsStrip } from "@/components/home/StatsStrip";
 import { BodyTypes } from "@/components/home/BodyTypes";
@@ -107,21 +107,29 @@ export default async function HomePage({
 
   return (
     <>
-      {/* ——— Hero: the real parking, the real count, the real slogan ——— */}
-      <section className="hero relative overflow-hidden bg-ink text-white">
-        <HeroFx />
-        <div className="hero-media">
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img
-            src="/images/hero.webp"
-            alt={`${site.name} — ${site.address.full}`}
-            width={1280}
-            height={960}
-            fetchPriority="high"
-            className="hero-photo h-full w-full object-cover object-top lg:object-center"
+      {/* ——— Hero: the real parking, live, edge to edge; the real count and slogan on top ——— */}
+      <section className="hero relative flex flex-col justify-end overflow-hidden bg-ink text-white lg:justify-center">
+        <div className="hero-bg" aria-hidden="true">
+          {/* the still is the first paint and the whole story under reduced motion;
+              phones get a tighter crop (the car, from under the sign) */}
+          <picture>
+            <source media="(max-width: 767px)" srcSet="/images/hero-still-mobile.webp" />
+            <img
+              src="/images/hero-still.webp"
+              alt=""
+              width={1920}
+              height={1080}
+              fetchPriority="high"
+              decoding="async"
+            />
+          </picture>
+          <LoopVideo
+            desktop={{ mp4: "/videos/hero-loop.mp4", poster: "/images/hero-still.webp" }}
+            mobile={{ mp4: "/videos/hero-loop-mobile.mp4", poster: "/images/hero-still-mobile.webp" }}
           />
+          <div className="hero-scrim" />
         </div>
-        <div className={`hero-copy ${wrap} relative -mt-12 pb-24 sm:-mt-16 sm:pb-28 lg:mt-0 lg:pb-36 lg:pt-20`}>
+        <div className={`hero-copy ${wrap} relative w-full pb-24 pt-12 sm:pb-28 sm:pt-16 lg:py-28`}>
           <p className="text-[11.5px] font-semibold uppercase tracking-[0.12em] text-white/70 sm:text-[12px] sm:tracking-[0.18em]">
             {t("home.heroEyebrow")}
           </p>

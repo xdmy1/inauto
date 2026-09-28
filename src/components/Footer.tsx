@@ -5,7 +5,7 @@ import { site, telHref, waHref } from "@/lib/site";
 import { brandSlug, getBrandsWithCounts } from "@/lib/cars";
 import { Logo } from "./Logo";
 import { HoursList } from "./HoursList";
-import { HeroFx } from "./hero/HeroFx";
+import { LoopVideo } from "./hero/LoopVideo";
 import { OpenNowBadge } from "./OpenNowBadge";
 import {
   ArrowRightIcon,
@@ -62,21 +62,27 @@ export async function Footer() {
   return (
     <footer className="mt-44 bg-ink text-white sm:mt-48">
       <div className="mx-auto flow-root max-w-[1360px] px-4 sm:px-6">
-        {/* visit band — sits across the footer's top edge, with the real wall sign */}
-        <div className="footer-band relative -mt-24 overflow-hidden rounded-3xl">
-          <HeroFx copy=".footer-band-copy" media=".footer-band-photo" darkWidth={0.6} fade={[0.4, 0.55]} />
-          <div className="footer-band-photo">
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img
-              src="/images/parcare.webp"
-              alt={`${site.name} — ${site.address.full}`}
-              width={1280}
-              height={620}
-              loading="lazy"
-              className="h-full w-full object-cover object-top"
+        {/* visit band — sits across the footer's top edge, the live parking behind the copy */}
+        <div className="footer-band relative -mt-24 flex flex-col justify-end overflow-hidden rounded-3xl lg:justify-center">
+          <div className="footer-band-media" aria-hidden="true">
+            <picture>
+              <source media="(max-width: 767px)" srcSet="/images/hero-still-mobile.webp" />
+              <img
+                src="/images/hero-still.webp"
+                alt=""
+                width={1920}
+                height={1080}
+                loading="lazy"
+                decoding="async"
+              />
+            </picture>
+            <LoopVideo
+              desktop={{ mp4: "/videos/hero-loop.mp4", poster: "/images/hero-still.webp" }}
+              mobile={{ mp4: "/videos/hero-loop-mobile.mp4", poster: "/images/hero-still-mobile.webp" }}
             />
+            <div className="footer-band-scrim" />
           </div>
-          <div className="footer-band-copy relative -mt-8 px-5 pb-6 sm:px-9 sm:pb-9 lg:mt-0 lg:max-w-[54%] lg:p-10">
+          <div className="footer-band-copy relative px-5 pb-6 pt-8 sm:px-9 sm:pb-9 lg:max-w-[54%] lg:p-10">
             <OpenNowBadge />
             <h2 className="mt-1.5 font-display text-[26px] font-extrabold leading-tight tracking-tight sm:text-[32px]">
               {t("home.contactTitle")}
