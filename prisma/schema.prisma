@@ -87,6 +87,9 @@ model Advert999 {
   views        Int?
   postedAt     DateTime? // first posted on 999.md
   expiresAt    DateTime? // when the advert expires on 999.md
+  // the dealer sometimes posts one car twice on 999.md (same photos, another
+  // title); the copy is hidden on the site and points at the advert kept
+  duplicateOf  String?
   createdAt    DateTime  @default(now()) // for imported cars: when the import brought it in
   updatedAt    DateTime  @updatedAt
 

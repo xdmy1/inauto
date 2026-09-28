@@ -128,6 +128,7 @@ export default async function AdminDashboard({
           state: c.advert.state,
           nnnState: c.advert.nnnState,
           lastError: c.advert.lastError,
+          duplicateOf: c.advert.duplicateOf,
           views: c.advert.views,
           expiresAt: c.advert.expiresAt?.toISOString() ?? null,
           importedAt: c.advert.createdAt.toISOString(),

@@ -66,6 +66,8 @@ export type ImportReport = {
   skipped: number;
   unchanged: number;
   warnings: string[];
+  /** adverts hidden this run because they repeat another advert */
+  hiddenDuplicates?: number;
   error?: string;
   runId?: string;
 };
@@ -431,7 +433,8 @@ export async function importFrom999(
     const stamp = (a: NnnAdvertListItem) => a.republished ?? a.posted ?? null;
     const untouched = (a: NnnAdvertListItem) => {
       const link = linkByAdvert.get(a.id);
-      if (force || !link || link.state !== "SYNCED" || link.car.status !== "PUBLISHED") return false;
+      if (force || !link || link.state !== "SYNCED") return false;
+      if (link.car.status !== "PUBLISHED" && !link.duplicateOf) return false;
       const s = stamp(a);
       return (
         !!s &&
@@ -588,7 +591,7 @@ export async function importFrom999(
         data: {
           ...specs,
           // an archived (expired) advert that is public again comes back too
-          ...(link.car.status === "ARCHIVED" ? { status: "PUBLISHED" } : {}),
+          ...(link.car.status === "ARCHIVED" && !link.duplicateOf ? { status: "PUBLISHED" } : {}),
           ...(photosChanged
             ? { images: { deleteMany: {}, create: paths.map((path, i) => ({ path, order: i })) } }
             : {}),
@@ -614,6 +617,8 @@ export async function importFrom999(
       });
     }
 
+    report.hiddenDuplicates = await hideDuplicates();
+
     // views / expiry change every day — refresh them for every linked advert
     // (one cheap batch; nothing else is re-read for this)
     const statUpdates = adverts.flatMap((item) => {
@@ -634,7 +639,7 @@ export async function importFrom999(
     report.error = e instanceof Error ? e.message : String(e);
   }
 
-  const summary = `${report.created} noi · ${report.updated} actualizate · ${report.archived} arhivate · ${report.unchanged} neschimbate · ${report.skipped} sărite`;
+  const summary = `${report.created} noi · ${report.updated} actualizate · ${report.archived} arhivate · ${report.unchanged} neschimbate · ${report.skipped} sărite${report.hiddenDuplicates ? ` · ${report.hiddenDuplicates} dubluri ascunse` : ""}`;
   await prisma.syncRun.update({
     where: { id: run.id },
     data: {
@@ -646,7 +651,7 @@ export async function importFrom999(
     },
   });
 
-  if (report.created || report.updated || report.archived) {
+  if (report.created || report.updated || report.archived || report.hiddenDuplicates) {
     try {
       revalidatePath("/", "layout");
     } catch {
@@ -673,4 +678,91 @@ export async function importIsStale(hours = 6) {
   });
   if (!last) return true;
   return Date.now() - last.startedAt.getTime() > hours * 60 * 60 * 1000;
+}
+
+// The dealer sometimes posts one car twice on 999.md: the same photos under
+// another title ("Transporter" + "Transporter Long", "Kuga" + "Escape",
+// "RAM 1500" + "Dodge Ram"). Two public adverts are the same car when their
+// first photo is the same file, or when make, year, mileage, price, fuel and
+// gearbox all match. One of them stays on the site (the one posted first);
+// the rest are archived and remember which advert they repeat. When the kept
+// advert goes away, its copy comes back on the next run.
+export async function hideDuplicates(): Promise<number> {
+  const links = await prisma.advert999.findMany({
+    where: { source: "nnn", advertId: { not: null }, nnnState: "public" },
+    include: { car: { include: { images: { orderBy: { order: "asc" }, take: 1 } } } },
+  });
+  // the admin's own decisions (sold, reserved, draft) are left alone
+  const candidates = links.filter(
+    (l) => l.car.status === "PUBLISHED" || (l.car.status === "ARCHIVED" && l.duplicateOf)
+  );
+
+  // union-find over the two keys
+  const parent = new Map<string, string>();
+  const find = (x: string): string => {
+    const p = parent.get(x) ?? x;
+    if (p === x) return x;
+    const r = find(p);
+    parent.set(x, r);
+    return r;
+  };
+  const union = (a: string, b: string) => {
+    const ra = find(a);
+    const rb = find(b);
+    if (ra !== rb) parent.set(rb, ra);
+  };
+  const firstByKey = new Map<string, string>();
+  for (const l of candidates) {
+    const c = l.car;
+    const keys = [
+      c.images[0] ? `img:${c.images[0].path}` : null,
+      `spec:${c.brand.toLowerCase()}|${c.year}|${c.mileage}|${c.price}|${c.fuel}|${c.transmission}`,
+    ];
+    for (const k of keys) {
+      if (!k) continue;
+      const seen = firstByKey.get(k);
+      if (seen) union(seen, l.id);
+      else firstByKey.set(k, l.id);
+    }
+  }
+
+  const groups = new Map<string, typeof candidates>();
+  for (const l of candidates) {
+    const r = find(l.id);
+    groups.set(r, [...(groups.get(r) ?? []), l]);
+  }
+
+  // an ALL-CAPS title is the dealer's sloppier copy; otherwise the first posted wins
+  const caps = (l: (typeof candidates)[number]) => {
+    const m = l.car.model.replace(/[^A-Za-zĂÂÎȘȚăâîșț]/g, "");
+    return m.length > 2 && m === m.toUpperCase() ? 1 : 0;
+  };
+  const rank = (l: (typeof candidates)[number]) => [caps(l), Number(l.advertId)];
+
+  let hidden = 0;
+  for (const g of groups.values()) {
+    const sorted = [...g].sort((a, b) => {
+      const [ca, ia] = rank(a);
+      const [cb, ib] = rank(b);
+      return ca - cb || ia - ib;
+    });
+    const [keep, ...copies] = sorted;
+    if (keep.duplicateOf || keep.car.status !== "PUBLISHED") {
+      await prisma.car.update({ where: { id: keep.carId }, data: { status: "PUBLISHED" } });
+      await prisma.advert999.update({ where: { id: keep.id }, data: { duplicateOf: null, lastError: null } });
+    }
+    for (const c of copies) {
+      if (c.duplicateOf === keep.advertId && c.car.status === "ARCHIVED") continue;
+      await prisma.car.update({ where: { id: c.carId }, data: { status: "ARCHIVED" } });
+      await prisma.advert999.update({
+        where: { id: c.id },
+        data: {
+          duplicateOf: keep.advertId,
+          lastError: `Același anunț ca #${keep.advertId} pe 999.md — ascuns ca să nu apară de două ori`,
+        },
+      });
+      hidden++;
+    }
+  }
+  return hidden;
 }

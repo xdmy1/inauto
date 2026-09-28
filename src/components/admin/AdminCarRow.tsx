@@ -29,6 +29,7 @@ export type AdminCar = {
     state: string;
     nnnState: string | null;
     lastError: string | null;
+    duplicateOf: string | null;
     views: number | null;
     expiresAt: string | null;
     importedAt: string;
@@ -52,6 +53,7 @@ const GEARBOX: Record<string, string> = {
 
 /** one plain sentence about where the car stands on 999.md */
 function nnnLine(a: NonNullable<AdminCar["advert"]>) {
+  if (a.duplicateOf) return { text: `Dublură a anunțului #${a.duplicateOf} — ascunsă`, warn: false };
   if (a.state === "ERROR") return { text: "Eroare la 999.md", warn: true };
   if (a.nnnState === "deleted") return { text: "Șters de pe 999.md", warn: true };
   if (a.nnnState === "hidden") return { text: "Ascuns pe 999.md", warn: false };
