@@ -11,6 +11,8 @@ import { canonicalFor, localizedAlternates, vehicleJsonLd } from "@/lib/seo";
 import { Gallery } from "@/components/Gallery";
 import { CarCard } from "@/components/CarCard";
 import { ShareButton } from "@/components/ShareButton";
+import { TrackEvent } from "@/components/TrackEvent";
+import { carItem } from "@/lib/analytics";
 import { SectionHeader } from "@/components/home/SectionHeader";
 import {
   CheckIcon,
@@ -163,7 +165,22 @@ export default async function CarPage({
   const trust = ["verified", "docs", "financing", "testdrive"] as const;
 
   return (
-    <div data-hide-fab className="mx-auto max-w-[1360px] px-4 pb-20 pt-6 sm:px-6 sm:pt-8 lg:pb-0">
+    <div
+      data-hide-fab
+      data-car-page
+      data-item-id={car.slug}
+      data-item-name={`${car.brand} ${car.model} ${car.year}`}
+      data-item-price={car.price}
+      className="mx-auto max-w-[1360px] px-4 pb-20 pt-6 sm:px-6 sm:pt-8 lg:pb-0"
+    >
+      <TrackEvent
+        event="view_item"
+        params={{
+          currency: "EUR",
+          value: car.price,
+          items: [carItem({ id: car.slug, brand: car.brand, model: car.model, year: car.year, price: car.price, body: car.body, fuel: car.fuel })],
+        }}
+      />
       {/* Breadcrumb */}
       <nav className="flex flex-wrap items-center gap-2 text-xs text-ink-faint" aria-label="Breadcrumb">
         <Link href="/" className="hover:text-ink">{t("nav.home")}</Link>

@@ -59,6 +59,12 @@ export async function CarCard({
     <Link
       href={`/auto/${car.slug}`}
       data-reveal
+      data-item-id={car.slug}
+      data-item-brand={car.brand}
+      data-item-model={car.model}
+      data-item-year={car.year}
+      data-item-price={car.price}
+      data-item-fuel={car.fuel}
       className="card group flex flex-col overflow-hidden transition-all hover:-translate-y-0.5 hover:shadow-lift"
     >
       <div className="relative aspect-[4/3] overflow-hidden bg-line/50">

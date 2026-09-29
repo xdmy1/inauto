@@ -6,6 +6,7 @@ import { Link, useRouter } from "@/i18n/navigation";
 import { FUELS } from "@/lib/cars";
 import { ArrowRightIcon, SlidersIcon } from "./icons";
 import { Select } from "./ui/Select";
+import { track } from "@/lib/analytics";
 
 const PRICE_STEPS = [3000, 5000, 7500, 10000, 15000, 20000, 30000, 50000, 70000];
 const nf = new Intl.NumberFormat("ro-RO");
@@ -63,6 +64,16 @@ export function QuickSearch({
   function submit(e: React.FormEvent) {
     e.preventDefault();
     const p = buildParams();
+    track("search", {
+      search_term: [brand, model, fuel, priceMin && `>${priceMin}`, priceMax && `<${priceMax}`].filter(Boolean).join(" ") || "(toate)",
+      area: "hero_search",
+      brand,
+      model,
+      fuel,
+      price_min: Number(priceMin) || undefined,
+      price_max: Number(priceMax) || undefined,
+      results: count,
+    });
     router.push(`/auto${p.size ? `?${p}` : ""}`);
   }
 

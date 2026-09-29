@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { CheckIcon, ShareIcon } from "./icons";
+import { track } from "@/lib/analytics";
 
 // "Expediază" in the top-right corner of every car card: the phone's share
 // sheet where there is one, otherwise the link goes to the clipboard.
@@ -24,6 +25,8 @@ export function CardShare({
     const url = `${window.location.origin}${path}`;
     // the share sheet only where it is a real one (touch devices); desktops copy the link
     const touch = window.matchMedia("(hover: none) and (pointer: coarse)").matches;
+    const item_id = path.split("/").pop();
+    track("share", { method: touch && "share" in navigator ? "share_sheet" : "copy_link", content_type: "car", item_id, area: "car_card" });
     if (touch && navigator.share) {
       try {
         await navigator.share({ title, url });

@@ -1,4 +1,6 @@
 import type { Metadata } from "next";
+import { TrackEvent } from "@/components/TrackEvent";
+import { carItem } from "@/lib/analytics";
 import { getTranslations, setRequestLocale } from "next-intl/server";
 import { getPathname, Link } from "@/i18n/navigation";
 import {
@@ -95,8 +97,32 @@ export default async function CatalogPage({
     (b) => b.brand.toLowerCase() === filters.brand?.toLowerCase()
   )?.brand;
 
+  // every filter state the visitor lands on, as one readable string
+  const applied = Object.entries(sp)
+    .filter(([k, v]) => typeof v === "string" && v !== "" && k !== "page")
+    .map(([k, v]) => `${k}=${v}`)
+    .join("&");
+
   return (
     <div className="mx-auto max-w-[1360px] px-4 pt-6 sm:px-6 sm:pt-8">
+      <TrackEvent
+        event="view_item_list"
+        params={{
+          item_list_name: category ?? "catalog",
+          filters: applied || "none",
+          results: total,
+          page: filters.page ?? 1,
+          items: cars.slice(0, 12).map((c, i) =>
+            carItem({ id: c.slug, brand: c.brand, model: c.model, year: c.year, price: c.price, fuel: c.fuel, index: i, list: category ?? "catalog" })
+          ),
+        }}
+      />
+      {(filters.q || applied) && (
+        <TrackEvent
+          event="search"
+          params={{ search_term: filters.q || applied, filters: applied, results: total }}
+        />
+      )}
       <nav className="flex items-center gap-2 text-xs text-ink-faint" aria-label="Breadcrumb">
         <Link href="/" className="hover:text-ink">
           {t("nav.home")}

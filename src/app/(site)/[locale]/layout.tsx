@@ -11,6 +11,7 @@ import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
 import { FloatingContact } from "@/components/FloatingContact";
 import { ScrollReveal } from "@/components/ScrollReveal";
+import { Analytics } from "@/components/Analytics";
 import "../../globals.css";
 import "../../motion.css";
 import "../../header.css";
@@ -89,6 +90,7 @@ export default async function LocaleLayout({
           <Footer />
           <FloatingContact />
         </NextIntlClientProvider>
+        <Analytics />
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{

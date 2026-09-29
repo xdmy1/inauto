@@ -30,6 +30,7 @@
 import { useEffect, useRef } from "react";
 import { Link } from "@/i18n/navigation";
 import { ArrowRightIcon } from "@/components/icons";
+import { track } from "@/lib/analytics";
 
 export type OrbitFrames = {
   /** folder under /public, frames are 000.webp … */
@@ -226,6 +227,8 @@ export function OrbitStage({
     };
 
     // the copy: promises light up as the turn reaches them and stay lit
+    let reached = -1;
+    let finished = false;
     const copy = () => {
       const moving = p >= MOVING_FROM;
       if (moving !== movingOn) {
@@ -235,6 +238,11 @@ export function OrbitStage({
       let now = -1;
       for (let i = 0; i < beatEls.length; i++) if (p >= (timing.beats[i] ?? 2)) now = i;
       if (now !== nowOn) {
+        // how far into the story people get (each beat once per visit)
+        if (now > reached) {
+          reached = now;
+          track("orbit_progress", { step: now + 1, of: beatEls.length });
+        }
         nowOn = now;
         beatEls.forEach((el, i) => {
           el.classList.toggle("is-on", i <= now);
@@ -243,6 +251,10 @@ export function OrbitStage({
       }
       const atEnd = p >= timing.end;
       if (atEnd !== endOn) {
+        if (atEnd && !finished) {
+          finished = true;
+          track("orbit_complete", {});
+        }
         endOn = atEnd;
         end.classList.toggle("is-on", atEnd);
       }

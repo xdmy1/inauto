@@ -5,6 +5,7 @@ import { createPortal } from "react-dom";
 import { useTranslations } from "next-intl";
 import { imageUrl } from "@/lib/images";
 import { CarMark } from "./Logo";
+import { track } from "@/lib/analytics";
 
 const chevron = {
   viewBox: "0 0 24 24",
@@ -98,7 +99,10 @@ export function Gallery({
           ref={trigger}
           type="button"
           aria-label={t("galleryOpen")}
-          onClick={() => setOpen(true)}
+          onClick={() => {
+            setOpen(true);
+            track("gallery_open", { index, photos: images.length, item_id: location.pathname.split("/").pop() });
+          }}
           className="block w-full cursor-zoom-in"
         >
           {/* eslint-disable-next-line @next/next/no-img-element */}
