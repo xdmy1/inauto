@@ -1,4 +1,5 @@
 import { prisma } from "./prisma";
+import { cachedCar } from "./cache";
 import type { Prisma } from "@prisma/client";
 
 // Canonical option keys stored in DB; translated for display via messages
@@ -174,8 +175,8 @@ export function filtersToOrderBy(
 export async function getPublishedCars(f: CarFilters) {
   const where = filtersToWhere(f);
   const [total, cars] = await Promise.all([
-    prisma.car.count({ where }),
-    prisma.car.findMany({
+    cachedCar.count({ where }),
+    cachedCar.findMany({
       where,
       orderBy: filtersToOrderBy(f),
       skip: ((f.page ?? 1) - 1) * PER_PAGE,
@@ -191,7 +192,7 @@ export type BrandCount = { brand: string; count: number };
 export async function getBrandsWithCounts(
   scope?: Prisma.CarWhereInput
 ): Promise<BrandCount[]> {
-  const rows = await prisma.car.groupBy({
+  const rows = await cachedCar.groupBy({
     by: ["brand"],
     where: { status: "PUBLISHED", ...scope },
     _count: { brand: true },
@@ -201,7 +202,7 @@ export async function getBrandsWithCounts(
 }
 
 export async function getBodyCounts() {
-  const rows = await prisma.car.groupBy({
+  const rows = await cachedCar.groupBy({
     by: ["body"],
     where: { status: "PUBLISHED" },
     _count: { body: true },
@@ -220,7 +221,7 @@ export async function getBudgetCounts() {
   return Promise.all(
     BUDGETS.map(async (b) => ({
       ...b,
-      count: await prisma.car.count({
+      count: await cachedCar.count({
         where: { status: "PUBLISHED", price: { gte: b.min, lte: b.max } },
       }),
     }))

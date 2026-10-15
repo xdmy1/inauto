@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { getTranslations, setRequestLocale } from "next-intl/server";
 import { Link } from "@/i18n/navigation";
-import { prisma } from "@/lib/prisma";
+import { cachedCar } from "@/lib/cache";
 import { site, telHref, waHref } from "@/lib/site";
 import { canonicalFor, localizedAlternates } from "@/lib/seo";
 import {
@@ -50,7 +50,7 @@ export default async function AboutPage({
   const { locale } = await params;
   setRequestLocale(locale);
   const t = await getTranslations();
-  const count = await prisma.car.count({ where: { status: "PUBLISHED" } });
+  const count = await cachedCar.count({ where: { status: "PUBLISHED" } });
 
   const stats = [
     { value: String(count), label: t("about.statsCars") },

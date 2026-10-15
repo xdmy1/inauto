@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { getTranslations, setRequestLocale } from "next-intl/server";
 import { Link } from "@/i18n/navigation";
-import { prisma } from "@/lib/prisma";
+import { cachedCar } from "@/lib/cache";
 import {
   CARS_ONLY,
   getBodyCounts,
@@ -77,16 +77,16 @@ export default async function HomePage({
   const t = await getTranslations();
 
   const [count, carCount, carBrands, latest, featured, brands, bodies, budgets] = await Promise.all([
-    prisma.car.count({ where: { status: "PUBLISHED" } }),
-    prisma.car.count({ where: { status: "PUBLISHED", ...CARS_ONLY } }),
+    cachedCar.count({ where: { status: "PUBLISHED" } }),
+    cachedCar.count({ where: { status: "PUBLISHED", ...CARS_ONLY } }),
     getBrandsWithCounts(CARS_ONLY),
-    prisma.car.findMany({
+    cachedCar.findMany({
       where: { status: "PUBLISHED" },
       orderBy: { createdAt: "desc" },
       take: 8,
       include: cardInclude,
     }),
-    prisma.car.findMany({
+    cachedCar.findMany({
       where: {
         status: "PUBLISHED",
         OR: [{ featured: true }, { oldPrice: { not: null } }],

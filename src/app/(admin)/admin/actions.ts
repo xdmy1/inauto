@@ -1,11 +1,12 @@
 "use server";
 
-import { revalidatePath } from "next/cache";
+import { revalidatePath, updateTag } from "next/cache";
 import { redirect } from "next/navigation";
 import { cookies } from "next/headers";
 import bcrypt from "bcryptjs";
 import { z } from "zod";
 import { prisma } from "@/lib/prisma";
+import { CARS_TAG } from "@/lib/cache";
 import { createSessionToken, SESSION_COOKIE } from "@/lib/session";
 import {
   BODIES,
@@ -185,6 +186,7 @@ async function processImages(carId: string, formData: FormData) {
 }
 
 function revalidateSite() {
+  updateTag(CARS_TAG);
   revalidatePath("/", "layout");
 }
 
@@ -255,6 +257,7 @@ export async function syncNnnAction(
 ): Promise<SyncReport> {
   const id = String(formData.get("carId") ?? "");
   const report = await syncCarTo999(id);
+  updateTag(CARS_TAG); // the public car page shows the 999.md link
   revalidatePath(`/admin/cars/${id}`);
   return report;
 }
@@ -265,6 +268,7 @@ export async function republishNnnAction(
 ): Promise<SyncReport> {
   const id = String(formData.get("carId") ?? "");
   const report = await republishCarOn999(id);
+  updateTag(CARS_TAG); // the public car page shows the 999.md link
   revalidatePath(`/admin/cars/${id}`);
   return report;
 }
@@ -286,6 +290,7 @@ export async function toggleNnnVisibilityAction(
       where: { carId: id },
       data: { nnnState: makePublic ? "public" : "hidden", lastSyncAt: new Date(), lastError: null },
     });
+    updateTag(CARS_TAG); // the public car page shows the 999.md link
     revalidatePath(`/admin/cars/${id}`);
     return { ok: true, action: makePublic ? "shown" : "hidden", advertId, warnings: [] };
   } catch (e) {

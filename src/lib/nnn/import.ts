@@ -11,7 +11,8 @@
 // Photos are not copied: the site shows them straight from 999.md's CDN
 // (i.simpalsmedia.com), the same way the catalogue was first filled.
 import { prisma } from "../prisma";
-import { revalidatePath } from "next/cache";
+import { revalidatePath, revalidateTag } from "next/cache";
+import { CARS_TAG } from "../cache";
 import { uniqueCarSlug } from "../cars";
 import { site } from "../site";
 import {
@@ -653,6 +654,7 @@ export async function importFrom999(
 
   if (report.created || report.updated || report.archived || report.hiddenDuplicates) {
     try {
+      revalidateTag(CARS_TAG, "max");
       revalidatePath("/", "layout");
     } catch {
       /* outside a request (script) — nothing to revalidate */

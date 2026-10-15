@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { getTranslations, setRequestLocale } from "next-intl/server";
 import { Link } from "@/i18n/navigation";
-import { prisma } from "@/lib/prisma";
+import { cachedCar } from "@/lib/cache";
 import { brandSlug, equipmentList, fmtEngine, fmtKm, fmtPrice } from "@/lib/cars";
 import { imageUrl } from "@/lib/images";
 import { nnnAdvertUrl } from "@/lib/nnn/client";
@@ -24,7 +24,7 @@ import {
 } from "@/components/icons";
 
 async function getCar(slug: string) {
-  return prisma.car.findFirst({
+  return cachedCar.findFirst({
     where: { slug, status: { in: ["PUBLISHED", "RESERVED", "SOLD"] } },
     include: { images: { orderBy: { order: "asc" } }, advert: true },
   });
@@ -81,7 +81,7 @@ export default async function CarPage({
     images: { orderBy: { order: "asc" as const }, take: 3 },
     _count: { select: { images: true } },
   };
-  const similar = await prisma.car.findMany({
+  const similar = await cachedCar.findMany({
     where: {
       status: "PUBLISHED",
       id: { not: car.id },
@@ -94,7 +94,7 @@ export default async function CarPage({
     include: cardInclude,
   });
   if (similar.length < 4) {
-    const fill = await prisma.car.findMany({
+    const fill = await cachedCar.findMany({
       where: {
         status: "PUBLISHED",
         id: { notIn: [car.id, ...similar.map((s) => s.id)] },

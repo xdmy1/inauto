@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { getTranslations, setRequestLocale } from "next-intl/server";
 import { Link } from "@/i18n/navigation";
-import { prisma } from "@/lib/prisma";
+import { cachedCar } from "@/lib/cache";
 import { brandFromSlug, brandSlug, fmtPrice, getBrandsWithCounts } from "@/lib/cars";
 import { imageUrl } from "@/lib/images";
 import { site, telHref } from "@/lib/site";
@@ -45,7 +45,7 @@ export default async function BrandPage({
   const t = await getTranslations();
 
   const [cars, brands] = await Promise.all([
-    prisma.car.findMany({
+    cachedCar.findMany({
       where: { status: "PUBLISHED", brand: found.brand },
       orderBy: [{ featured: "desc" }, { createdAt: "desc" }],
       include: {

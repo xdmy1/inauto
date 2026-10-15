@@ -1,5 +1,5 @@
 import type { MetadataRoute } from "next";
-import { prisma } from "@/lib/prisma";
+import { cachedCar } from "@/lib/cache";
 import { site } from "@/lib/site";
 import { brandSlug, getBrandsWithCounts } from "@/lib/cars";
 
@@ -7,7 +7,7 @@ import { brandSlug, getBrandsWithCounts } from "@/lib/cars";
 export const dynamic = "force-dynamic";
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
-  const cars = await prisma.car
+  const cars = await cachedCar
     .findMany({
       where: { status: "PUBLISHED" },
       select: { slug: true, updatedAt: true },

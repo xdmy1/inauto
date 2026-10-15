@@ -17,7 +17,7 @@ import { CarCard } from "@/components/CarCard";
 import { CatalogFilters } from "@/components/CatalogFilters";
 import { SortSelect } from "@/components/SortSelect";
 import { BrandRow } from "@/components/home/BrandRow";
-import { prisma } from "@/lib/prisma";
+import { cachedCar } from "@/lib/cache";
 
 
 /** translation key for the active body category, or null for the full catalog */
@@ -73,7 +73,7 @@ export default async function CatalogPage({
   const [{ cars, total, pages }, brands, colorRows] = await Promise.all([
     getPublishedCars(filters),
     getBrandsWithCounts(categoryWhere),
-    prisma.car.findMany({
+    cachedCar.findMany({
       where: { status: "PUBLISHED", color: { not: null } },
       select: { color: true },
       distinct: ["color"],

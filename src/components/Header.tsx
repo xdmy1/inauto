@@ -1,6 +1,6 @@
 import { getTranslations } from "next-intl/server";
 import { Link } from "@/i18n/navigation";
-import { prisma } from "@/lib/prisma";
+import { cachedCar } from "@/lib/cache";
 import { fmtPrice } from "@/lib/cars";
 import { imageUrl } from "@/lib/images";
 import { site, telHref } from "@/lib/site";
@@ -19,7 +19,7 @@ export async function Header() {
   const t = await getTranslations();
 
   // the newest cars: a slim ticker above the bar, the first three also in the "Automobile" panel
-  const newest = await prisma.car.findMany({
+  const newest = await cachedCar.findMany({
     where: { status: "PUBLISHED" },
     orderBy: { createdAt: "desc" },
     take: 10,

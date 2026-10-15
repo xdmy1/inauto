@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { prisma } from "./prisma";
+import { cachedCar } from "./cache";
 import { brandSlug, getBrandsWithCounts, slugify } from "./cars";
 
 // The old inauto.md kept its cars at /car/<slug> (2022–2025) and, before that,
@@ -11,7 +11,7 @@ export async function legacyCarTarget(raw: string): Promise<string> {
   const slug = slugify(decodeURIComponent(raw));
   if (!slug) return "/auto";
 
-  const exact = await prisma.car.findFirst({
+  const exact = await cachedCar.findFirst({
     where: { slug, status: "PUBLISHED" },
     select: { slug: true },
   });
@@ -26,7 +26,7 @@ export async function legacyCarTarget(raw: string): Promise<string> {
 
   const rest = slug.slice(brand.slug.length + 1);
   if (rest) {
-    const cars = await prisma.car.findMany({
+    const cars = await cachedCar.findMany({
       where: { brand: brand.name, status: "PUBLISHED" },
       orderBy: { createdAt: "desc" },
       select: { slug: true, model: true },
