@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # Deploy to the VPS: ship the source, build it in a fresh folder next to the
 # live one, then swap and restart (a few seconds of downtime, not the build).
-# Traffic reaches 127.0.0.1:3100 through the Cloudflare Tunnel.
+# Traffic reaches localhost:3100 through the Cloudflare Tunnel.
 # Server layout: /opt/inauto/{app,next,app.prev,shared/.env,shared/uploads}
 set -euo pipefail
 HOST=root@168.231.127.48
@@ -26,5 +26,5 @@ ssh "$HOST" "set -e; cd $D; cp next/deploy/*.service next/deploy/*.timer /etc/sy
   systemctl daemon-reload
   rm -rf app.prev; [ -d app ] && mv app app.prev; mv next app
   systemctl enable -q --now inauto-import.timer; systemctl enable -q inauto; systemctl restart inauto
-  for i in \$(seq 1 30); do curl -fs -o /dev/null http://127.0.0.1:3100/robots.txt && break; sleep 1; done
-  echo \"home: \$(curl -s -o /dev/null -w '%{http_code}' -H 'Host: www.inauto.md' http://127.0.0.1:3100/)\""
+  for i in \$(seq 1 30); do curl -fs -o /dev/null http://localhost:3100/robots.txt && break; sleep 1; done
+  echo \"home: \$(curl -s -o /dev/null -w '%{http_code}' -H 'Host: www.inauto.md' http://localhost:3100/)\""

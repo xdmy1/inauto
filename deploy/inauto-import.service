@@ -5,4 +5,4 @@ After=inauto.service
 [Service]
 Type=oneshot
 EnvironmentFile=/opt/inauto/shared/.env
-ExecStart=/bin/sh -c 'curl -fsS --max-time 400 -H "Authorization: Bearer $CRON_SECRET" http://127.0.0.1:3100/api/nnn/import'
+ExecStart=/bin/sh -c 'curl -fsS --max-time 400 -H "Authorization: Bearer $CRON_SECRET" http://localhost:3100/api/nnn/import'

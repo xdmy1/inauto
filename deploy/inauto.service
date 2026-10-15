@@ -7,7 +7,10 @@ Wants=postgresql.service
 User=inauto
 WorkingDirectory=/opt/inauto/app
 Environment=NODE_ENV=production
-ExecStart=/usr/bin/node node_modules/next/dist/bin/next start -H 127.0.0.1 -p 3100
+# "localhost", not 127.0.0.1: Next compares the middleware URL host with
+# "localhost"; any other host turns next-intl rewrites into proxy calls (500)
+# and its redirects into loops
+ExecStart=/usr/bin/node node_modules/next/dist/bin/next start -H localhost -p 3100
 Restart=always
 RestartSec=3
 
