@@ -19,6 +19,14 @@ const nextConfig: NextConfig = {
       statusCode: 301 as const,
     });
     return [
+      // the bare domain answers on www (what Vercel's domain redirect did;
+      // behind the Cloudflare Tunnel both hostnames reach this app)
+      {
+        source: "/:path*",
+        has: [{ type: "host" as const, value: "inauto.md" }],
+        destination: "https://www.inauto.md/:path*",
+        statusCode: 308 as const,
+      },
       to("/about", "/despre"),
       to("/contacts", "/contacte"),
       to("/contact-us", "/contacte"),

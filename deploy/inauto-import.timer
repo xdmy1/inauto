@@ -1,0 +1,9 @@
+[Unit]
+Description=inauto.md: daily import from 999.md (was the Vercel cron)
+
+[Timer]
+OnCalendar=*-*-* 06:00:00 UTC
+Persistent=true
+
+[Install]
+WantedBy=timers.target
