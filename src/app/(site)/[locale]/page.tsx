@@ -7,6 +7,7 @@ import {
   getBodyCounts,
   getBrandsWithCounts,
   getBudgetCounts,
+  MINIBUS,
 } from "@/lib/cars";
 import { site, telHref, waHref } from "@/lib/site";
 import { canonicalFor, localizedAlternates } from "@/lib/seo";
@@ -161,6 +162,16 @@ export default async function HomePage({
               </li>
             ))}
           </ul>
+          <div className="mt-7 grid max-w-[560px] grid-cols-2 gap-3 sm:gap-4">
+            <Link href="/auto" className="btn-primary h-14 rounded-2xl px-4 text-[15px] uppercase tracking-[0.06em] sm:h-[68px] sm:text-lg">
+              {t("home.heroCars")}
+              <ArrowRightIcon className="h-5 w-5" />
+            </Link>
+            <Link href={`/auto?body=${MINIBUS}`} className="btn-white h-14 rounded-2xl px-4 text-[15px] uppercase tracking-[0.06em] text-ink sm:h-[68px] sm:text-lg">
+              {t("home.heroMinibus")}
+              <ArrowRightIcon className="h-5 w-5" />
+            </Link>
+          </div>
         </div>
       </section>
 

@@ -110,6 +110,8 @@
     "heroEyebrow": "Parc auto în Chișinău · str. Socoleni 19",
     "heroCountLabel": "{count, plural, one {automobil} other {automobile}} de vânzare",
     "heroSub": "Mașini verificate, cu kilometraj real, acte gata și prima rată de la 100 €. Vino, alegi, conduci.",
+    "heroCars": "Autoturisme",
+    "heroMinibus": "Microbuze",
     "heroCta": "Vezi automobilele",
     "searchTitleShort": "Caută în parcare",
     "quickFilters": "Rapid:",
